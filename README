@@ -1,0 +1,258 @@
+
+GJID v1.0 for Linux
+------------------------
+
+Linux GJID is a port of a DOS shareware game with that name. Unlike the DOS
+game this is freeware. I have not used any of the DOS version's code, so I
+don't think I am violating anything. After all, there are so many breakout
+clones :) Feel free to distribute it or use the code at your
+discretion (although I would like it if you told me) The levels are
+taken copied entirely from there, although the data file format is not
+supported - you will have to code in the levels by hand.
+
+I have not been able to contact the author of the DOS game, due to expiration 
+of his E-Mail address (?), which can be found in the document below.
+I can be reached at msharov@rucs2.sunlab.cs.runet.edu, which is a valid
+address until January 1996. After that you can try to locate me through
+the Four11 directory (http://www.Four11.com).
+
+I would like you to think of this as a direct port, so the following
+document, taken from the original DOS GJID distribution, is included. The
+controls are not the same as described below - they are explained in the
+game's titles.
+
+My GJID also has a builtin level editor, which can be started by running
+gjid with an argument. You will need a mouse to use it. The controls are:
+	'n' - Next (or new) level
+	'p' - Previous level
+	'q' - Quit
+
+---------------------------
+
+To compile GJID you will need SVGALIB installed. I have used v1.2, but it is
+possible that it may compile with earlier versions too. You should be able
+to link with -lvga -lvgagl .
+
+Edit the Makefiles in gamelib and src and compile script in tools to set
+your compiler and options. The 'build' script assumes that you have bash in
+/bin/bash and that you have awk; if it is not so, edit build and src/mkdata . 
+After build is finished, which on my 486DX33 takes 3.68 minutes, you will be 
+asked to install as root because GJID has to be suid root.
+
+Enjoy the game!
+
+==============================================================================
+
+GJID 2.0 - A game by John Remyn.
+Copyright 1990, 1992 Galifir Developments.
+
+
+GJID is a fascinating puzzle game, which will keep you glued to the screen for
+quite some time. It combines intricate puzzles with straightforward gameplay
+in 14 challenging levels.
+
+This game is shareware. You are encouraged to freely copy and distribute it,
+provided that no fee is charged beyond normal media duplication and shipping
+costs, and that no changes are made to the distribution archive contents. If
+you like this game, you are strongly encouraged to register it. You will
+receive the latest registered version of the game, along with a number of
+other (unregistered) games by the authors, on diskette. The registered
+version includes a level editor which allows you to create and modify GJID
+levels in a user friendly environment. For further information see the end
+of this file and the file ORDER.FRM.
+
+
+---- Hardware Requirements ---------------------------------------------------
+
+    EGA or VGA compatible card recommended, CGA works also.
+    128K of free conventional memory.
+    DOS v2.0 or greater.
+
+Disclaimer:
+
+    This program is provided on an "as is" basis without warranty of any kind.
+    In no event will the authors be liable to you for any damages.
+
+
+---- Installing & Configuring ------------------------------------------------
+
+Just put all files in the archive (or on the distribution diskette) in a
+directory on hard or floppy disk, which you will probably already have done.
+The files require about 90 Kb of free disk space.
+
+Now make that directory the current directory and type: gjid <enter>, and the
+program will run.
+
+
+---- The Story ---------------------------------------------------------------
+
+The story of GJID can be found in the scrolling text on the main menu screen
+in the game itself.
+
+
+---- The Main Menu -----------------------------------------------------------
+
+The menu is fairly self-explanatory. The only option which might need some
+clarification is F3, change colorset. GJID (when run with EGA or VGA monitors)
+uses a diffent color scheme for each level. With this option you can select
+the color the first level will have. You can also change the colorset during
+play.
+
+
+---- The Game ----------------------------------------------------------------
+
+Getting to grips with the game should be easy. The objective is to clear
+levels from crates containing peace-threatening armaments. There are three
+types of crates, which only differ in visual appearance. A level consists of a
+maze through which you have to push the crates onto disposers, where they are
+vaporized. However, this will not always be easy. You cannot push crates
+around corners nor can you push more than one crate at a time, and you cannot
+pull them back. Although these three limitations alone provide lots of fun
+(and frustration), there is another element to the game, the 'one-way
+passages'. You can get onto these passages from only one direction, but move
+off them in any direction. It is possible to push crates over these passages,
+or leave crates standing on them. There is also an exit on each level (marked
+with an E), onto which you should move as soon as you
+have disposed of all crates in a level. Note that you can move
+and push crates over exits, and move over disposers.
+
+There is a limited take-back move facility, which allows you to take back a
+wrong crate push, provided you haven't moved since the push. Ordinary moves
+cannot be taken back.
+
+You score points by finishing a level. The basic score is equal to the number of
+disposed crates. You gain more bonus points by making fewer moves.
+When completing a level for the first time, you may find that you receive no
+bonus at all because you made too many moves. When you play it again, you'll
+know the basic strategy, and may find a shorter route, threreby gaining more
+bonus points. There is not necessarily only one way to finish a level.
+
+Truly finishing the game is done by finishing all levels in one run. It is
+possible to skip levels you don't want to play, because you have already
+finished the level before, or haven't solved it yet. Levels are not sorted on
+difficulty, so you may find that while one level is very tough, the next is a
+doddle.
+
+We guarantee that all levels in the original game can be finished. We cannot
+guarantee this for levels created by other people using the level editor.
+
+When passing the last level, 50 extra bonus points are awarded for every level
+that you have finished.
+
+The key definitions:
+
+    Cursor keys : move GJID
+    F1          : show help (key definitions)
+    F2          : take back move
+    F3          : change colorset
+    F4          : toggle sound on/off
+    F5          : restart level (unconditional)
+    F8          : skip current level
+    Escape      : return to main menu
+
+Enjoy!
+
+
+---- Please register ---------------------------------------------------------
+
+Many hours of work have been put into this game. If you like it, please
+consider registering it. To encourage you to register, we offer you this for
+$10:
+
+    - The registered version of GJID, including a comprehensive level editor,
+      which enables you to create your own levels. Designing new levels is
+      even more challenging than playing them.
+
+    - The Solar Hockey League, a future sports simulation with fast and
+      furious action. Play against one of the challenging computer
+      teams, or compete with a friend (which is great fun).
+
+    - Hi-Q, a beautiful implementation of the classical board game. Not as
+      taxing on the mind as GJID, and not so exhilarating as The Solar Hockey
+      League, but showing some very nice 256 color VGA graphics. This game
+      also supports SuperVGA graphics on many SVGA cards, using 256 color
+      modes with resolutions of 640x400 or 640x480 pixels.
+
+    - Any other games which we may have developed since this release of
+      GJID.
+
+
+---- Technical Info and History ----------------------------------------------
+
+Programming was started on this game in 1989. It was released through the
+Public (Software) Library in Houston in 1990. Now (in 1992) colors and small
+details have been improved, a comprehensive level editor has been created for
+the registered version and some real documentation has been written.
+
+
+--- Ordering Information -----------------------------------------------------
+
+Send cash (bills) in a double envelope or in an envelope with some paper
+(possibly the order form) wrapped around the bills. An international
+money order will probably cost you a fee comparable to the registration
+amount. You can also use American Express Travelers Checks. Please do
+not send coins or other checks. Send the money along with the order
+form, or the information asked in the order form if you don't have easy
+access to a printer, to the address below. Remember to add proper
+postage for delivery to Europe. Mail usually takes a few days to reach
+Europe from North America. We will respond within 3 weeks at least, but
+usually within a few days.
+
+Comments, suggestions and bug reports are always welcome. For these,
+if you have access to Electronic Mail, you can use the following Internet
+address: hhanemaa@cs.ruu.nl
+
+
+------------------------------------------------------------------------------
+
+    Registration for GJID:
+
+    [ ] Normal registration, $10. You will receive a diskette with
+        the latest registered version of the game, and a number of other
+        shareware and public domain games by the authors.
+
+        [ ] Personal version (your name hardcoded in the game).
+
+
+    Diskette format:
+
+    [ ] 3.5" DD diskette                [ ] 5.25" DD diskette
+ÿÿ
+    Your hardware: (optional)
+
+    [ ] EGA             [ ] VGA
+    [ ] SVGA            [ ] other: ________________
+        chipset: ______________
+
+    [ ] 8088/86         [ ] 80186/286/V20/V30
+    [ ] 80386           [ ] 80486                      speed: ______
+
+    How did you obtain this program? (optional) ____________________
+
+
+    Name: __________________________________________________________
+
+
+    Address: _______________________________________________________
+
+    ________________________________________________________________
+
+    ________________________________________________________________
+                                         (add ZIPcode if applicable)
+    Country: ___________________________
+
+
+    Criticism/Comments: ____________________________________________
+
+    ________________________________________________________________
+
+
+    Mail To:
+
+                        John Remyn
+                        Rembrandtlaan 68
+                        4907 NP  Oosterhout
+                        The Netherlands
+
+
+

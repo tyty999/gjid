@@ -1,0 +1,57 @@
+#!/bin/bash
+#######################################################################
+## Creates GJID's data file. 4-way pictures are rotated from one. then
+## all the files listed in gjid.lst are placed in gjid.dat.
+## After that size of the file is recorded into gjid.size for later
+## level retrieveal. If gjid.levels is found, append it, otherwise
+## append data/zero.num, effectively creating zero levels.
+#######################################################################
+
+## First rotate the 4-way pics like robot, one-way door.
+echo Creating 4-way pics ...
+for i in robot oneway; do
+    cp data/${i}.pix data/${i}_n.pix
+    cp data/${i}.pix data/${i}_e.pix
+    ../tools/pixrotate data/${i}_e.pix
+    cp data/${i}_e.pix data/${i}_s.pix
+    ../tools/pixrotate data/${i}_s.pix
+    cp data/${i}_s.pix data/${i}_w.pix
+    ../tools/pixrotate data/${i}_w.pix
+    echo -n .
+done
+echo \/
+
+## Now create gjid.dat using gjid.lst as a guide
+echo Building data file ...
+rm -f gjid.dat
+SIZE=0
+cp /dev/null gjid.dat
+for i in `cat gjid.lst`; do
+    cat data/$i >> gjid.dat
+    OLDSIZE=$SIZE
+    SIZE=$OLDSIZE+`ls -l data/$i | awk '{print $5;}'`
+    echo -n .
+done
+
+## Append story with its size
+STORYSIZE=`ls -l gjid.story | awk '{print $5;}'`
+printnum $STORYSIZE >> gjid.dat
+cat gjid.story >> gjid.dat
+echo -n .
+OLDSIZE=$SIZE
+SIZE=$OLDSIZE+4+$STORYSIZE
+
+echo \/
+echo $SIZE | bc > gjid.size
+
+## Append levels if present
+if [ -f gjid.levels ]; then
+    echo Appending old levels ...
+    cat gjid.levels >> gjid.dat
+else
+    echo Zero levels in file ...
+    printnum 0 >> gjid.dat
+fi
+
+echo Total size is `ls -l gjid.dat | awk '{print $5;}'`
+

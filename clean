@@ -1,0 +1,7 @@
+#!/bin/bash
+rm -f build.log &> /dev/null
+make -C gamelib clean &> /dev/null
+make -C src clean dataclean &> /dev/null
+cd tools
+clean &> /dev/null
+cd ..
