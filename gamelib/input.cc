@@ -76,7 +76,7 @@ WORD ibo;
     mouse.Show();
 }
 
-HandlerStatus InputBox :: MousePressEvent (int x, int y, ButtonType button)
+HandlerStatus InputBox :: MousePressEvent (int, int, ButtonType)
 {
     if (!Disabled && !Pressed && UserHandler != NULL) {
        UserHandler (Buffer);

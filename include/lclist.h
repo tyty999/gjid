@@ -25,22 +25,22 @@ public:
 
 template <class LCListEl>
 inline void LCList<LCListEl> :: Next
-(ListWin wid = 0)
+(ListWin wid)
 {     
-    if (windows[wid] == MoveToTail())
-       windows[wid] = MoveToHead();
+    if (this->windows[wid] == this->MoveToTail())
+       this->windows[wid] = this->MoveToHead();
     else
-       windows[wid] = MoveToNext (windows [wid]);
+       this->windows[wid] = MoveToNext (this->windows [wid]);
 };
 
 template <class LCListEl>
 inline void LCList<LCListEl> :: Prev
-(ListWin wid = 0)
+(ListWin wid)
 {     
-    if (windows[wid] == MoveToHead())
-       windows[wid] = MoveToTail();
+    if (this->windows[wid] == this->MoveToHead())
+       this->windows[wid] = this->MoveToTail();
     else
-       windows[wid] = MoveToPrev (windows [wid]);
+       this->windows[wid] = MoveToPrev (this->windows [wid]);
 };
 
 template <class LCListEl>

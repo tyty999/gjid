@@ -49,7 +49,7 @@ BOOL Mouse :: IsClicked (ButtonType myButtons)
 
 BOOL Mouse :: IsInBox (int x1, int y1, int x2, int y2)
 {
-    if (x1 <= nx && y1 <= ny && x2 > nx && y2 > ny)
+    if (x1 <= int(nx) && y1 <= int(ny) && x2 > int(nx) && y2 > int(ny))
        return (TRUE);
     else
        return (FALSE);
@@ -68,7 +68,7 @@ WORD NewX, NewY;
     NewX = MouseXpos();
     NewY = MouseYpos();
 
-    if (clock() - LastClick > RepeatDelay) {
+    if (clock() - LastClick > clock_t(RepeatDelay)) {
        but = MouseButton();
        if (but & MOUSE_LEFTBUTTON)
 	  nbutton |= LeftButton;

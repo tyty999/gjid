@@ -31,7 +31,7 @@ ChainLink<QueueEl> * NewLink;
  
     NewLink = new ChainLink<QueueEl>;
     NewLink->SetData (element);
-    ConnectBefore (MoveToHead(), NewLink);
+    ConnectBefore (this->MoveToHead(), NewLink);
 }
 
 template <class QueueEl>
@@ -40,13 +40,13 @@ inline QueueEl * Queue<QueueEl> :: Serve (void)
 ChainLink<QueueEl> * ptr;
 QueueEl * data;
 
-    if (IsEmpty())
+    if (this->IsEmpty())
     {
        cout << "Queue: Serving from an empty queue!\n";
        return (NULL);
     }
 
-    ptr = MoveToTail();
+    ptr = this->MoveToTail();
     Disconnect (ptr);
     data = ptr->GetData();
     delete ptr;
@@ -59,7 +59,7 @@ inline QueueEl * Queue<QueueEl> :: Front (void)
 ChainLink<QueueEl> * ptr;
 QueueEl * data = NULL;
 
-    ptr = MoveToTail();
+    ptr = this->MoveToTail();
     if (ptr != NULL)
        data = ptr->GetData();
     return (data);

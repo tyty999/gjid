@@ -93,14 +93,14 @@ template <class LListEl>
 inline void LList<LListEl> :: Head 
 (const ListWin wid)
 { 
-    windows [wid] = MoveToHead ();
+    windows [wid] = this->MoveToHead ();
 }
 
 template <class LListEl>
 inline void LList<LListEl> :: Tail
 (const ListWin wid)
 { 
-    windows [wid] = MoveToTail ();
+    windows [wid] = this->MoveToTail ();
 }
 
 template <class LListEl>
@@ -158,14 +158,14 @@ inline LListEl * LList<LListEl> :: Remove
 ChainLink<LListEl> * ObtainedLink;
 LListEl * ObtainedData;
 	       
-    if (IsEmpty()) {
+    if (this->IsEmpty()) {
        cout << "LList: Removing an element from an empty list!\n";
        return (NULL);
     }		 
     
     Disconnect (windows [wid]);
     ObtainedLink = windows [wid];
-    windows [wid] = MoveToHead();
+    windows [wid] = this->MoveToHead();
     ObtainedData = ObtainedLink->GetData();
     delete ObtainedLink;
     -- size;
@@ -219,7 +219,7 @@ inline LListEl * LList<LListEl> :: FindFirst
 {
 BOOL result = FALSE;
 
-    windows[wid] = MoveToHead();
+    windows[wid] = this->MoveToHead();
     while (OnList(wid) && (result = f (LookAt (wid)) != TRUE))
        Next (wid);
        
@@ -235,7 +235,7 @@ inline LListEl * LList<LListEl> :: FindLast
 {
 BOOL result = FALSE;
 
-    windows[wid] = MoveToTail();
+    windows[wid] = this->MoveToTail();
     while (OnList(wid) && (result = f (LookAt (wid)) != TRUE))
        Prev (wid);
     if (result == TRUE)
@@ -248,7 +248,7 @@ template <class LListEl>
 inline void LList<LListEl> :: ForEach
 (LListIteratorFunc f, void * param)
 {	   
-    if (IsEmpty())
+    if (this->IsEmpty())
        return;
 
     Head(0);		 

@@ -4,7 +4,6 @@
 */
 
 #include <mdefs.h>
-#include <fstream.h>
 #include <game/font.h>
 #include "gjid.h"
 
@@ -15,7 +14,6 @@ void LoadData (char * filename)
 {
 Level * NewLevel;
 ifstream is;
-int i;
 
     is.open (filename); 
 
@@ -29,7 +27,7 @@ int i;
 
     cout << "Reading " << NumberOfPics << " pictures";
     // Read the pictures
-    for (i = 0; i < NumberOfPics; ++ i) {
+    for (WORD i = 0; i < NumberOfPics; ++ i) {
        pics[i].Read (is);
        cout << ".";
     }
@@ -37,12 +35,12 @@ int i;
 
     // Read the story
     cout << "Reading story.\n";
-    is.read (&StorySize, sizeof(WORD));
+    is.read ((char*) &StorySize, sizeof(WORD));
     story = new char [StorySize];
     is.read (story, StorySize);
 
     // Read the levels
-    is.read (&nLevels, sizeof(WORD));
+    is.read ((char*) &nLevels, sizeof(WORD));
     if (nLevels == 0)
        cout << "No levels found in data file!";
     else if (nLevels > MAX_LEVELS) {
@@ -53,7 +51,7 @@ int i;
     else
        cout << "Reading " << nLevels << " levels";
 
-    for (i = 0; i < nLevels; ++ i) {
+    for (WORD i = 0; i < nLevels; ++ i) {
        NewLevel = new Level;
        NewLevel->Read (is);
        levels.Tail();
@@ -68,7 +66,6 @@ int i;
 void SaveData (char * filename)
 {
 ofstream os;
-int i;
 
     os.open (filename); 
 
@@ -76,13 +73,13 @@ int i;
     font.Write (os);
 
     // Write the pictures
-    for (i = 0; i < NumberOfPics; ++ i)
+    for (WORD i = 0; i < NumberOfPics; ++ i)
        pics[i].Write (os);
 
     // Read the levels
-    os.write (&nLevels, sizeof(WORD));
+    os.write ((const char*) &nLevels, sizeof(WORD));
     levels.Head (1);
-    for (i = 0; i < nLevels; ++ i) {
+    for (WORD i = 0; i < nLevels; ++ i) {
        levels.LookAt (1)->Write (os);
        levels.Next (1);
     }

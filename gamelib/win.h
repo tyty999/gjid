@@ -114,22 +114,22 @@ inline void Win :: Deactivate (void)
     Active = FALSE;
 }
 
-inline HandlerStatus Win :: MouseMoveEvent (int x, int y)
+inline HandlerStatus Win :: MouseMoveEvent (int, int)
 {
     return (HandlerIgnoredEvent);
 }
 
-inline HandlerStatus Win :: MousePressEvent (int x, int y, ButtonType button)
+inline HandlerStatus Win :: MousePressEvent (int, int, ButtonType)
 {
     return (HandlerIgnoredEvent);
 }
 
-inline HandlerStatus Win :: MouseReleaseEvent (int x, int y, ButtonType button)
+inline HandlerStatus Win :: MouseReleaseEvent (int, int, ButtonType)
 {
     return (HandlerIgnoredEvent);
 }
 
-inline HandlerStatus Win :: KeyPressEvent (int key)
+inline HandlerStatus Win :: KeyPressEvent (int)
 {
     return (HandlerIgnoredEvent);
 }

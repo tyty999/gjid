@@ -12,7 +12,7 @@
 #include <game/mob.h>
 #include <game/palette.h>
 
-#define DATAFILE	LIBDIR##"/gjid.dat"
+#define DATAFILE	"/usr/games/lib/gjid.dat"
 #define SQUARE_SIDE	16
 #define MAP_WIDTH	20
 #define MAP_HEIGHT	12

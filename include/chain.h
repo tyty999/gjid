@@ -39,7 +39,7 @@ public:
 					return (data);
 				};
 
-    friend			Chain<DataType>;
+    friend class		Chain<DataType>;
 };
     
 template <class ChainEl> 

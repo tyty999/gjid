@@ -11,17 +11,16 @@ void AniMap :: Write (ofstream& os)
 {
 char IdStr [ANIMAP_ID_STRING_LENGTH + 1] = ANIMAP_ID_STRING;
 AnimIcon * ai;
-int i;
 
     os.write (IdStr, sizeof(BYTE) * ANIMAP_ID_STRING_LENGTH);
     Matrix<WORD>::Write (os);
 
-    os.write (&SquareSize.x, sizeof(WORD));
-    os.write (&SquareSize.y, sizeof(WORD));
+    os.write ((const char*) &SquareSize.x, sizeof(WORD));
+    os.write ((const char*) &SquareSize.y, sizeof(WORD));
 
-    os.write (&nPictures, sizeof(WORD));
+    os.write ((const char*) &nPictures, sizeof(WORD));
     Pictures.Head();
-    for (i = 0; i < nPictures; ++ i) {
+    for (WORD i = 0; i < nPictures; ++ i) {
        if ((ai = Pictures.LookAt()) != NULL)
           ai->Write (os);
        else {
@@ -36,7 +35,6 @@ void AniMap :: Read (ifstream& is)
 {
 char IdStr [ANIMAP_ID_STRING_LENGTH + 1];
 AnimIcon * NewPic;
-int i;
 
     is.read (IdStr, sizeof(BYTE) * ANIMAP_ID_STRING_LENGTH);
     if (strncmp (IdStr, ANIMAP_ID_STRING, ANIMAP_ID_STRING_LENGTH) != 0) {
@@ -46,11 +44,11 @@ int i;
 
     Matrix<WORD>::Read (is);
 
-    is.read (&SquareSize.x, sizeof(WORD));
-    is.read (&SquareSize.y, sizeof(WORD));
+    is.read ((char*) &SquareSize.x, sizeof(WORD));
+    is.read ((char*) &SquareSize.y, sizeof(WORD));
 
-    is.read (&nPictures, sizeof(WORD));
-    for (i = 0; i < nPictures; ++ i) {
+    is.read ((char*) &nPictures, sizeof(WORD));
+    for (WORD i = 0; i < nPictures; ++ i) {
        NewPic = new AnimIcon;
        NewPic->Read (is);
        Pictures.Tail();

@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <c2cpp.h>
+#include <algorithm>
+using namespace std;
 
 #define NeedFunctionPrototypes		1
 

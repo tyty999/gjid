@@ -17,9 +17,9 @@ WORD nLevels;
 char * story;
 WORD StorySize = 0;
 
-int main (int argc, char ** argv)
+int main (int argc, char**)
 {
-    GraphInit (G320x200x256);
+    GraphInit(0);
 
     cout << "Using data file " << DATAFILE << " ...\n";
     LoadData (DATAFILE);
@@ -87,7 +87,7 @@ int title [6][16] = {
 
 void PrintStory (void)
 {
-int x, y, i, offset, row, key = 0;
+WORD x, y, i, offset, row, key = 0;
 ifstream is;
 char buffer[80], c;
 Icon blend, backgr (50, 50);

@@ -4,7 +4,7 @@
 void AnimIcon :: Read (ifstream& is)
 {
 char IdStr [ANIMICON_ID_STRING_LENGTH + 1];
-register WORD nLoops, nFrames, l, f;
+WORD nLoops, nFrames, l, f;
 LCList<Icon> * NewList;
 Icon * NewIcon;
 		
@@ -15,10 +15,10 @@ Icon * NewIcon;
        exit (1);
     }
 
-    is.read (&nLoops, sizeof(WORD));
+    is.read ((char*) &nLoops, sizeof(WORD));
     NewList = new LCList<Icon>;
     for (l = 0; l < nLoops; ++ l) {
-       is.read (&nFrames, sizeof(WORD));
+       is.read ((char*) &nFrames, sizeof(WORD));
        NewIcon = new Icon (0, 0);
        for (f = 0; f < nFrames; ++ f)
 	  NewIcon->Read (is);
@@ -36,14 +36,14 @@ Icon * NewIcon;
 void AnimIcon :: Write (ofstream& os)
 {
 char IdStr [ANIMICON_ID_STRING_LENGTH + 1] = ANIMICON_ID_STRING;
-register WORD nLoops, nFrames, l, f;
+WORD nLoops, nFrames, l, f;
 LCList<Icon> * CurLoop;
 Icon * CurIcon;
 
     nLoops = frames.Size();
 		
     os.write (IdStr, sizeof(BYTE) * ANIMICON_ID_STRING_LENGTH);
-    os.write (&nLoops, sizeof(WORD));
+    os.write ((const char*) &nLoops, sizeof(WORD));
     
     frames.Head();
     for (l = 0; l < nLoops; ++ l) {
@@ -52,7 +52,7 @@ Icon * CurIcon;
 	  exit (1);
        }
        nFrames = CurLoop->Size();
-       os.write (&nFrames, sizeof(WORD));
+       os.write ((const char*) &nFrames, sizeof(WORD));
        CurLoop->Head();
        for (f = 0; f < nFrames; ++ f)
        {

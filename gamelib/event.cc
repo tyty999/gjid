@@ -45,7 +45,7 @@ EventType * NewEvent;
     if (NewEvent->button == NoButtons && oldbutton != NoButtons)
        NewEvent->Type = (EK)(NewEvent->Type | MouseReleased);
     else if (NewEvent->button != NoButtons && 
-             (oldbutton == NoButtons || mouseDelay > mouse.GetRepeatDelay())) {
+             (oldbutton == NoButtons || mouseDelay > int(mouse.GetRepeatDelay()))) {
        NewEvent->Type = (EK)(NewEvent->Type | MousePressed);
        mouseDelay = 0;
     }

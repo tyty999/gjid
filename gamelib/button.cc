@@ -65,7 +65,7 @@ int tx, ty;
     mouse.Show();
 }
 
-HandlerStatus Button :: MousePressEvent (int x, int y, ButtonType button)
+HandlerStatus Button :: MousePressEvent (int, int, ButtonType)
 {
 HandlerStatus status = HandlerUsedEvent;
 
@@ -77,7 +77,7 @@ HandlerStatus status = HandlerUsedEvent;
     return (status);
 }
 
-HandlerStatus Button :: MouseReleaseEvent (int x, int y, ButtonType button)
+HandlerStatus Button :: MouseReleaseEvent (int, int, ButtonType)
 {
     Pressed = FALSE;
     Draw();

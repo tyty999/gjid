@@ -21,17 +21,17 @@ Font :: Font (void)
 void Font :: Read (ifstream& is)
 {
 BYTE w, h;
-    is.read (&w, sizeof(BYTE));
-    is.read (&h, sizeof(BYTE));
+    is.read ((char*) &w, sizeof(BYTE));
+    is.read ((char*) &h, sizeof(BYTE));
     Resize (w, h);
-    is.read (data, LetterSize * NOL);
+    is.read ((char*) data, LetterSize * NOL);
 }
 
 void Font :: Write (ofstream& os) const
 {
-    os.write (&width, sizeof(BYTE));
-    os.write (&height, sizeof(BYTE));
-    os.write (data, LetterSize * NOL);
+    os.write ((const char*) &width, sizeof(BYTE));
+    os.write ((const char*) &height, sizeof(BYTE));
+    os.write ((const char*) data, LetterSize * NOL);
 }
 
 BYTE * Font :: GetLetterStart (WORD letter)
@@ -95,9 +95,8 @@ void Font :: Resize (BYTE NewWidth, BYTE NewHeight)
 
 int Font :: PrintString (WORD x, WORD y, char * string, WORD color)
 {
-int n, m;
-    m = x;
-    for (n = 0;n < strlen (string); ++ n)
+    size_t m = x;
+    for (size_t n = 0; n < strlen (string); ++ n)
        m += PrintCharacter (m, y, (int) string[n], color);
     return (m - x);
 }

@@ -42,27 +42,25 @@ Icon& Icon :: operator= (const Icon& ToBe)
 
 void Icon :: BlendWith (const Icon& AnIcon, BlendType how)
 {
-int i;
-
     if (width != AnIcon.width || height != AnIcon.height)
        return;
 
     if (how == SeeThroughBlend) {
-       for (i = 0; i < width * height; ++ i) {
+       for (WORD i = 0; i < width * height; ++ i) {
 	  if (bits[i] == 0)
 	     bits[i] = AnIcon.bits[i];
        }
     }
     else if (how == AndBlend) {
-       for (i = 0; i < width * height; ++ i)
+       for (WORD i = 0; i < width * height; ++ i)
 	  bits[i] &= AnIcon.bits[i];
     }
     else if (how == XorBlend) {
-       for (i = 0; i < width * height; ++ i)
+       for (WORD i = 0; i < width * height; ++ i)
 	  bits[i] ^= AnIcon.bits[i];
     }
     else if (how == OrBlend) {
-       for (i = 0; i < width * height; ++ i)
+       for (WORD i = 0; i < width * height; ++ i)
 	  bits[i] |= AnIcon.bits[i];
     }
 }
@@ -75,12 +73,12 @@ char IdStr [ICON_ID_STRING_LENGTH + 1];
     
     if (strncmp (IdStr, ICON_ID_STRING, ICON_ID_STRING_LENGTH) == 0)
     {
-       is.read (&width, sizeof(WORD));
-       is.read (&height, sizeof(WORD));
+       is.read ((char*) &width, sizeof(WORD));
+       is.read ((char*) &height, sizeof(WORD));
        if (bits != NULL)
           delete [] bits;
        bits = new BYTE [width * height];
-       is.read (bits, sizeof(BYTE) * width * height);
+       is.read ((char*) bits, sizeof(BYTE) * width * height);
     }
     else {
        cout << "Icon: invalid icon file!\n";
@@ -93,9 +91,9 @@ void Icon :: Write (ofstream& os)
 char IdStr [ICON_ID_STRING_LENGTH + 1] = ICON_ID_STRING;
 		
     os.write (IdStr, sizeof(BYTE) * ICON_ID_STRING_LENGTH);
-    os.write (&width, sizeof(WORD));
-    os.write (&height, sizeof(WORD));
-    os.write (bits, sizeof(BYTE) * width * height);
+    os.write ((const char*) &width, sizeof(WORD));
+    os.write ((const char*) &height, sizeof(WORD));
+    os.write ((const char*) bits, sizeof(BYTE) * width * height);
 }
 
 Icon :: ~Icon (void)

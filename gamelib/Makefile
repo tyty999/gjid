@@ -1,15 +1,15 @@
 CC 	= g++
 AR 	= ar
 RANLIB	= ranlib
-CFLAGS 	= -Wall -O6 -m486 -DGL_GR -I../include
+CFLAGS 	= -Wall -W -Werror -g -DFB_GR -I../include
 
 LIBDIR	= $(HOME)/lib
 INCDIR	= $(HOME)/include
 
 OBJS 	= icon.o animicon.o animap.o mob.o mouse.o font.o palette.o win.o \
-	button.o label.o input.o event.o graph_gl.o
+	button.o label.o input.o event.o
 SRCS	= animap.cc animicon.cc font.cc icon.cc mob.cc mouse.cc palette.cc \
-	win.cc button.cc label.cc input.cc event.cc graph_gl.cc
+	win.cc button.cc label.cc input.cc event.cc
 TARGET 	= libgame.a
 
 ###########################################################

@@ -1,6 +1,6 @@
 CC	= g++
 LDFLAGS	= -L../gamelib
-LIBS	= -lgame -lvga -lvgagl
+LIBS	= -lgame
 
 EXE	= gjid
 OBJS	= gjid.o datafile.o level.o
@@ -9,7 +9,7 @@ SRCS	= gjid.cc datafile.cc level.cc
 BINDIR	= /usr/games
 LIBDIR	= /usr/games/lib
 
-CFLAGS	= -Wall -O2 -m486 -I../include -DGL_GR -DLIBDIR=\"$(LIBDIR)\"
+CFLAGS	= -Wall -W -Werror -I../include -DFB_GR
 
 #######################################################
 

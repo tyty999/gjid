@@ -8,7 +8,7 @@
 
 Level :: Level (void)
 {
-int x, y;
+WORD x, y;
     for (y = 0; y < MAP_HEIGHT; ++ y)
        for (x = 0; x < MAP_WIDTH; ++ x)
 	  Map[x][y] = FloorPix;
@@ -20,7 +20,7 @@ int x, y;
 
 Level& Level :: operator= (Level& ToBe)
 {
-int x, y;
+WORD x, y;
 ObjectType * NewCrate, * CurCrate;
 
     for (y = 0; y < MAP_HEIGHT; ++ y)
@@ -56,13 +56,13 @@ void Level :: Draw (WORD x, WORD y)
 {
 Icon combo;
 ObjectType * cc;
-int i;
+WORD i;
 
     pics [Map [x][y]].Put (x * SQUARE_SIDE, y * SQUARE_SIDE);
     Crates.Head();
     for (i = 0; i < nCrates; ++ i) {
        cc = Crates.LookAt();
-       if (cc->x == x && cc->y == y) {
+       if (cc->x == int(x) && cc->y == int(y)) {
 	  combo = pics [cc->pic];
 	  combo.BlendWith (pics [FloorPix], SeeThroughBlend);
           combo.Put (x * SQUARE_SIDE, y * SQUARE_SIDE);
@@ -70,7 +70,7 @@ int i;
        }
        Crates.Next();
     }
-    if (Robot.x == x && Robot.y == y) {
+    if (Robot.x == int(x) && Robot.y == int(y)) {
        combo = pics [Robot.pic];
        combo.BlendWith (pics [Map [x][y]], SeeThroughBlend);
        combo.Put (x * SQUARE_SIDE, y * SQUARE_SIDE);
@@ -113,15 +113,12 @@ BOOL Can = FALSE;
 
 int Level :: FindCrate (WORD x, WORD y)
 {
-ObjectType * cc;
-int i;
-
     Crates.Head();
-    for (i = 0; i < nCrates; ++ i) {
-       cc = Crates.LookAt();
-       Crates.Next();
-       if (cc->x == x && cc->y == y)
-	  return (i);
+    for (WORD i = 0; i < nCrates; ++ i) {
+	ObjectType * cc = Crates.LookAt();
+	Crates.Next();
+	if (cc->x == int(x) && cc->y == int(y))
+	    return (i);
     }
     return (-1);
 }
@@ -234,31 +231,27 @@ ObjectType * NewCrate;
 
 void Level :: Read (ifstream& is)
 {
-ObjectType * NewCrate;
-int i;
-
-    is.read (Map, MAP_HEIGHT * MAP_WIDTH * sizeof(PicIndex));
-    is.read (&nCrates, sizeof(WORD));
-    for (i = 0; i < nCrates; ++ i) {
-       NewCrate = new ObjectType;
-       is.read (NewCrate, sizeof(ObjectType));
-       Crates.Tail();
-       Crates.InsertAfter (NewCrate);
+    is.read ((char*) Map, MAP_HEIGHT * MAP_WIDTH * sizeof(PicIndex));
+    is.read ((char*) &nCrates, sizeof(WORD));
+    for (WORD i = 0; i < nCrates; ++ i) {
+	ObjectType* NewCrate = new ObjectType;
+	is.read ((char*) NewCrate, sizeof(ObjectType));
+	Crates.Tail();
+	Crates.InsertAfter (NewCrate);
     }
-    is.read (&Robot, sizeof(ObjectType));
+    is.read ((char*) &Robot, sizeof(ObjectType));
 }
 
 void Level :: Write (ofstream& os)
 {
-int i;
-    os.write (Map, MAP_HEIGHT * MAP_WIDTH * sizeof(PicIndex));
-    os.write (&nCrates, sizeof(WORD));
+    os.write ((const char*) Map, MAP_HEIGHT * MAP_WIDTH * sizeof(PicIndex));
+    os.write ((const char*) &nCrates, sizeof(WORD));
     Crates.Head();
-    for (i = 0; i < nCrates; ++ i) {
-       os.write (Crates.LookAt(), sizeof(ObjectType));
-       Crates.Next();
+    for (WORD i = 0; i < nCrates; ++ i) {
+	os.write ((const char*) Crates.LookAt(), sizeof(ObjectType));
+	Crates.Next();
     }
-    os.write (&Robot, sizeof(ObjectType));
+    os.write ((const char*) &Robot, sizeof(ObjectType));
 }
 
 Level :: ~Level (void)

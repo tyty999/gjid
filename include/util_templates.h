@@ -7,27 +7,6 @@
 #ifndef __UTIL_TEMPLATES_H
 #define __UTIL_TEMPLATES_H
 
-#ifndef __cplusplus
-#   error		Must use C++ for templates.
-#endif
-
-#undef min		// In case those were defined...
-#undef max
-#undef diff
-#undef member
-
-template <class MinVal>
-inline MinVal min (MinVal a, MinVal b)
-{   
-    return (a < b ? a : b);
-}      
-
-template <class MaxVal>
-inline MaxVal max (MaxVal a, MaxVal b)
-{   
-    return (a > b ? a : b);
-}      
-
 template <class DiffVal>
 inline DiffVal diff (DiffVal a, DiffVal b)
 {

@@ -14,19 +14,20 @@
 #ifndef __STREAMABLE_H
 #define __STREAMABLE_H		 
 
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
+using namespace std;
 
 class Streamable {
 public:
     inline void			Load (char * filename);
     inline void			Save (char * filename);
 
-    virtual inline void 	Read (istream& is) {};
-    virtual inline void 	Write (ostream& os) {};
+    virtual inline void 	Read (istream&) {};
+    virtual inline void 	Write (ostream&) {};
 
-    virtual inline void 	Read (ifstream& is) {};
-    virtual inline void 	Write (ofstream& os) {};
+    virtual inline void 	Read (ifstream&) {};
+    virtual inline void 	Write (ofstream&) {};
 };
 		   
 inline void Streamable :: Load (char * filename)

@@ -30,15 +30,12 @@ void PaletteType :: SetAll (BYTE *new_palette)
 
 void PaletteType :: FadeOut (WORD Start, WORD End)
 {
-int lev, col, beam;
-BYTE * curmap;
-
     -- End;
     memcpy (FadeBuffer, colors, MAXCOL * 3);
-    for (lev = 0; lev < MAXBRIGHT; ++ lev) {
-       curmap = colors;
-       for (col = Start; col < End; ++ col) {
-	  for (beam = 0; beam < 3; ++ beam)
+    for (int lev = 0; lev < MAXBRIGHT; ++ lev) {
+       BYTE* curmap = colors;
+       for (WORD col = Start; col < End; ++ col) {
+	  for (int beam = 0; beam < 3; ++ beam)
 	     if (curmap[beam] > 0)
 		curmap[beam] -= 1;
 	  curmap += 3;
@@ -49,16 +46,12 @@ BYTE * curmap;
 
 void PaletteType :: FadeIn (WORD Start, WORD End)
 {
-int lev, col, beam;
-BYTE *curmap;
-BYTE *bufmap;
-
     -- End;
-    for (lev = 0; lev < MAXBRIGHT; ++ lev) {
-       curmap = colors;
-       bufmap = FadeBuffer;
-       for (col = Start; col < End; ++ col) {
-	  for (beam = 0; beam < 3; ++ beam)
+    for (int lev = 0; lev < MAXBRIGHT; ++ lev) {
+       BYTE* curmap = colors;
+       BYTE* bufmap = FadeBuffer;
+       for (WORD col = Start; col < End; ++ col) {
+	  for (int beam = 0; beam < 3; ++ beam)
 	     if (curmap[beam] < bufmap[beam])
 		++ curmap[beam];
 	  curmap += 3;
@@ -101,14 +94,14 @@ void PaletteType :: Standardize (void)
 
 void PaletteType :: Read (ifstream& is)
 {
-BYTE buffer [MAXCOL * 3];
-    is.read (buffer, MAXCOL * 3 * sizeof(BYTE));
+    BYTE buffer [MAXCOL * 3];
+    is.read ((char*) buffer, MAXCOL * 3 * sizeof(BYTE));
     SetAll (buffer);
 }
 
 void PaletteType :: Write (ofstream& os) const
 {
-    os.write (colors, MAXCOL * 3 * sizeof(BYTE));
+    os.write ((const char*) colors, MAXCOL * 3 * sizeof(BYTE));
 }
 
 PaletteType :: ~PaletteType (void)

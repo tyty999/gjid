@@ -162,32 +162,20 @@
 #include "graph_ds.h"
 
 // Include one platform-specific include file
-#ifdef GL_GR
+#if defined(GL_GR)
 #include "graph_gl.h"
-#endif
-#ifdef X11_GR
+#elif defined(FB_GR)
+#include "graph_fb.h"
+#elif defined(X11_GR)
 #error X11 support is not implemented!
-#endif
-#ifdef VGA_GR
+#elif defined(VGA_GR)
 #error VGA support is not implemented!
-#endif
-#ifdef MSW_GR
+#elif defined(MSW_GR)
 #error Microsoft windows support is not implemented!
-#endif
-#ifdef MAC_GR
+#elif defined(MAC_GR)
 #error Macintosh support not implemented!
-#endif
-
-#ifndef GL_GR
-   #ifndef VGA_GR
-      #ifndef X11_GR
-	 #ifndef MSW_GR
-	    #ifndef MAC_GR
-	       #error Must specify platform!
-	    #endif
-	 #endif
-      #endif
-   #endif
+#else
+#error Must specify platform!
 #endif
 
 #endif

@@ -86,13 +86,11 @@ template <class MatrixEl>
 inline BOOL Matrix<MatrixEl> :: operator== 
 (const Matrix<MatrixEl>& toCompare) const
 {    
-MatrixSizeType i;
-
     if (toCompare.height != height || toCompare.width != width)
        return (FALSE);
 	    
-    for (i = 0; i < size; ++ i)
-       if (data[i] != toCompare.data[i])
+    for (MatrixSizeType i = 0; i < this->size; ++ i)
+       if (this->data[i] != toCompare.data[i])
           return (FALSE);
 
     return (TRUE); 
@@ -105,7 +103,7 @@ inline MatrixEl * Matrix<MatrixEl> :: operator[]
 #ifdef CHECK_BOUNDS
     if (index < height)
 #endif
-       return (&data [index * width]);
+       return (&this->data [index * width]);
        
     cout << "Matrix: index out of range.\n";
     exit (1);
@@ -118,8 +116,8 @@ inline Matrix<MatrixEl>& Matrix<MatrixEl> :: operator=
 MatrixSizeType i;
 			    
     Resize (toBe.height, toBe.width);
-    for (i = 0; i < size; ++ i)
-       data[i] = toBe.data[i];
+    for (i = 0; i < this->size; ++ i)
+       this->data[i] = toBe.data[i];
 
     return (*this);
 }
@@ -140,7 +138,7 @@ Matrix<MatrixEl> * sum;
     
     for (row = 0; row < height; ++ row)
        for (col = 0; col < width; ++ col)
-          sum->data [row * sum->width + col] = data [row * width + col] + toAdd.data [row * toAdd.width + col];
+          sum->data [row * sum->width + col] = this->data [row * width + col] + toAdd.data [row * toAdd.width + col];
        
     return (*sum);
 }
@@ -161,7 +159,7 @@ Matrix<MatrixEl> * diff;
     
     for (row = 0; row < height; ++ row)
        for (col = 0; col < width; ++ col)
-          diff->data [row * diff->width + col] = data [row * width + col] - toSub.data [row * toSub.width + col];
+          diff->data [row * diff->width + col] = this->data [row * width + col] - toSub.data [row * toSub.width + col];
        
     return (*diff);
 }
@@ -177,7 +175,7 @@ Matrix<MatrixEl> * product;
     
     for (row = 0; row < height; ++ row)
        for (col = 0; col < width; ++ col)
-          product->data [row * product->width + col] = data [row * width + col] * scalar;
+          product->data [row * product->width + col] = this->data [row * width + col] * scalar;
        
     return (*product);
 }
@@ -206,7 +204,7 @@ MatrixSizeType ProductOffset, MyOffset, HisOffset;
           product->data [ProductOffset] = 0;
     
           for (idx = 0; idx < width; ++ idx) {
-             product->data [ProductOffset] += data [MyOffset + idx] * 
+             product->data [ProductOffset] += this->data [MyOffset + idx] * 
                                               toMul.data [HisOffset];
 	     HisOffset += toMul.width;
 	  }
@@ -226,9 +224,9 @@ MatrixEl * NewValue;
 
     for (y = 0; y < height; ++ y)
        for (x = 0; x < width; ++ x)
-          NewValue [x * height + y] = data [y * width + x];
+          NewValue [x * height + y] = this->data [y * width + x];
     for (x = 0; x < width * height; ++ x)
-       data [x] = NewValue [x];
+       this->data [x] = NewValue [x];
 
     temp = width;
     width = height;
@@ -254,7 +252,7 @@ MatrixSizeType x;
     }
     RowReduce();
     for (x = 0; x < width; ++ x)
-       det *= data [x * width + x];
+       det *= this->data [x * width + x];
 
     return (det);
 } 
@@ -265,12 +263,12 @@ inline void Matrix<MatrixEl> :: Read
 {	    
 MatrixSizeType row, col, SavedWidth, SavedHeight;
   						
-    is.read (&SavedHeight, sizeof (MatrixSizeType));
-    is.read (&SavedWidth, sizeof (MatrixSizeType));
+    is.read ((char*) &SavedHeight, sizeof (MatrixSizeType));
+    is.read ((char*) &SavedWidth, sizeof (MatrixSizeType));
     Resize (SavedHeight, SavedWidth);
     for (row = 0; row < height; ++ row)
        for (col = 0; col < width; ++ col)
-          is.read (&data [row * width + col], sizeof(MatrixEl));
+          is.read ((char*) &this->data [row * width + col], sizeof(MatrixEl));
 } 
 
 template <class MatrixEl>
@@ -279,11 +277,11 @@ inline void Matrix<MatrixEl> :: Write
 {	    
 MatrixSizeType row, col;
   				       
-    os.write (&height, sizeof (MatrixSizeType));
-    os.write (&width, sizeof (MatrixSizeType));
+    os.write ((const char*) &height, sizeof (MatrixSizeType));
+    os.write ((const char*) &width, sizeof (MatrixSizeType));
     for (row = 0; row < height; ++ row)
        for (col = 0; col < width; ++ col)
-          os.write (&data [row * width + col], sizeof(MatrixEl));
+          os.write ((const char*) &this->data [row * width + col], sizeof(MatrixEl));
 } 
        
 template <class MatrixEl>
@@ -297,7 +295,7 @@ MatrixSizeType row, col, SavedWidth, SavedHeight;
     Resize (SavedHeight, SavedWidth);
     for (row = 0; row < height; ++ row) {
        for (col = 0; col < width; ++ col)
-          is >> data [row * width + col];
+          is >> this->data [row * width + col];
     }
 } 
 
@@ -310,7 +308,7 @@ MatrixSizeType row, col;
     os << height << " " << width << "\n";
     for (row = 0; row < height; ++ row) {
        for (col = 0; col < width; ++ col)
-          os << data [row * width + col] << " ";
+          os << this->data [row * width + col] << " ";
        os << "\n";
     }
 } 
@@ -326,13 +324,13 @@ MatrixSizeType row, col;
 
     for (row = 0; row < height; ++ row)
        for (col = 0; col < width; ++ col)
-          NewData [row * w + col] = data [row * width + col];
+          NewData [row * w + col] = this->data [row * width + col];
     height = h;
     width = w;
-    size = height * width;
+    this->size = height * width;
     
-    delete [] data;
-    data = NewData;
+    delete [] this->data;
+    this->data = NewData;
 }
 
 #endif

@@ -105,15 +105,11 @@ inline void Icon :: SetRow (WORD row, BYTE * dots)
 
 inline void Icon :: SetCol (WORD col, BYTE * dots)
 {	
-int i;
-BYTE * bp, * dp;
-
     if (col >= width)
        return;
-
-    bp = &bits [col];
-    dp = dots;
-    for (i = 0; i < height; ++ i) {
+    BYTE* bp = &bits [col];
+    BYTE* dp = dots;
+    for (WORD i = 0; i < height; ++ i) {
        *bp = *dp;
        ++ dp;
        bp += width;
