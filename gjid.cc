@@ -3,10 +3,10 @@
 **	Implements a puzzle game based on DOS shareware version.
 */
 
-#include <game/graph.h>
-#include <game/icon.h>
-#include <game/mouse.h>
-#include <game/font.h>
+#include <graph.h>
+#include <icon.h>
+#include <mouse.h>
+#include <font.h>
 #include <unistd.h>
 #include "gjid.h"
 

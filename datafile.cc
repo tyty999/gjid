@@ -4,7 +4,7 @@
 */
 
 #include <mdefs.h>
-#include <game/font.h>
+#include <font.h>
 #include "gjid.h"
 
 extern char * story;

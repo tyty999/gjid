@@ -7,6 +7,7 @@
 #define GRAPH_FB_H_493319565D1D13E24D7DC79C50D05FC5
 
 #include <mdefs.h>
+#include "graph_ds.h"
 
 typedef int	GC;
 typedef BYTE	ColorID;

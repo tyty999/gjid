@@ -9,7 +9,7 @@ SRCS	= gjid.cc datafile.cc level.cc
 BINDIR	= /usr/games
 LIBDIR	= /usr/games/lib
 
-CFLAGS	= -Wall -W -Werror -I../include -DFB_GR
+CFLAGS	= -Wall -W -Werror -I ../include -I ../gamelib -DFB_GR
 
 #######################################################
 

@@ -9,8 +9,8 @@
 #include <mdefs.h>
 #include <llist.h>
 #include <streamable.h>
-#include <game/mob.h>
-#include <game/palette.h>
+#include <mob.h>
+#include <palette.h>
 
 #define DATAFILE	"/usr/games/lib/gjid.dat"
 #define SQUARE_SIDE	16
