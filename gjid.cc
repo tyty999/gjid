@@ -288,7 +288,6 @@ int crate;
 #define KEY_PAINT	(int)(' ')
 #define KEY_TILE_CYCLE	(int)('\t')
 
-    EnableClipping();
     ClearScreen (0);
     levels.Head();
     if (levels.OnList())
