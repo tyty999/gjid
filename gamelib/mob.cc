@@ -4,7 +4,7 @@
 ** Typical mob is a mouse.
 */
 
-#include <game/mob.h>
+#include "mob.h"
 
 Mob :: Mob (void)
 {

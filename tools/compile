@@ -1,21 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
 CC=g++
-CFLAGS="-w -I../include -L../gamelib -DGL_GR"
-LIBS="-lgame -lvga -lvgagl"
+CFLAGS="-Wall -W -Werror -I../include -L../gamelib -DFB_GR"
+LIBS="-lgame"
 
-for e in c cc; do
-   for i in *.$e; do
-      EXE=`basename $i .$e`
-      if [ ! -x $EXE ]; then
-	 echo Compiling $i ...
-	 $CC $CFLAGS -o $EXE $i $LIBS
-	 strip $EXE
-      elif [ $i -nt $EXE ] || [ ${1:-"none"} = $EXE ]; then
-	 echo Rebuilding $i ...
-	 rm -f $EXE
-	 $CC $CFLAGS -o $EXE $i $LIBS
-	 strip $EXE
-      fi
-   done
+for i in *.cc; do
+    EXE=${i%%.cc}
+    if [ ! -f $EXE ]; then
+	echo Compiling $i ...
+	$CC $CFLAGS -o $EXE $i $LIBS
+	strip $EXE
+    elif [ $i -nt $EXE ] || [ ${1:-"none"} = $EXE ]; then
+	echo Rebuilding $i ...
+	rm -f $EXE
+	$CC $CFLAGS -o $EXE $i $LIBS
+	strip $EXE
+    fi
 done
+

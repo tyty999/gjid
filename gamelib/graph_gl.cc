@@ -3,7 +3,7 @@
 **	These routines use a global variable.
 */
 
-#include <game/graph.h>
+#include "graph.h"
 #include <iostream.h>
 
 typedef struct __GCStackEntry {

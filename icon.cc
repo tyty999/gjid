@@ -6,7 +6,7 @@
 **	icon.h		- for WORD, BYTE
 */
 
-#include <game/icon.h>
+#include "icon.h"
 #include <string.h>
 
 Icon :: Icon (WORD Width, WORD Height, BYTE * NewBits)

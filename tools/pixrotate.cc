@@ -3,13 +3,11 @@
 **	Rotates a .pix file by 90 degrees.
 */
 
-#include <fstream.h>
-#include <game/icon.h>
+#include "../gamelib/icon.h"
 
 int main (int argc, char ** argv)
 {
-Icon pix, rpix;
-int x, y;
+    Icon pix, rpix;
 
     if (argc < 2) {
        cout << "Usage: " << argv[0] << " <file.pix>\n";
@@ -24,8 +22,8 @@ int x, y;
        
     rpix = pix;
 
-    for (y = 0; y < pix.Height(); ++ y)
-       for (x = 0; x < pix.Width(); ++ x)
+    for (WORD y = 0; y < pix.Height(); ++ y)
+       for (WORD x = 0; x < pix.Width(); ++ x)
 	  rpix.SetPixel (pix.Height() - (y + 1), x, pix.GetPixel (x, y));
 
     rpix.Save (argv[1]);

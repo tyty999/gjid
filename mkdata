@@ -26,6 +26,7 @@ echo Building data file ...
 rm -f gjid.dat
 SIZE=0
 cp /dev/null gjid.dat
+chmod 644 gjid.dat
 for i in `cat gjid.lst`; do
     cat data/$i >> gjid.dat
     OLDSIZE=$SIZE

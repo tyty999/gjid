@@ -9,7 +9,6 @@
 
 #include <stdlib.h>
 #include <stddef.h>
-#include <c2cpp.h>
 #include <algorithm>
 using namespace std;
 
@@ -27,21 +26,14 @@ typedef	unsigned char		BYTE;
 typedef unsigned long int	WORD;
 #endif
 #ifndef BOOL
-typedef BYTE			BOOL;
+typedef bool			BOOL;
 #endif
 
 typedef enum {
     Off, On
 } OnOffType;
 
-/*	In plain C define min and max as macros.
-**	In C++ define them as templates for additional type checking.
-*/    
-#ifndef __cplusplus
-#   include <util_macros.h>
-#else
-#   include <util_templates.h>
-#endif
+#include <util_templates.h>
 
 #endif
 

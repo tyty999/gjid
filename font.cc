@@ -4,8 +4,8 @@
 */
 
 #define FONT_UNIT
-#include <game/font.h>
-#include <game/graph.h>
+#include "font.h"
+#include "graph.h"
 
 #ifndef NO_FONT
 Font font;

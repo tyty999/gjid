@@ -6,10 +6,8 @@ CFLAGS 	= -Wall -W -Werror -g -DFB_GR -I../include
 LIBDIR	= $(HOME)/lib
 INCDIR	= $(HOME)/include
 
-OBJS 	= icon.o animicon.o animap.o mob.o mouse.o font.o palette.o win.o \
-	button.o label.o input.o event.o graph_fb.o
-SRCS	= animap.cc animicon.cc font.cc icon.cc mob.cc mouse.cc palette.cc \
-	win.cc button.cc label.cc input.cc event.cc graph_fb.cc
+OBJS 	= icon.o mob.o mouse.o font.o palette.o graph_fb.o
+SRCS	= font.cc icon.cc mob.cc mouse.cc palette.cc graph_fb.cc
 TARGET 	= libgame.a
 
 ###########################################################

@@ -4,8 +4,8 @@
 */
 
 #include <string.h>
-#include <game/palette.h>
-#include <game/graph.h>
+#include "palette.h"
+#include "graph.h"
 
 static BYTE FadeBuffer [MAXCOL * 3];
 static BYTE StandardPaletteType [MAXCOL * 3];

@@ -4,8 +4,8 @@
 */
 
 #include <time.h>
-#include <game/mouse.h>
-#include <game/graph.h>
+#include "mouse.h"
+#include "graph.h"
 
 Mouse mouse;
 
