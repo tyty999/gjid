@@ -5,7 +5,6 @@
 
 #include <graph.h>
 #include <icon.h>
-#include <mouse.h>
 #include <font.h>
 #include <unistd.h>
 #include "gjid.h"
@@ -280,17 +279,16 @@ void EditData (void)
 BOOL Done = FALSE;
 Level * CurLevel, * NewLevel;
 PicIndex CurPic = Wall1Pix;
-int x, y, i, key, timer;
+int x = 0, y = 0, i, key;
 int crate;
 #define KEY_NEXTLEVEL	(int)('n')
 #define KEY_PREVLEVEL	(int)('p')
 #define KEY_QUIT	(int)('q')
 #define KEY_SAVE	(int)('s')
+#define KEY_PAINT	(int)(' ')
+#define KEY_TILE_CYCLE	(int)('\t')
 
-    mouse.Hide();
-    mouse.Blending = SeeThroughBlend;
     EnableClipping();
-    timer = 0;
     ClearScreen (0);
     levels.Head();
     if (levels.OnList())
@@ -304,114 +302,76 @@ int crate;
        ++ nLevels;
     }
 
-    SetClipWindow (0, 0, 320, 183);
-    CurLevel->Draw();
-    SetClipWindow (0, 0, 320, 200);
-
-    for (i = 0; i < NumberOfMapPics; ++ i)
-       pics[i].Put (i * SQUARE_SIDE, 184);
-    DrawRect (CurPic * SQUARE_SIDE, 184, 
-    	      (CurPic + 1) * SQUARE_SIDE - 1, 184 + SQUARE_SIDE - 1, 15);
-
-    mouse.RescanBackgr();
-    mouse.Show();
-
     do {
-       mouse.Update();
-       key = GetKey();
-       switch (key) {
-	   case KEY_NEXTLEVEL:	levels.Next();
-	   			if (levels.OnList())
-				   CurLevel = levels.LookAt();
-				else {
-				   NewLevel = new Level;
-				   levels.Tail();
-				   levels.InsertAfter (NewLevel);
-				   levels.Tail();
-				   CurLevel = levels.LookAt();
-				   ++ nLevels;
-				}
-				mouse.Hide();
-    				SetClipWindow (0, 0, 320, 183);
+	SetClipWindow (0, 0, 320, 183);
+	CurLevel->Draw();
+	DrawRect (x * SQUARE_SIDE, y * SQUARE_SIDE, 
+		  (x + 1) * SQUARE_SIDE - 1, (y + 1) * SQUARE_SIDE - 1, 15);
+	SetClipWindow (0, 0, 320, 200);
 
-				if (CurLevel == NULL) {
-				   GraphClose();
-				   cout << "Error: out of memory!\n";
-				   exit (1);
-				}
-			
-				CurLevel->Draw();
-    				SetClipWindow (0, 0, 320, 200);
-				mouse.RescanBackgr();
-				mouse.Show();
-				usleep (100);
-	   			break;
-           case KEY_QUIT:	Done = TRUE;
-	   			break;
-	   case KEY_PREVLEVEL:	levels.Prev();
-	   			if (levels.OnList())
-				   CurLevel = levels.LookAt();
-				else {
-				   levels.Head();
-				   CurLevel = levels.LookAt();
-				}
-				mouse.Hide();
-    				SetClipWindow (0, 0, 320, 183);
-				CurLevel->Draw();
-    				SetClipWindow (0, 0, 320, 200);
-				mouse.RescanBackgr();
-				mouse.Show();
-	   			break;
-	   case KEY_SAVE:	SaveData ("gjid.dat");
-	   			break;
-       }
+	for (i = 0; i < NumberOfMapPics; ++ i)
+	   pics[i].Put (i * SQUARE_SIDE, 184);
+	DrawRect (CurPic * SQUARE_SIDE, 184, 
+		  (CurPic + 1) * SQUARE_SIDE - 1, 184 + SQUARE_SIDE - 1, 15);
 
-       if (mouse.IsPressed (LeftButton) || mouse.IsClicked (LeftButton)) {
-	  if (mouse.IsInBox (0, 0, MAP_WIDTH * SQUARE_SIDE, 
-              		     MAP_HEIGHT * SQUARE_SIDE)) {
-	     x = mouse.x() / SQUARE_SIDE;
-	     y = mouse.y() / SQUARE_SIDE;
-	     mouse.Hide();
-    	     SetClipWindow (0, 0, 320, 183);
-	     switch (CurPic) {
-	         case Barrel1Pix:
-		 case Barrel2Pix:
-		  		if (mouse.IsClicked (LeftButton)) {
-				   if ((crate = CurLevel->FindCrate (x, y)) < 0)
-				      CurLevel->AddCrate (x, y, CurPic);
-				   else
-				      CurLevel->DisposeCrate (crate);
-				}
-				break;
-		 case RobotNorthPix:
-		 case RobotSouthPix:
-		 case RobotEastPix:
-		 case RobotWestPix:
-		 		CurLevel->MoveRobot (x, y, CurPic);
-				break;
-		 default:
-	     			CurLevel->SetCell (x, y, CurPic);
-				break;
-	     }
-	     CurLevel->Draw (x, y);
-    	     SetClipWindow (0, 0, 320, 200);
-	     mouse.RescanBackgr();
-	     mouse.Show();
-	  }
-	  else if (mouse.IsInBox (0, 184, NumberOfMapPics * SQUARE_SIDE, 
-				   184 + SQUARE_SIDE)) {
-	     mouse.Hide();
-	     pics[CurPic].Put (CurPic * SQUARE_SIDE, 184);
-	     CurPic = (PicIndex) (mouse.x() / SQUARE_SIDE);
-	     DrawRect (CurPic * SQUARE_SIDE, 184, 
-		       (CurPic + 1) * SQUARE_SIDE - 1, 
-		       184 + SQUARE_SIDE - 1, 15);
-	     mouse.RescanBackgr();
-	     mouse.Show();
-	  }
-	  timer = 0;
-       }
-       ++ timer;
+	key = GetKeyWait();
+	switch (key) {
+	    case KEY_NEXTLEVEL:
+		levels.Next();
+		if (levels.OnList())
+		    CurLevel = levels.LookAt();
+		else {
+		    NewLevel = new Level;
+		    levels.Tail();
+		    levels.InsertAfter (NewLevel);
+		    levels.Tail();
+		    CurLevel = levels.LookAt();
+		    ++ nLevels;
+		}
+		break;
+	    case KEY_QUIT:
+		Done = TRUE;
+		break;
+	    case KEY_PREVLEVEL:
+		levels.Prev();
+		if (levels.OnList())
+		    CurLevel = levels.LookAt();
+		else {
+		    levels.Head();
+		    CurLevel = levels.LookAt();
+		}
+		break;
+	    case KEY_SAVE:
+		SaveData ("gjid.dat");
+		break;
+	    case KEY_LEFT:	if (x > 0) -- x;		break;
+	    case KEY_RIGHT:	if (x < MAP_WIDTH - 1) ++ x;	break;
+	    case KEY_UP:	if (y > 0) -- y;		break;
+	    case KEY_DOWN:	if (y < MAP_WIDTH - 1) ++ y;	break;
+	    case KEY_PAINT:
+		switch (CurPic) {
+		    case Barrel1Pix:
+		    case Barrel2Pix:
+			if ((crate = CurLevel->FindCrate (x, y)) < 0)
+			    CurLevel->AddCrate (x, y, CurPic);
+			else
+			    CurLevel->DisposeCrate (crate);
+			break;
+		    case RobotNorthPix:
+		    case RobotSouthPix:
+		    case RobotEastPix:
+		    case RobotWestPix:
+			CurLevel->MoveRobot (x, y, CurPic);
+			break;
+		    default:
+			CurLevel->SetCell (x, y, CurPic);
+			break;
+		}
+		break;
+	    case KEY_TILE_CYCLE:
+		CurPic = PicIndex ((CurPic + 1) % NumberOfMapPics);
+		break;
+	};
     }
     while (!Done);
 }
