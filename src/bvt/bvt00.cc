@@ -1,7 +1,6 @@
-#include <fbgl.h>
-using namespace fbgl;
+#include "stdtest.h"
 
-int main (void)
+void TestModeLoading (void)
 {
     typedef vector<CFbMode> modevec_t;
     modevec_t v;
@@ -16,6 +15,6 @@ int main (void)
 	v.pop_back();
     foreach (modevec_t::const_iterator, m, v)
 	cout << *m;
-    return (EXIT_SUCCESS);
 }
 
+StdBvtMain (TestModeLoading)
