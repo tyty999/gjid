@@ -3,11 +3,7 @@
 
 #include "fbdrv.h"
 #include "cmap.h"
-#include <linux/fb.h>
-#include <linux/kdev_t.h>
-#include <linux/major.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "constate.h"
 
 namespace fbgl {
 
@@ -26,10 +22,12 @@ CConsoleFramebuffer::CConsoleFramebuffer (void)
   m_Modes (),
   m_Colormap ()
 {
+    CConsoleState::Instance().RegisterFramebuffer (this);
 }
 
 CConsoleFramebuffer::~CConsoleFramebuffer (void)
 {
+    CConsoleState::Instance().RegisterFramebuffer (NULL);
     Close();
 }
 
@@ -50,10 +48,12 @@ void CConsoleFramebuffer::Open (void)
     m_Var = m_OrigVar;
     m_Screen = m_Device.Map (m_Fix.smem_len);
     LoadModes();
+    CConsoleState::Instance().EnterGraphicsMode();
 }
 
 void CConsoleFramebuffer::Close (void)
 {
+    CConsoleState::Instance().LeaveGraphicsMode();
     if (m_Screen.data())
 	m_Device.Unmap (m_Screen);
     if (m_Device.IsOpen()) {
@@ -69,10 +69,7 @@ void CConsoleFramebuffer::Close (void)
 ///
 void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
 {
-    struct stat ttyStat;
-    if (fstat (STDIN_FILENO, &ttyStat))
-	throw file_exception ("fstat", "stdin");
-    const int vti = ((MAJOR(ttyStat.st_rdev) == TTY_MAJOR) ? int(MINOR(ttyStat.st_rdev)) : -1);
+    const int vti = CConsoleState::Instance().VtIndex();
     if (vti < 0)
 	throw domain_error ("this program only works on a real console, not in an xterm or ssh");
     CFile fb;
