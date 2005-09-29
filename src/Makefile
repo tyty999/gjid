@@ -8,6 +8,7 @@ BUILD	= 0
 SRCS	= $(wildcard *.cc)
 INCS	= $(filter-out bsconf.%,$(wildcard *.h))
 OBJS	= $(SRCS:.cc=.o)
+LIBS	= -lutio -lustl -lsupc++
 
 ########################################################################
 

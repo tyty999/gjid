@@ -4,26 +4,27 @@
 #ifndef FBDRV_H_55DF359B07B17DD34D71BCFE3BC0D670
 #define FBDRV_H_55DF359B07B17DD34D71BCFE3BC0D670
 
-#include "fbmode.h"
+#include "fb.h"
 #include "cmap.h"
 
 namespace fbgl {
 
-class CFramebuffer {
+class CConsoleFramebuffer : public CFramebuffer {
 public:
-    static CFramebuffer&	Instance (void);
-    void			Open (void);
-    void			Close (void);
-    void			SetMode (CFbMode m, size_t depth);
-    const CFbMode&		FindClosestMode (size_t w, size_t h, size_t freq) const;
-private:
-    typedef vector<CFbMode>	modevec_t;
-private:
-				CFramebuffer (void);
-    virtual		       ~CFramebuffer (void);
+    static CConsoleFramebuffer&	Instance (void);
+    virtual void		Open (void);
+    virtual void		Close (void);
+    virtual void		SetMode (CFbMode m, size_t depth);
+    virtual const CFbMode&	FindClosestMode (size_t w, size_t h, size_t freq) const;
+    virtual void		OnFocus (bool bFocus);
+protected:
+				CConsoleFramebuffer (void);
+    virtual		       ~CConsoleFramebuffer (void);
     void			LoadModes (void);
     void			DetectDefaultDevice (string& deviceName) const;
     void			SetColormap (void);
+private:
+    typedef vector<CFbMode>	modevec_t;
 private:
     struct fb_fix_screeninfo	m_Fix;
     struct fb_var_screeninfo	m_OrigVar;

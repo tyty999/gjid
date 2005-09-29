@@ -1,0 +1,48 @@
+// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+//
+// constate.h
+//
+
+#ifndef CONSTATE_H_17C5725A6418797A3B7DD95B0A18BF4C
+#define CONSTATE_H_17C5725A6418797A3B7DD95B0A18BF4C
+
+#include <utio.h>
+#include "fb.h"
+
+#define SIG_VTACQ	SIGUSR2
+#define SIG_VTREL	SIGUSR1
+
+namespace fbgl {
+using namespace ustl;
+
+//----------------------------------------------------------------------
+
+class CConsoleState {
+public:
+    static CConsoleState&	Instance (void);
+    void			SetTerm (const char* termname);
+    void			RegisterFramebuffer (CFramebuffer* pRoot);
+    inline bool			IsActive (void) { return (m_bActive); }
+    void			Activate (bool v = true);
+    void			OnResize (void);
+    int				VtIndex (void) const;
+    void			EnterGraphicsMode (void);
+    void			LeaveGraphicsMode (void);
+    inline bool			DecodeKey (istream& is, wchar_t& kv, utio::CKeyboard::metastate_t& kf) const { return (m_Kb.DecodeKey (is, kv, kf)); }
+private:
+				CConsoleState (void);
+			       ~CConsoleState (void);
+    void			AttachToConsole (void);
+private:
+    CFramebuffer*		m_pFramebuffer;	///< Pointer to the root window.
+    utio::CTerminfo		m_TI;
+    utio::CKeyboard		m_Kb;
+    bool			m_bActive;	///< True if the console is currently active.
+};
+
+//----------------------------------------------------------------------
+
+} // namespace fbgl
+
+#endif
+

@@ -13,12 +13,13 @@ namespace fbgl {
 
 //----------------------------------------------------------------------
 
-const CFbMode CFramebuffer::s_NullMode;
+const CFbMode CConsoleFramebuffer::s_NullMode;
 
 //----------------------------------------------------------------------
 
-CFramebuffer::CFramebuffer (void)
-: m_Fix (),
+CConsoleFramebuffer::CConsoleFramebuffer (void)
+: CFramebuffer (),
+  m_Fix (),
   m_OrigVar (),
   m_Var (),
   m_Device (),
@@ -27,18 +28,18 @@ CFramebuffer::CFramebuffer (void)
 {
 }
 
-CFramebuffer::~CFramebuffer (void)
+CConsoleFramebuffer::~CConsoleFramebuffer (void)
 {
     Close();
 }
 
-/*static*/ CFramebuffer& CFramebuffer::Instance (void)
+/*static*/ CConsoleFramebuffer& CConsoleFramebuffer::Instance (void)
 {
-    static CFramebuffer s_fb;
+    static CConsoleFramebuffer s_fb;
     return (s_fb);
 }
 
-void CFramebuffer::Open (void)
+void CConsoleFramebuffer::Open (void)
 {
     assert (!m_Device.IsOpen());
     string deviceName;
@@ -51,7 +52,7 @@ void CFramebuffer::Open (void)
     LoadModes();
 }
 
-void CFramebuffer::Close (void)
+void CConsoleFramebuffer::Close (void)
 {
     if (m_Screen.data())
 	m_Device.Unmap (m_Screen);
@@ -66,7 +67,7 @@ void CFramebuffer::Close (void)
 /// This works by trying to open fb0 and getting the console-framebuffer
 /// mapping for the standard input device.
 ///
-void CFramebuffer::DetectDefaultDevice (string& deviceName) const
+void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
 {
     struct stat ttyStat;
     if (fstat (STDIN_FILENO, &ttyStat))
@@ -81,7 +82,7 @@ void CFramebuffer::DetectDefaultDevice (string& deviceName) const
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
 }
 
-void CFramebuffer::LoadModes (void)
+void CConsoleFramebuffer::LoadModes (void)
 {
     string mdbt, reader;
     mdbt.read_file ("/etc/fb.modes");
@@ -94,7 +95,7 @@ void CFramebuffer::LoadModes (void)
 	m_Modes.pop_back();
 }
 
-const CFbMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
+const CFbMode& CConsoleFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
 {
     uoff_t found (m_Modes.size());
     size_t diff (SIZE_MAX);
@@ -110,7 +111,11 @@ const CFbMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) c
     return (found < m_Modes.size() ? m_Modes[found] : s_NullMode);
 }
 
-void CFramebuffer::SetMode (CFbMode newMode, size_t depth)
+void CConsoleFramebuffer::OnFocus (bool)
+{
+}
+
+void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
 {
     assert (m_Device.IsOpen());
     newMode.SetDepth (depth);
@@ -124,7 +129,7 @@ void CFramebuffer::SetMode (CFbMode newMode, size_t depth)
     m_Device.MSync (m_Screen);
 }
 
-void CFramebuffer::SetColormap (void)
+void CConsoleFramebuffer::SetColormap (void)
 {
     if (m_Fix.visual == FB_VISUAL_TRUECOLOR)
 	return;
