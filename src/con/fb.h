@@ -4,7 +4,7 @@
 #ifndef FBDRV_H_55DF359B07B17DD34D71BCFE3BC0D670
 #define FBDRV_H_55DF359B07B17DD34D71BCFE3BC0D670
 
-#include "fb.h"
+#include "../fb.h"
 #include "cmap.h"
 
 namespace fbgl {

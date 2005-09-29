@@ -7,7 +7,7 @@
 #define CONSTATE_H_17C5725A6418797A3B7DD95B0A18BF4C
 
 #include <utio.h>
-#include "fb.h"
+#include "../fb.h"
 
 #define SIG_VTACQ	SIGUSR2
 #define SIG_VTREL	SIGUSR1

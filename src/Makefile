@@ -5,8 +5,8 @@ MAJOR	= 1
 MINOR	= 0
 BUILD	= 0
 
-SRCS	= $(wildcard *.cc)
-INCS	= $(filter-out bsconf.%,$(wildcard *.h))
+SRCS	= $(wildcard *.cc con/*.cc)
+INCS	= $(filter-out bsconf.%,$(wildcard *.h con/*.h))
 OBJS	= $(SRCS:.cc=.o)
 LIBS	= -lutio -lustl -lsupc++
 
@@ -63,6 +63,7 @@ uninstall-static: uninstall-incs
 install-incs: ${INCS}
 	@echo "Installing headers to ${INCDIR} ..."
 	@${INSTALLDIR} ${INCDIR}/${LIBNAME}
+	@${INSTALLDIR} ${INCDIR}/${LIBNAME}/con
 	@for i in ${INCS}; do					\
 	    ${INSTALLDATA} $$i ${INCDIR}/${LIBNAME}/$$i;	\
 	done;
