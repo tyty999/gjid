@@ -2,6 +2,7 @@
 //
 
 #include "fbdrv.h"
+#include "cmap.h"
 #include <linux/fb.h>
 #include <linux/kdev_t.h>
 #include <linux/major.h>
@@ -10,27 +11,25 @@
 
 namespace fbgl {
 
+//----------------------------------------------------------------------
+
+const CFbMode CFramebuffer::s_NullMode;
+
+//----------------------------------------------------------------------
+
 CFramebuffer::CFramebuffer (void)
-: m_pFix (NULL),
-  m_pOrigVar (NULL),
-  m_pVar (NULL),
+: m_Fix (),
+  m_OrigVar (),
+  m_Var (),
   m_Device (),
-  m_Modes ()
+  m_Modes (),
+  m_Colormap ()
 {
-    auto_ptr<fb_fix_screeninfo> pFix (new fb_fix_screeninfo);
-    auto_ptr<fb_var_screeninfo> pOrigVar (new fb_var_screeninfo);
-    auto_ptr<fb_var_screeninfo> pVar (new fb_var_screeninfo);
-    m_pFix = pFix.release();
-    m_pOrigVar = pOrigVar.release();
-    m_pVar = pVar.release();
 }
 
 CFramebuffer::~CFramebuffer (void)
 {
     Close();
-    Delete (m_pFix);
-    Delete (m_pOrigVar);
-    Delete (m_pVar);
 }
 
 /*static*/ CFramebuffer& CFramebuffer::Instance (void)
@@ -44,11 +43,12 @@ void CFramebuffer::Open (void)
     assert (!m_Device.IsOpen());
     string deviceName;
     DetectDefaultDevice (deviceName);
-    m_Device.Open (deviceName);
-    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), m_pFix);
-    m_Device.Ioctl (IOCTLID (FBIOGET_VSCREENINFO), m_pOrigVar);
-    *m_pVar = *m_pOrigVar;
-    m_Screen = m_Device.Map (m_pFix->smem_len);
+    m_Device.Open (deviceName, CFile::mode_Modify);
+    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+    m_Device.Ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_OrigVar);
+    m_Var = m_OrigVar;
+    m_Screen = m_Device.Map (m_Fix.smem_len);
+    LoadModes();
 }
 
 void CFramebuffer::Close (void)
@@ -56,7 +56,7 @@ void CFramebuffer::Close (void)
     if (m_Screen.data())
 	m_Device.Unmap (m_Screen);
     if (m_Device.IsOpen()) {
-	m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), m_pOrigVar);
+	m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_OrigVar);
 	m_Device.Close();
     }
 }
@@ -94,7 +94,7 @@ void CFramebuffer::LoadModes (void)
 	m_Modes.pop_back();
 }
 
-uoff_t CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
+const CFbMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
 {
     uoff_t found (m_Modes.size());
     size_t diff (SIZE_MAX);
@@ -107,23 +107,30 @@ uoff_t CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
 	    diff = md;
 	}
     }
-    return (found);
+    return (found < m_Modes.size() ? m_Modes[found] : s_NullMode);
 }
 
-void CFramebuffer::SetMode (size_t w, size_t h, size_t freq, size_t depth)
+void CFramebuffer::SetMode (CFbMode newMode, size_t depth)
 {
     assert (m_Device.IsOpen());
-    if (m_Modes.empty())
-	LoadModes();
-    uoff_t m = FindClosestMode (w, h, freq);
-    if (m == m_Modes.size())
-	return;
-    CFbMode newMode (m_Modes[m]);
     newMode.SetDepth (depth);
-    newMode.CreateVarinfo (*m_pVar);
-    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), m_pVar);
-    cout.format ("Mode closest to %ux%u@%u:\n", w, h, freq);
-    cout << m_Modes[m];
+    newMode.CreateVarinfo (m_Var);
+    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
+    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+    m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+    SetColormap();
+    for (uoff_t i = 0; i < m_Screen.size(); ++ i)
+	*(m_Screen.begin() + i) = i % 256;
+    m_Device.MSync (m_Screen);
+}
+
+void CFramebuffer::SetColormap (void)
+{
+    if (m_Fix.visual == FB_VISUAL_TRUECOLOR)
+	return;
+    if (!m_Colormap.red)
+	m_Colormap.InitTruecolorValues (m_Var, m_Fix);
+    m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
 }
 
 } // namespace fbgl
