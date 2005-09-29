@@ -39,9 +39,10 @@ CFile::~CFile (void)
 void CFile::Open (rcname_t name, EMode mode, mode_t perms)
 {
     static const int openmode [mode_Last] = {
-	/* mode_Read */		O_NONBLOCK | O_RDONLY,
-	/* mode_Write */	O_NONBLOCK | O_WRONLY | O_CREAT | O_TRUNC,
-	/* mode_Append */	O_NONBLOCK | O_WRONLY | O_CREAT | O_APPEND
+	/* mode_Read */		O_RDONLY,
+	/* mode_Write */	O_WRONLY | O_CREAT | O_TRUNC,
+	/* mode_Append */	O_WRONLY | O_CREAT | O_APPEND,
+	/* mode_Modify */	O_RDWR
     };
     Close();
     const int fd = open (name, openmode[mode], perms);

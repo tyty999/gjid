@@ -27,6 +27,7 @@ public:
 	mode_Read,
 	mode_Write,
 	mode_Append,
+	mode_Modify,
 	mode_Last
     };
     static const mode_t	perms_Std = 0644;
