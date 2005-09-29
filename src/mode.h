@@ -25,6 +25,8 @@ public:
 	flag_ExtSync,
 	flag_Interlaced,
 	flag_Doublescan,
+	flag_SyncOnGreen,
+	flag_Broadcast,
 	flag_Last
     };
     typedef string::const_iterator	mdbiter_t;

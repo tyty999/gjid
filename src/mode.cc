@@ -16,7 +16,9 @@ const char* CFbMode::s_FlagText [flag_Last] = {
     "csync high",	// flag_CSync
     "extsync true",	// flag_ExtSync
     "laced true",	// flag_Interlaced
-    "double true"	// flag_Doublescan
+    "double true",	// flag_Doublescan
+    "gsync true",	// flag_SyncOnGreen
+    "bcast true"	// flag_Broadcast
 };
 
 //----------------------------------------------------------------------
@@ -97,6 +99,8 @@ void CFbMode::CreateVarinfo (struct fb_var_screeninfo& vi) const
     set_vi_flag (flag_VSyncHigh, sync, FB_SYNC_VERT_HIGH_ACT);
     set_vi_flag (flag_CSync, sync, FB_SYNC_COMP_HIGH_ACT);
     set_vi_flag (flag_ExtSync, sync, FB_SYNC_EXT);
+    set_vi_flag (flag_SyncOnGreen, sync, FB_SYNC_ON_GREEN);
+    set_vi_flag (flag_Broadcast, sync, FB_SYNC_BROADCAST);
     #undef set_vi_flag
     if (Flag (flag_Interlaced)) vi.vmode = FB_VMODE_INTERLACED;
     else if (Flag (flag_Doublescan)) vi.vmode = FB_VMODE_DOUBLE;
