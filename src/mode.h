@@ -7,6 +7,7 @@
 #define FBMODE_H_305B7A305F04122E318379A84269939F
 
 #include "file.h"
+#include "primi.h"
 
 struct fb_var_screeninfo;
 

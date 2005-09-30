@@ -33,22 +33,17 @@ CColormap::~CColormap (void)
 }
 
 /// Resizes the raymaps to hold enough elements for \p rb.
-void CColormap::Resize (rcvarinfo_t rv, rcfixinfo_t rf)
+void CColormap::Resize (size_t bpp, size_t rlen, size_t glen, size_t blen, bool bDirectColor)
 {
-    size_t nReds, nGreens, nBlues;
-    if (rf.visual == FB_VISUAL_DIRECTCOLOR) {
-	nReds   = 1 << rv.red.length;
-	nGreens = 1 << rv.green.length;
-	nBlues  = 1 << rv.blue.length;
-    } else
-	nReds = nGreens = nBlues = 1 << rv.bits_per_pixel;
-    len = max (max (nReds, nGreens), nBlues);
-    red   = (__u16*) realloc (red,   nReds * sizeof (__u16));
-    green = (__u16*) realloc (green, nGreens * sizeof (__u16));
-    blue  = (__u16*) realloc (blue,  nBlues * sizeof (__u16));
-    fill_n (red, nReds, 0U);
-    fill_n (green, nReds, 0U);
-    fill_n (blue, nReds, 0U);
+    if (!bDirectColor)
+	rlen = glen = blen = bpp;
+    rlen = 1 << rlen;
+    glen = 1 << glen;
+    blen = 1 << blen;
+    len = max (max (rlen, glen), blen);
+    red   = (__u16*) realloc (red,   rlen * sizeof (__u16));
+    green = (__u16*) realloc (green, glen * sizeof (__u16));
+    blue  = (__u16*) realloc (blue,  blen * sizeof (__u16));
 }
 
 /// Fills \p v with truecolor values spread over \p bits.
@@ -64,19 +59,28 @@ void CColormap::InitTruecolorRamp (__u16* v, size_t bits, bool bDirectColor)
 }
 
 /// Fills the colormap with a truecolor-like ramp clamped to \p rb.
-void CColormap::InitTruecolorValues (rcvarinfo_t rv, rcfixinfo_t rf)
+void CColormap::InitTruecolorValues (size_t bpp, size_t rlen, size_t glen, size_t blen, bool bDirectColor)
 {
-    Resize (rv, rf);
-    size_t nReds, nGreens, nBlues;
-    if (rf.visual == FB_VISUAL_DIRECTCOLOR) {
-	nReds   = rv.red.length;
-	nGreens = rv.green.length;
-	nBlues  = rv.blue.length;
-    } else
-	nReds = nGreens = nBlues = rv.bits_per_pixel;
-    InitTruecolorRamp (red, nReds, rf.visual == FB_VISUAL_DIRECTCOLOR);
-    InitTruecolorRamp (green, nGreens, rf.visual == FB_VISUAL_DIRECTCOLOR);
-    InitTruecolorRamp (blue, nBlues, rf.visual == FB_VISUAL_DIRECTCOLOR);
+    Resize (bpp, rlen, glen, blen, bDirectColor);
+    if (!bDirectColor)
+	rlen = glen = blen = bpp;
+    InitTruecolorRamp (red, rlen, bDirectColor);
+    InitTruecolorRamp (green, glen, bDirectColor);
+    InitTruecolorRamp (blue, blen, bDirectColor);
+}
+
+/// Create a pseudocolor palette from \p pal.
+void CColormap::CopyFrom (const CPalette& pal)
+{
+    Resize (8, 8, 8, 8, false);
+    ray_t* pr (((ray_t*) red));
+    ray_t* pg (((ray_t*) green));
+    ray_t* pb (((ray_t*) blue));
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    ++ pr; ++ pg; ++ pb;
+#endif
+    for (uoff_t i = 0; i < 256; ++i, pr+=2, pg+=2, pb+=2)
+	pal.Get (i, *pr, *pg, *pb);
 }
 
 //----------------------------------------------------------------------

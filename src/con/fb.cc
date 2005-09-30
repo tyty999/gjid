@@ -13,6 +13,7 @@ const CFbMode CConsoleFramebuffer::s_NullMode;
 
 //----------------------------------------------------------------------
 
+/// Default constructor.
 CConsoleFramebuffer::CConsoleFramebuffer (void)
 : CFramebuffer (),
   m_Fix (),
@@ -25,18 +26,21 @@ CConsoleFramebuffer::CConsoleFramebuffer (void)
     CConsoleState::Instance().RegisterFramebuffer (this);
 }
 
+/// Virtual destructor.
 CConsoleFramebuffer::~CConsoleFramebuffer (void)
 {
     CConsoleState::Instance().RegisterFramebuffer (NULL);
     Close();
 }
 
+/// Singleton interface.
 /*static*/ CConsoleFramebuffer& CConsoleFramebuffer::Instance (void)
 {
     static CConsoleFramebuffer s_fb;
     return (s_fb);
 }
 
+/// Opens the framebuffer device and enables graphics mode.
 void CConsoleFramebuffer::Open (void)
 {
     assert (!m_Device.IsOpen());
@@ -51,6 +55,7 @@ void CConsoleFramebuffer::Open (void)
     CConsoleState::Instance().EnterGraphicsMode();
 }
 
+/// Leaves graphics mode and closes the device.
 void CConsoleFramebuffer::Close (void)
 {
     CConsoleState::Instance().LeaveGraphicsMode();
@@ -79,6 +84,7 @@ void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
 }
 
+/// Loads available video modes from /etc/fb.modes
 void CConsoleFramebuffer::LoadModes (void)
 {
     string mdbt, reader;
@@ -92,6 +98,7 @@ void CConsoleFramebuffer::LoadModes (void)
 	m_Modes.pop_back();
 }
 
+/// Looks up a video mode closest to the given parameters.
 const CFbMode& CConsoleFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
 {
     uoff_t found (m_Modes.size());
@@ -108,10 +115,12 @@ const CFbMode& CConsoleFramebuffer::FindClosestMode (size_t w, size_t h, size_t 
     return (found < m_Modes.size() ? m_Modes[found] : s_NullMode);
 }
 
+/// Called when the vt gains or loses focus.
 void CConsoleFramebuffer::OnFocus (bool)
 {
 }
 
+/// Changes to another mode.
 void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
 {
     assert (m_Device.IsOpen());
@@ -122,17 +131,115 @@ void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
     m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
     SetColormap();
     for (uoff_t i = 0; i < m_Screen.size(); ++ i)
-	*(m_Screen.begin() + i) = i % 256;
+	*(m_Screen.begin() + i) = i % 128;
     m_Device.MSync (m_Screen);
 }
 
+/// Sets up the default colormap.
 void CConsoleFramebuffer::SetColormap (void)
 {
     if (m_Fix.visual == FB_VISUAL_TRUECOLOR)
 	return;
     if (!m_Colormap.red)
-	m_Colormap.InitTruecolorValues (m_Var, m_Fix);
+	m_Colormap.InitTruecolorValues (m_Var.bits_per_pixel, m_Var.red.length, m_Var.green.length, m_Var.blue.length, m_Fix.visual == FB_VISUAL_DIRECTCOLOR);
     m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
+}
+
+/// Returns pointer to the screen.
+memlink CConsoleFramebuffer::Pixels (void)
+{
+    return (m_Screen);
+}
+
+/// Returns the size of the screen.
+Size2d CConsoleFramebuffer::Size (void)
+{
+    return (Size2d (m_Var.xres, m_Var.yres));
+}
+
+/// Writes the contents of \p gc to screen.
+void CConsoleFramebuffer::Flush (const CGC& gc)
+{
+    if (m_Fix.visual == FB_VISUAL_PSEUDOCOLOR) {
+	m_Colormap.CopyFrom (gc.Palette());
+	m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
+    }
+}
+
+/// Translates utio key codes to fbgl equivalents.
+static key_t TranslateKeycode (wchar_t key)
+{
+    struct SKMap {
+	utio::EKeyDataValue	utioValue;
+	EKeyDataValue		fbglValue;
+    };
+    static const SKMap kmap[] = {
+	{ utio::kv_Space,	kv_Space	},
+	{ utio::kv_Tab,		kv_Tab		},
+	{ utio::kv_Enter,	kv_Enter	},
+	{ utio::kv_Esc,		kv_Esc		},
+	{ utio::kv_Backspace,	kv_Backspace	},
+	{ utio::kv_Center,	kv_Center	},
+	{ utio::kv_Close,	kv_Close	},
+	{ utio::kv_Delete,	kv_Delete	},
+	{ utio::kv_Down,	kv_Down		},
+	{ utio::kv_DownLeft,	kv_DownLeft	},
+	{ utio::kv_DownRight,	kv_DownRight	},
+	{ utio::kv_End,		kv_End		},
+	{ utio::kv_F0,		kv_F0		},
+	{ utio::kv_F1,		kv_F1		},
+	{ utio::kv_F2,		kv_F2		},
+	{ utio::kv_F3,		kv_F3		},
+	{ utio::kv_F4,		kv_F4		},
+	{ utio::kv_F5,		kv_F5		},
+	{ utio::kv_F6,		kv_F6		},
+	{ utio::kv_F7,		kv_F7		},
+	{ utio::kv_F8,		kv_F8		},
+	{ utio::kv_F9,		kv_F9		},
+	{ utio::kv_F10,		kv_F10		},
+	{ utio::kv_F11,		kv_F11		},
+	{ utio::kv_F12,		kv_F12		},
+	{ utio::kv_Home,	kv_Home		},
+	{ utio::kv_Insert,	kv_Insert	},
+	{ utio::kv_Left,	kv_Left		},
+	{ utio::kv_PageDown,	kv_PageDown	},
+	{ utio::kv_PageUp,	kv_PageUp	},
+	{ utio::kv_Right,	kv_Right	},
+	{ utio::kv_Up,		kv_Up		},
+	{ utio::kv_UpLeft,	kv_UpLeft	},
+	{ utio::kv_UpRight,	kv_UpRight	}
+    };
+    for (uoff_t i = 0; i < VectorSize(kmap); ++ i)
+	if (kmap[i].utioValue == key)
+	    return (kmap[i].fbglValue);
+    return (key);
+};
+
+/// Translates utio key metastate to fbgl equivalents.
+static keystate_t TranslateKeystate (utio::CKeyboard::metastate_t kbms)
+{
+    static const uint8_t metamap[] = {
+	ks_Shift,
+	ks_Alt,
+	ks_Ctrl
+    };
+    keystate_t ks;
+    for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
+	if (kbms[i])
+	    ks.set (metamap[i]);
+    return (ks);
+}
+
+/// Waits for and reads any UI events.
+void CConsoleFramebuffer::CheckEvents (CEventProcessor* evp) const
+{
+    static const long defaultTimeout (200);
+    const utio::CKeyboard& rkb = CConsoleState::Instance().Keyboard();
+    rkb.WaitForKeyData (defaultTimeout);
+    utio::CKeyboard::metastate_t meta;
+    wchar_t key = rkb.GetKey (&meta, false);
+    if (key)
+	evp->OnKey (TranslateKeycode(key), TranslateKeystate(meta));
 }
 
 } // namespace fbgl

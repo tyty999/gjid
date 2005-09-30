@@ -17,6 +17,10 @@ public:
     virtual void		SetMode (CFbMode m, size_t depth);
     virtual const CFbMode&	FindClosestMode (size_t w, size_t h, size_t freq) const;
     virtual void		OnFocus (bool bFocus);
+    virtual void		CheckEvents (CEventProcessor* evp) const;
+    virtual memlink		Pixels (void);
+    virtual Size2d		Size (void);
+    virtual void		Flush (const CGC& gc);
 protected:
 				CConsoleFramebuffer (void);
     virtual		       ~CConsoleFramebuffer (void);

@@ -29,6 +29,7 @@ public:
     void			EnterGraphicsMode (void);
     void			LeaveGraphicsMode (void);
     inline bool			DecodeKey (istream& is, wchar_t& kv, utio::CKeyboard::metastate_t& kf) const { return (m_Kb.DecodeKey (is, kv, kf)); }
+    inline const utio::CKeyboard&	Keyboard (void) const	{ return (m_Kb); }
 private:
 				CConsoleState (void);
 			       ~CConsoleState (void);

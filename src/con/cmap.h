@@ -6,11 +6,10 @@
 #ifndef CMAP_H_7738C1BC229459A94DB9E3E048568B33
 #define CMAP_H_7738C1BC229459A94DB9E3E048568B33
 
-#include <ustl.h>
+#include "../pal.h"
 #include <linux/fb.h>
 
 namespace fbgl {
-using namespace ustl;
 
 /// \class CColormap cmap.h "render/fb/cmap.h"
 class CColormap : public fb_cmap {
@@ -20,8 +19,9 @@ public:
 public:
 		CColormap (void);
 	       ~CColormap (void);
-    void	Resize (rcvarinfo_t rv, rcfixinfo_t rf);
-    void	InitTruecolorValues (rcvarinfo_t rv, rcfixinfo_t rf);
+    void	Resize (size_t bpp, size_t rlen, size_t glen, size_t blen, bool bDirectColor);
+    void	InitTruecolorValues (size_t bpp, size_t rlen, size_t glen, size_t blen, bool bDirectColor);
+    void	CopyFrom (const CPalette& pal);
 private:
     void	InitTruecolorRamp (__u16* v, size_t bits, bool bDirectColor);
 };
