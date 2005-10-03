@@ -21,10 +21,10 @@ public:
     virtual memlink		Pixels (void);
     virtual Size2d		Size (void);
     virtual void		Flush (const CGC& gc);
+    void			LoadModes (void);
 protected:
 				CConsoleFramebuffer (void);
     virtual		       ~CConsoleFramebuffer (void);
-    void			LoadModes (void);
     void			DetectDefaultDevice (string& deviceName) const;
     void			SetColormap (void);
 private:
