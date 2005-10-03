@@ -3,6 +3,7 @@
 
 #include "app.h"
 #include "con/fbdrv.h"
+#include "con/constate.h"
 
 namespace fbgl {
 
@@ -29,10 +30,8 @@ void CApplication::MainLoop (void)
 {
     m_pFb = GetFramebuffer();
     try {
-	m_pFb->Open();
-	m_GC.link (m_pFb->Pixels(), m_pFb->Size());
-	Update();
 	OnCreate();
+	Update();
 	SetFlag (f_QuitRequested, false);
 	while (!Flag (f_QuitRequested)) {
 	    m_pFb->CheckEvents (this);
@@ -40,19 +39,21 @@ void CApplication::MainLoop (void)
 	}
     } catch (...) {
 	OnDestroy();
-	m_GC.unlink();
-	m_pFb->Close();
 	throw;
     }
     OnDestroy();
-    m_GC.unlink();
-    m_pFb->Close();
 }
 
 /// Gets an appropriate framebuffer pointer.
 CFramebuffer* CApplication::GetFramebuffer (void) const
 {
-    return (&CConsoleFramebuffer::Instance());
+    const int vti = CConsoleState::Instance().VtIndex();
+    if (vti >= 0)
+	return (&CConsoleFramebuffer::Instance());
+    const char* pDisp = getenv ("DISPLAYX");
+    if (!pDisp)
+	throw runtime_error ("this program requires the framebuffer console or an X server");
+    return (NULL);
 }
 
 /// Redraws the application.
@@ -63,8 +64,18 @@ void CApplication::Update (void)
 	m_pFb->Flush (m_GC);
 }
 
-void CApplication::OnCreate (void) {}
-void CApplication::OnDestroy (void) {}
+void CApplication::OnCreate (void)
+{
+    m_pFb->Open();
+    m_GC.link (m_pFb->Pixels(), m_pFb->Size());
+}
+
+void CApplication::OnDestroy (void)
+{
+    m_GC.unlink();
+    m_pFb->Close();
+}
+
 void CApplication::OnIdle (void) {}
 void CApplication::OnQuit (void) { SetFlag (f_QuitRequested); }
 void CApplication::OnDraw (CGC&) {}

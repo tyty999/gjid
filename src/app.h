@@ -46,6 +46,27 @@ private:
     bitset<f_Max>	m_Flags;
 };
 
+template <typename AppClass>
+inline int TFbglMain (int argc, const char* const* argv)
+{
+    int rv = EXIT_FAILURE;
+    try {
+	CApplication& rApp = AppClass::Instance();
+	rApp.ProcessArguments (argc, argv);
+	rApp.MainLoop();
+	rv = EXIT_SUCCESS;
+    } catch (exception& e) {
+	cerr.flush(); cout << "Error: " << e << endl;
+    } catch (...) {
+	cerr.flush(); cout << "Unexpected fatal error has occured" << endl;
+    }
+    return (rv);
+}
+
+#define FbglMain(appClass)				\
+    int main (int argc, const char* const* argv)	\
+	{ return (TFbglMain<appClass> (argc, argv)); }
+
 } // namespace fbgl
 
 #endif
