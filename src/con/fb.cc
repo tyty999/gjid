@@ -108,18 +108,18 @@ void CConsoleFramebuffer::SetColormap (void)
 /// Resets the old mode when refocused.
 void CConsoleFramebuffer::OnFocus (bool bFocused)
 {
-    if (!m_Device.IsOpen())
-	return;
-    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
-    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
-    m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+    if (bFocused && m_Device.IsOpen()) {
+	m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
+	m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+	m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+    }
     CFramebuffer::OnFocus (bFocused);
 }
 
 /// Writes the contents of \p gc to screen.
 void CConsoleFramebuffer::Flush (void)
 {
-    if (!CConsoleState::Instance().IsActive())
+    if (!m_Device.IsOpen() || !CConsoleState::Instance().IsActive())
 	return;
 
     if (m_Fix.visual == FB_VISUAL_PSEUDOCOLOR) {
