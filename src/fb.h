@@ -16,14 +16,14 @@ class CFramebuffer {
 public:
     virtual void		Open (void) = 0;
     virtual void		Close (void) = 0;
-    virtual void		OnFocus (bool bFocus) = 0;
     virtual void		CheckEvents (CEventProcessor* evp) const = 0;
-    virtual memlink		Pixels (void) = 0;
-    virtual Size2d		Size (void) = 0;
-    virtual void		Flush (const CGC& gc) = 0;
-    virtual void		SetMode (CFbMode m, size_t depth) = 0;
+    virtual void		Flush (void) = 0;
+    virtual void		OnFocus (bool bFocus);
+    virtual void		SetMode (CFbMode m, size_t depth);
     const CFbMode&		FindClosestMode (size_t w, size_t h, size_t freq) const;
     void			LoadModes (void);
+    inline const CGC&		GC (void) const	{ return (m_GC); }
+    inline CGC&			GC (void)	{ return (m_GC); }
 protected:
 				CFramebuffer (void);
     virtual		       ~CFramebuffer (void);
@@ -31,6 +31,8 @@ private:
     typedef vector<CFbMode>	modevec_t;
 private:
     modevec_t			m_Modes;
+    CGC				m_GC;
+    memblock			m_Buffer;
 };
 
 } // namespace fbgl

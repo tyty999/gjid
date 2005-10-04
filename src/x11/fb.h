@@ -18,11 +18,8 @@ public:
     virtual void		Open (void);
     virtual void		Close (void);
     virtual void		SetMode (CFbMode m, size_t depth);
-    virtual void		OnFocus (bool bFocus);
     virtual void		CheckEvents (CEventProcessor* evp) const;
-    virtual memlink		Pixels (void);
-    virtual Size2d		Size (void);
-    virtual void		Flush (const CGC& gc);
+    virtual void		Flush (void);
 protected:
 				CXlibFramebuffer (void);
     virtual		       ~CXlibFramebuffer (void);

@@ -28,29 +28,16 @@ void CXlibFramebuffer::Close (void)
 {
 }
 
-void CXlibFramebuffer::SetMode (CFbMode, size_t)
+void CXlibFramebuffer::SetMode (CFbMode m, size_t depth)
 {
-}
-
-void CXlibFramebuffer::OnFocus (bool)
-{
+    CFramebuffer::SetMode (m, depth);
 }
 
 void CXlibFramebuffer::CheckEvents (CEventProcessor*) const
 {
 }
 
-memlink CXlibFramebuffer::Pixels (void)
-{
-    return (memlink());
-}
-
-Size2d CXlibFramebuffer::Size (void)
-{
-    return (Size2d());
-}
-
-void CXlibFramebuffer::Flush (const CGC&)
+void CXlibFramebuffer::Flush (void)
 {
 }
 

@@ -83,6 +83,18 @@ void CColormap::CopyFrom (const CPalette& pal)
 	pal.Get (i, *pr, *pg, *pb);
 }
 
+void CColormap::CopyTo (CPalette& pal) const
+{
+    const ray_t* pr (((const ray_t*) red));
+    const ray_t* pg (((const ray_t*) green));
+    const ray_t* pb (((const ray_t*) blue));
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    ++ pr; ++ pg; ++ pb;
+#endif
+    for (uoff_t i = 0; i < 256; ++i, pr+=2, pg+=2, pb+=2)
+	pal.Set (i, *pr, *pg, *pb);
+}
+
 //----------------------------------------------------------------------
 
 } // namespace fbgl

@@ -18,7 +18,7 @@ protected:
 void CAppTest::OnIdle (void)
 {
     static size_t idleCount = 0;
-    if (++idleCount > 5)
+    if (++idleCount > 25)
 	Quit();
     cout << "OnIdle called" << endl;
 }

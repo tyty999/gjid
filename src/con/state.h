@@ -20,7 +20,7 @@ using namespace ustl;
 class CConsoleState {
 public:
     static CConsoleState&	Instance (void);
-    void			SetTerm (const char* termname);
+    void			SetTerm (const char* termname = NULL);
     void			RegisterFramebuffer (CFramebuffer* pRoot);
     inline bool			IsActive (void) { return (m_bActive); }
     void			Activate (bool v = true);

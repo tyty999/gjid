@@ -70,8 +70,9 @@ void CConsoleState::EnterGraphicsMode (void)
     cout << m_TI.HideCursor();
     cout.flush();
     m_Kb.EnterUIMode();
-    if (isatty(STDIN_FILENO) && ioctl (STDIN_FILENO, KDSETMODE, KD_GRAPHICS))
-	throw file_exception ("ioctl(KDSETMODE)", "stdin");
+    if (isatty(STDIN_FILENO))
+	if (!getenv("IN_DEBUGGER") && ioctl (STDIN_FILENO, KDSETMODE, KD_GRAPHICS))
+	    throw file_exception ("ioctl(KDSETMODE)", "stdin");
 }
 
 /// Leaves graphical mode.
@@ -133,6 +134,8 @@ void CConsoleState::AttachToConsole (void)
     vtm.relsig = SIG_VTREL;	// Raise this on VT release.
     if (ioctl (STDIN_FILENO, VT_SETMODE, &vtm))
 	throw file_exception ("ioctl(VT_SETMODE)", "stdin");
+
+    SetTerm();
 }
 
 /// Performs actions on console activation.

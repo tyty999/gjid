@@ -18,7 +18,6 @@ CApplication* CApplication::s_pApp = NULL;
 CApplication::CApplication (void)
 : CEventProcessor (),
   m_pFb (NULL),
-  m_GC (),
   m_Flags (0)
 {
     assert (!s_pApp && "CApplication derivatives must be singletons!");
@@ -76,26 +75,26 @@ CFramebuffer* CApplication::GetFramebuffer (void) const
 /// Redraws the application.
 void CApplication::Update (void)
 {
-    OnDraw (m_GC);
-    if (m_pFb)
-	m_pFb->Flush (m_GC);
+    if (m_pFb) {
+	OnDraw (m_pFb->GC());
+	m_pFb->Flush();
+    }
 }
 
 void CApplication::OnCreate (void)
 {
     m_pFb->Open();
-    m_GC.link (m_pFb->Pixels(), m_pFb->Size());
     m_pFb->SetMode (m_pFb->FindClosestMode (640, 480, 60), 8);
 }
 
 void CApplication::OnDestroy (void)
 {
-    m_GC.unlink();
     m_pFb->Close();
 }
 
-bool CApplication::OnSignal (int)
+bool CApplication::OnSignal (int sig)
 {
+    cout << "Fatal error " << sig << endl;
     return (false);
 }
 

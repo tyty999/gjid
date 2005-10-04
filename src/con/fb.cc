@@ -79,11 +79,6 @@ void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
 }
 
-/// Called when the vt gains or loses focus.
-void CConsoleFramebuffer::OnFocus (bool)
-{
-}
-
 /// Changes to another mode.
 void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
 {
@@ -95,6 +90,7 @@ void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
     m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
     SetColormap();
     m_Device.MSync (m_Screen);
+    CFramebuffer::SetMode (newMode, depth);
 }
 
 /// Sets up the default colormap.
@@ -102,30 +98,38 @@ void CConsoleFramebuffer::SetColormap (void)
 {
     if (m_Fix.visual == FB_VISUAL_TRUECOLOR)
 	return;
-    if (!m_Colormap.red)
+    if (!m_Colormap.red) {
 	m_Colormap.InitTruecolorValues (m_Var.bits_per_pixel, m_Var.red.length, m_Var.green.length, m_Var.blue.length, m_Fix.visual == FB_VISUAL_DIRECTCOLOR);
+	m_Colormap.CopyTo (GC().Palette());
+    }
     m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
 }
 
-/// Returns pointer to the screen.
-memlink CConsoleFramebuffer::Pixels (void)
+/// Resets the old mode when refocused.
+void CConsoleFramebuffer::OnFocus (bool bFocused)
 {
-    return (m_Screen);
-}
-
-/// Returns the size of the screen.
-Size2d CConsoleFramebuffer::Size (void)
-{
-    return (Size2d (m_Var.xres, m_Var.yres));
+    if (!m_Device.IsOpen())
+	return;
+    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
+    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+    m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+    CFramebuffer::OnFocus (bFocused);
 }
 
 /// Writes the contents of \p gc to screen.
-void CConsoleFramebuffer::Flush (const CGC& gc)
+void CConsoleFramebuffer::Flush (void)
 {
     if (m_Fix.visual == FB_VISUAL_PSEUDOCOLOR) {
-	m_Colormap.CopyFrom (gc.Palette());
+	m_Colormap.CopyFrom (GC().Palette());
 	m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
     }
+
+    const uint8_t* src = GC().begin();
+    uint8_t* dest = (uint8_t*) m_Screen.begin();
+    const size_t srclinelen (GC().Size()[0] * m_Var.bits_per_pixel / 8);
+    for (uoff_t i = 0; i < GC().Size()[1]; ++i, src+=srclinelen, dest+=m_Fix.line_length)
+	copy_n (src, srclinelen, dest);
+
     m_Device.MSync (m_Screen);
 }
 
@@ -196,7 +200,7 @@ static keystate_t TranslateKeystate (utio::CKeyboard::metastate_t kbms)
 /// Waits for and reads any UI events.
 void CConsoleFramebuffer::CheckEvents (CEventProcessor* evp) const
 {
-    static const long defaultTimeout (200);
+    static const long defaultTimeout (200000);
     const utio::CKeyboard& rkb = CConsoleState::Instance().Keyboard();
     rkb.WaitForKeyData (defaultTimeout);
     utio::CKeyboard::metastate_t meta;

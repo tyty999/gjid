@@ -22,6 +22,7 @@ public:
     void	Resize (size_t bpp, size_t rlen, size_t glen, size_t blen, bool bDirectColor);
     void	InitTruecolorValues (size_t bpp, size_t rlen, size_t glen, size_t blen, bool bDirectColor);
     void	CopyFrom (const CPalette& pal);
+    void	CopyTo (CPalette& pal) const;
 private:
     void	InitTruecolorRamp (__u16* v, size_t bits, bool bDirectColor);
 };
