@@ -126,8 +126,6 @@ void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
     m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
     m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
     SetColormap();
-    for (uoff_t i = 0; i < m_Screen.size(); ++ i)
-	*(m_Screen.begin() + i) = i % 128;
     m_Device.MSync (m_Screen);
 }
 
@@ -160,6 +158,7 @@ void CConsoleFramebuffer::Flush (const CGC& gc)
 	m_Colormap.CopyFrom (gc.Palette());
 	m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
     }
+    m_Device.MSync (m_Screen);
 }
 
 /// Translates utio key codes to fbgl equivalents.

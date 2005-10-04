@@ -85,6 +85,7 @@ void CApplication::OnCreate (void)
 {
     m_pFb->Open();
     m_GC.link (m_pFb->Pixels(), m_pFb->Size());
+    m_pFb->SetMode (m_pFb->FindClosestMode (640, 480, 60), 8);
 }
 
 void CApplication::OnDestroy (void)
