@@ -47,7 +47,7 @@ void CFile::Open (rcname_t name, EMode mode, mode_t perms)
     Close();
     const int fd = open (name, openmode[mode], perms);
     if (fd < 0)
-	throw file_exception ("open", name);
+	throw file_exception ("open", name.c_str());
     m_bOwned = true;
     m_fd = fd;
     m_Flags = mode;
@@ -58,7 +58,7 @@ void CFile::Open (rcname_t name, EMode mode, mode_t perms)
 void CFile::Close (void)
 {
     if (m_bOwned && close (m_fd) < 0)
-	throw file_exception ("close", m_Name);
+	throw file_exception ("close", m_Name.c_str());
     m_bOwned = false;
     m_fd = fd_Null;
     m_Flags = 0;
@@ -70,9 +70,9 @@ void CFile::Attach (int fd)
 {
     int flags;
     if ((flags = fcntl (fd, F_GETFL)) < 0)
-	throw file_exception ("fcntl(F_GETFL)", m_Name);
+	throw file_exception ("fcntl(F_GETFL)", m_Name.c_str());
     if (!(flags & O_NONBLOCK) && fcntl (fd, F_SETFL, flags |= O_NONBLOCK) < 0)
-	throw file_exception ("fcntl(F_SETFL)", m_Name);
+	throw file_exception ("fcntl(F_SETFL)", m_Name.c_str());
     Close();
     m_fd = fd;
     m_Flags = flags;
@@ -94,14 +94,14 @@ size_t CFile::Read (ostream& os)
     while (os.remaining()) {
 	ssize_t br = read (m_fd, os.ipos(), os.remaining());
 	if (br == 0)
-	    throw file_exception ("read eof", m_Name);
+	    throw file_exception ("read eof", m_Name.c_str());
 	else if (br > 0)
 	    os.skip (br);
 	else {
 	    if (errno == EAGAIN)
 		break;
 	    else if (errno != EINTR)
-		throw file_exception ("read", m_Name);
+		throw file_exception ("read", m_Name.c_str());
 	}
     }
     return (wasRemaining - os.remaining());
@@ -119,7 +119,7 @@ size_t CFile::Write (istream& is)
 	    if (errno == EAGAIN)
 		break;
 	    else if (errno != EINTR)
-		throw file_exception ("write", m_Name);
+		throw file_exception ("write", m_Name.c_str());
 	}
     }
     return (wasRemaining - is.remaining());
@@ -128,28 +128,28 @@ size_t CFile::Write (istream& is)
 void CFile::Stat (struct stat& st) const
 {
     if (fstat (m_fd, &st) < 0)
-	throw file_exception ("fstat", m_Name);
+	throw file_exception ("fstat", m_Name.c_str());
 }
 
 /// Seeks to the requested offset.
 void CFile::Seek (off_t p)
 {
     if (lseek (m_fd, p, SEEK_SET) < 0)
-	throw file_exception ("lseek", m_Name);
+	throw file_exception ("lseek", m_Name.c_str());
 }
 
 /// Flushes the data to disk.
 void CFile::Sync (void)
 {
     if (fsync (m_fd) < 0)
-	throw file_exception ("fsync", m_Name);
+	throw file_exception ("fsync", m_Name.c_str());
 }
 
 /// Executes the requested ioctl.
 void CFile::Ioctl (const char* name, int request, long argument)
 {
     if (ioctl (m_fd, request, argument) < 0)
-	throw file_exception (name, m_Name);
+	throw file_exception (name, m_Name.c_str());
 }
 
 /// Maps the file to a memory location.
@@ -157,7 +157,7 @@ memlink CFile::Map (size_t size, off_t offset)
 {
     void* result = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, offset);
     if (result == MAP_FAILED)
-	throw file_exception ("mmap", m_Name);
+	throw file_exception ("mmap", m_Name.c_str());
     return (memlink (result, size));
 }
 
@@ -165,7 +165,7 @@ memlink CFile::Map (size_t size, off_t offset)
 void CFile::Unmap (memlink& l)
 {
     if (munmap (l.data(), l.size()) < 0)
-	throw file_exception ("munmap", m_Name);
+	throw file_exception ("munmap", m_Name.c_str());
     l.unlink();
 }
 
@@ -173,7 +173,7 @@ void CFile::Unmap (memlink& l)
 void CFile::MSync (memlink& l)
 {
     if (msync (l.data(), l.size(), MS_ASYNC | MS_INVALIDATE))
-	throw file_exception ("msync", m_Name);
+	throw file_exception ("msync", m_Name.c_str());
 }
 
 } // namespace fbgl
