@@ -119,6 +119,9 @@ void CConsoleFramebuffer::OnFocus (bool bFocused)
 /// Writes the contents of \p gc to screen.
 void CConsoleFramebuffer::Flush (void)
 {
+    if (!CConsoleState::Instance().IsActive())
+	return;
+
     if (m_Fix.visual == FB_VISUAL_PSEUDOCOLOR) {
 	m_Colormap.CopyFrom (GC().Palette());
 	m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);

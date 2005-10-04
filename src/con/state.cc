@@ -83,13 +83,12 @@ void CConsoleState::LeaveGraphicsMode (void)
 	return;
     m_Kb.LeaveUIMode();
     cout << m_TI.ShowCursor();
-    //cout << m_TI.Clear();
     cout.flush();
 }
 
 void CConsoleState::RegisterFramebuffer (CFramebuffer* pFb)
 {
-    assert ((!m_pFramebuffer || !pFb) && "You can only register one root window");
+    assert ((!m_pFramebuffer || !pFb) && "You can only register one framebuffer");
     if (!m_pFramebuffer && pFb)
 	AttachToConsole();
     if (IsActive()) {
