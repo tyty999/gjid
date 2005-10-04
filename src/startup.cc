@@ -31,20 +31,18 @@ static const char* strsignal (int sig);
 /// Called when a signal is received.
 static void OnSignal (int sig, siginfo*, void*)
 {
-    CApplication* pApp = CApplication::Instance();
-    if (!pApp) {
-	cerr << "[S] Fatal error: " << strsignal(sig) << endl;
-	exit (sig);
-    }
     try {
-	if (pApp->OnSignal (sig))
+	CApplication* pApp = CApplication::Instance();
+	if (!pApp)
+	    cerr << "[S] Fatal error: " << strsignal(sig) << endl;
+	else if (pApp->OnSignal (sig))
 	    return;
     } catch (exception& e) {
 	cerr << "[S] Error: " << e << endl;
     } catch (...) {
 	cerr << "[S] Unexpected error has occured." << endl;
     }
-    exit (EXIT_FAILURE);
+    exit (sig);
 }
 
 /// Called by the framework on unrecoverable exception handling errors.

@@ -4,6 +4,7 @@
 #include "app.h"
 #include "con/fbdrv.h"
 #include "con/constate.h"
+#include "x11/xfb.h"
 
 namespace fbgl {
 
@@ -66,10 +67,10 @@ CFramebuffer* CApplication::GetFramebuffer (void) const
     const int vti = CConsoleState::Instance().VtIndex();
     if (vti >= 0)
 	return (&CConsoleFramebuffer::Instance());
-    const char* pDisp = getenv ("DISPLAYX");
+    const char* pDisp = getenv ("DISPLAY");
     if (!pDisp)
 	throw runtime_error ("this program requires the framebuffer console or an X server");
-    return (NULL);
+    return (&CXlibFramebuffer::Instance());
 }
 
 /// Redraws the application.

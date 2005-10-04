@@ -1,17 +1,20 @@
-// fbdrv.h
+// xfb.h
 //
 
-#ifndef FBDRV_H_55DF359B07B17DD34D71BCFE3BC0D670
-#define FBDRV_H_55DF359B07B17DD34D71BCFE3BC0D670
+#ifndef XFB_H_03AB4F7E09259B61062C6ACD0AB3CC92
+#define XFB_H_03AB4F7E09259B61062C6ACD0AB3CC92
 
 #include "../fb.h"
-#include "cmap.h"
 
 namespace fbgl {
 
-class CConsoleFramebuffer : public CFramebuffer {
+/// \class CXlibFramebuffer xfb fbgl.h
+///
+/// \brief Xlib backend.
+///
+class CXlibFramebuffer : public CFramebuffer {
 public:
-    static CConsoleFramebuffer&	Instance (void);
+    static CXlibFramebuffer&	Instance (void);
     virtual void		Open (void);
     virtual void		Close (void);
     virtual void		SetMode (CFbMode m, size_t depth);
@@ -23,20 +26,12 @@ public:
     virtual void		Flush (const CGC& gc);
     void			LoadModes (void);
 protected:
-				CConsoleFramebuffer (void);
-    virtual		       ~CConsoleFramebuffer (void);
-    void			DetectDefaultDevice (string& deviceName) const;
-    void			SetColormap (void);
+				CXlibFramebuffer (void);
+    virtual		       ~CXlibFramebuffer (void);
 private:
     typedef vector<CFbMode>	modevec_t;
 private:
-    struct fb_fix_screeninfo	m_Fix;
-    struct fb_var_screeninfo	m_OrigVar;
-    struct fb_var_screeninfo	m_Var;
-    CFile			m_Device;
     modevec_t			m_Modes;
-    memlink			m_Screen;
-    CColormap			m_Colormap;
 };
 
 } // namespace fbgl

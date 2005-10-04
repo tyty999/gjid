@@ -5,8 +5,8 @@ MAJOR	= 1
 MINOR	= 0
 BUILD	= 0
 
-SRCS	= $(wildcard *.cc con/*.cc)
-INCS	= $(filter-out bsconf.%,$(wildcard *.h con/*.h))
+SRCS	= $(wildcard *.cc con/*.cc x11/*.cc)
+INCS	= $(filter-out bsconf.%,$(wildcard *.h con/*.h x11/*.h))
 OBJS	= $(SRCS:.cc=.o)
 LIBS	= -lutio -lustl -lsupc++
 
@@ -64,6 +64,7 @@ install-incs: ${INCS}
 	@echo "Installing headers to ${INCDIR} ..."
 	@${INSTALLDIR} ${INCDIR}/${LIBNAME}
 	@${INSTALLDIR} ${INCDIR}/${LIBNAME}/con
+	@${INSTALLDIR} ${INCDIR}/${LIBNAME}/x11
 	@for i in ${INCS}; do					\
 	    ${INSTALLDATA} $$i ${INCDIR}/${LIBNAME}/$$i;	\
 	done;

@@ -32,6 +32,7 @@ public:
     };
     typedef string::const_iterator	mdbiter_t;
     typedef const string&		rcname_t;
+    static const CFbMode		null_Mode;
 public:
 			CFbMode (void);
     void		CreateVarinfo (struct fb_var_screeninfo& vi) const;

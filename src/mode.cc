@@ -20,6 +20,7 @@ const char* CFbMode::s_FlagText [flag_Last] = {
     "gsync true",	// flag_SyncOnGreen
     "bcast true"	// flag_Broadcast
 };
+const CFbMode CFbMode::null_Mode;
 
 //----------------------------------------------------------------------
 

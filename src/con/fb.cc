@@ -9,10 +9,6 @@ namespace fbgl {
 
 //----------------------------------------------------------------------
 
-const CFbMode CConsoleFramebuffer::s_NullMode;
-
-//----------------------------------------------------------------------
-
 /// Default constructor.
 CConsoleFramebuffer::CConsoleFramebuffer (void)
 : CFramebuffer (),
@@ -112,7 +108,7 @@ const CFbMode& CConsoleFramebuffer::FindClosestMode (size_t w, size_t h, size_t 
 	    diff = md;
 	}
     }
-    return (found < m_Modes.size() ? m_Modes[found] : s_NullMode);
+    return (found < m_Modes.size() ? m_Modes[found] : CFbMode::null_Mode);
 }
 
 /// Called when the vt gains or loses focus.
