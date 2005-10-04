@@ -16,7 +16,6 @@ CConsoleFramebuffer::CConsoleFramebuffer (void)
   m_OrigVar (),
   m_Var (),
   m_Device (),
-  m_Modes (),
   m_Colormap ()
 {
     CConsoleState::Instance().RegisterFramebuffer (this);
@@ -78,37 +77,6 @@ void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
     struct fb_con2fbmap c2fb = { vti, 0 };
     fb.Ioctl (IOCTLID (FBIOGET_CON2FBMAP), &c2fb);
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
-}
-
-/// Loads available video modes from /etc/fb.modes
-void CConsoleFramebuffer::LoadModes (void)
-{
-    string mdbt, reader;
-    mdbt.read_file ("/etc/fb.modes");
-    foreach (string::const_iterator, i, mdbt) {
-	m_Modes.push_back();
-	reader.link (i, mdbt.end());
-	i = m_Modes.back().ReadFromModedb (reader);
-    }
-    if (!m_Modes.empty() && m_Modes.back().Name().empty())
-	m_Modes.pop_back();
-}
-
-/// Looks up a video mode closest to the given parameters.
-const CFbMode& CConsoleFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
-{
-    uoff_t found (m_Modes.size());
-    size_t diff (SIZE_MAX);
-    foreach (modevec_t::const_iterator, m, m_Modes) {
-	const size_t md = absv<int>(m->Width() - w) +
-			  absv<int>(m->Height() - h) +
-			  absv<int>(m->RefreshRate() - freq);
-	if (md < diff) {
-	    found = distance (m_Modes.begin(), m);
-	    diff = md;
-	}
-    }
-    return (found < m_Modes.size() ? m_Modes[found] : CFbMode::null_Mode);
 }
 
 /// Called when the vt gains or loses focus.

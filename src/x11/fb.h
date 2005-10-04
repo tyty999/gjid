@@ -18,20 +18,14 @@ public:
     virtual void		Open (void);
     virtual void		Close (void);
     virtual void		SetMode (CFbMode m, size_t depth);
-    virtual const CFbMode&	FindClosestMode (size_t w, size_t h, size_t freq) const;
     virtual void		OnFocus (bool bFocus);
     virtual void		CheckEvents (CEventProcessor* evp) const;
     virtual memlink		Pixels (void);
     virtual Size2d		Size (void);
     virtual void		Flush (const CGC& gc);
-    void			LoadModes (void);
 protected:
 				CXlibFramebuffer (void);
     virtual		       ~CXlibFramebuffer (void);
-private:
-    typedef vector<CFbMode>	modevec_t;
-private:
-    modevec_t			m_Modes;
 };
 
 } // namespace fbgl
