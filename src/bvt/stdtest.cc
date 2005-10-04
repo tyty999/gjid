@@ -57,7 +57,7 @@ static void InstallCleanupHandlers (void)
 
 int StdTestHarness (stdtestfunc_t testFunction)
 {
-    InstallCleanupHandlers();
+    ::InstallCleanupHandlers();
     int rv = EXIT_FAILURE;
     try {
 	(*testFunction)();

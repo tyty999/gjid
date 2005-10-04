@@ -5,8 +5,7 @@
 #define APP_H_0AEE96827DC77ABC0A46F062495765A9
 
 #include "fb.h"
-#include "evp.h"
-#include "gc.h"
+#include "startup.h"
 
 namespace fbgl {
 
@@ -28,6 +27,8 @@ public:
     void		MainLoop (void);
     void		Update (void);
     inline void		Quit (void)			{ OnQuit(); }
+    virtual bool	OnSignal (int sig);
+   static CApplication*	Instance (void);
 protected:
 			CApplication (void);
     virtual	       ~CApplication (void);
@@ -36,6 +37,7 @@ protected:
     virtual void	OnQuit (void);
     virtual void	OnCreate (void);
     virtual void	OnDestroy (void);
+    virtual void	OnKey (key_t key, keystate_t ks);
     inline bool		Flag (uoff_t i) const		{ return (m_Flags[i]); }
     inline void		SetFlag (uoff_t i, bool v=true)	{ m_Flags.set (i, v); }
 private:
@@ -44,12 +46,14 @@ private:
     CFramebuffer*	m_pFb;
     CGC			m_GC;
     bitset<f_Max>	m_Flags;
+   static CApplication*	s_pApp;
 };
 
 template <typename AppClass>
 inline int TFbglMain (int argc, const char* const* argv)
 {
     int rv = EXIT_FAILURE;
+    InstallCleanupHandlers();
     try {
 	CApplication& rApp = AppClass::Instance();
 	rApp.ProcessArguments (argc, argv);

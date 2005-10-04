@@ -7,17 +7,33 @@
 
 namespace fbgl {
 
+//----------------------------------------------------------------------
+
+CApplication* CApplication::s_pApp = NULL;
+
+//----------------------------------------------------------------------
+
 /// Default constructor.
 CApplication::CApplication (void)
-: m_pFb (NULL),
+: CEventProcessor (),
+  m_pFb (NULL),
   m_GC (),
   m_Flags (0)
 {
+    assert (!s_pApp && "CApplication derivatives must be singletons!");
+    s_pApp = this;
 }
 
 /// Virtual destructor.
 CApplication::~CApplication (void)
 {
+    assert (s_pApp == this && "CApplication derivatives must be singletons!");
+    s_pApp = NULL;
+}
+
+/*static*/ CApplication* CApplication::Instance (void)
+{
+    return (s_pApp);
 }
 
 /// Call to process arguments.
@@ -74,6 +90,18 @@ void CApplication::OnDestroy (void)
 {
     m_GC.unlink();
     m_pFb->Close();
+}
+
+bool CApplication::OnSignal (int)
+{
+    return (false);
+}
+
+void CApplication::OnKey (key_t key, keystate_t ks)
+{
+    CEventProcessor::OnKey (key, ks);
+    if (key == key_F10 || (key == '\\' && ks[ks_Ctrl]))
+	Quit();
 }
 
 void CApplication::OnIdle (void) {}
