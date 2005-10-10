@@ -43,6 +43,8 @@ public:
     void			HLine (Point pt, size_t l, color_t c);
     void			VLine (Point pt, size_t l, color_t c);
     void			Image (Rect r, const uint8_t* p);
+    void			ImageMasked (Rect r, const uint8_t* p);
+    void			GetImage (Rect r, uint8_t* p) const;
     void			Bitmap (Rect r, const uint8_t* p, color_t c);
 private:
     memlink			m_Pix;	///< Pixel data.

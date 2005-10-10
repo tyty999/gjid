@@ -69,6 +69,22 @@ void CGC::Image (Rect r, const uint8_t* p)
 	copy_n (p, r.Width(), i);
 }
 
+void CGC::ImageMasked (Rect r, const uint8_t* p)
+{
+    iterator i (at (r[0]));
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=(m_Size[0]-r.Width()))
+	for (uoff_t x = 0; x < r.Width(); ++x, ++i, ++p)
+	    if (*p)
+		*i = *p;
+}
+
+void CGC::GetImage (Rect r, uint8_t* p) const
+{
+    const_iterator i (at (r[0]));
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=m_Size[0], p+=r.Width())
+	copy_n (i, r.Width(), p);
+}
+
 void CGC::Bitmap (Rect r, const uint8_t* p, color_t c)
 {
     iterator i (at (r[0]));
