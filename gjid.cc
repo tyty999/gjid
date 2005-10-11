@@ -5,6 +5,7 @@
 
 #include <font.h>
 #include "gjid.h"
+#include <time.h>
 
 picvec_t pics;
 PaletteType pal;
@@ -93,13 +94,15 @@ void GJID::OnIdle (void)
 {
     CApplication::OnIdle();
     if (m_State == state_Title) {
-	cout << "Using data file " << DATAFILE << " ...\n";
-	LoadData (DATAFILE);
-	if (!levels.empty())
-	    m_CurLevel = levels[0];
-	if (levels.empty() || story.empty() || !m_EditedPackage.empty())
-	    GoToState (state_Editor);
-	else
+	static const time_t titleDelay (time (NULL));
+	if (story.empty() || levels.empty()) {
+	    LoadData (DATAFILE);
+	    Update();
+	    if (!levels.empty())
+		m_CurLevel = levels[0];
+	    if (levels.empty() || story.empty() || !m_EditedPackage.empty())
+		GoToState (state_Editor);
+	} else if (time(NULL) > titleDelay + 3)
 	    GoToState (state_Story);
     }
 }
@@ -117,11 +120,11 @@ void GJID::OnDraw (CGC& gc)
 	&GJID::DrawEditor	// state_Editor
     };
     (this->*dfn[m_State])(gc);
+    gc.Palette() = pal;
 }
 
 void GJID::OnKey (key_t key, keystate_t ks)
 {
-    CApplication::OnKey (key, ks);
     typedef void (GJID::*pfnkey_t)(key_t key, keystate_t ks);
     static const pfnkey_t kfn [state_Last] = {
 	&GJID::TitleKeys,	// state_Title
@@ -294,6 +297,7 @@ void GJID::StoryKeys (key_t key, keystate_t ks)
 	    GoToState (state_Game);
 	}
     }
+    Update();
 }
 
 void GJID::WinnerScreen (CGC& gc)
@@ -325,7 +329,7 @@ void GJID::WinnerKeys (key_t, keystate_t)
 void GJID::DrawLevel (CGC& gc)
 {
     gc.Clear();
-    levels[m_Level].Draw (gc);
+    m_CurLevel.Draw (gc);
 }
 
 void GJID::LevelKeys (key_t key, keystate_t)
