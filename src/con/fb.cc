@@ -53,13 +53,14 @@ void CConsoleFramebuffer::Open (void)
 /// Leaves graphics mode and closes the device.
 void CConsoleFramebuffer::Close (void)
 {
-    CConsoleState::Instance().LeaveGraphicsMode();
     if (m_Screen.data())
 	m_Device.Unmap (m_Screen);
     if (m_Device.IsOpen()) {
-	m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_OrigVar);
+	m_Var = m_OrigVar;
+	SyncScreeninfo();
 	m_Device.Close();
     }
+    CConsoleState::Instance().LeaveGraphicsMode();
 }
 
 /// Detects the default framebuffer device for use with the attached tty.
@@ -79,18 +80,35 @@ void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
 }
 
+/// Writes the varinfo to the fb and reads the parameters back.
+void CConsoleFramebuffer::SyncScreeninfo (void)
+{
+    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
+    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+    m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+}
+
 /// Changes to another mode.
 void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
 {
     assert (m_Device.IsOpen());
     newMode.SetDepth (depth);
     newMode.CreateVarinfo (m_Var);
-    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
-    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
-    m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+    SyncScreeninfo();
     SetColormap();
     m_Device.MSync (m_Screen);
     CFramebuffer::SetMode (newMode, depth);
+}
+
+/// Sets a standard mode.
+void CConsoleFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
+{
+    if (m == stdmode_Text) {
+	m_Var = m_OrigVar;
+	SyncScreeninfo();
+	CConsoleState::Instance().LeaveGraphicsMode();
+    }
+    CFramebuffer::SetStandardMode (m, freq);
 }
 
 /// Sets up the default colormap.
@@ -108,11 +126,8 @@ void CConsoleFramebuffer::SetColormap (void)
 /// Resets the old mode when refocused.
 void CConsoleFramebuffer::OnFocus (bool bFocused)
 {
-    if (bFocused && m_Device.IsOpen()) {
-	m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
-	m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
-	m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
-    }
+    if (bFocused && m_Device.IsOpen())
+	SyncScreeninfo();
     CFramebuffer::OnFocus (bFocused);
 }
 
@@ -129,9 +144,23 @@ void CConsoleFramebuffer::Flush (void)
 
     const uint8_t* src = GC().begin();
     uint8_t* dest = (uint8_t*) m_Screen.begin();
-    const size_t srclinelen (GC().Size()[0] * m_Var.bits_per_pixel / 8);
-    for (uoff_t i = 0; i < GC().Size()[1]; ++i, src+=srclinelen, dest+=m_Fix.line_length)
-	copy_n (src, srclinelen, dest);
+    const Size2d gcsz (GC().Size());
+    const size_t srclinelen (gcsz[0] * m_Var.bits_per_pixel / 8);
+
+    if (gcsz[0] == m_Var.xres) {
+	for (uoff_t i = 0; i < gcsz[1]; ++i, src+=srclinelen, dest+=m_Fix.line_length)
+	    copy_n (src, srclinelen, dest);
+    } else if (gcsz[0] == 320 && m_Var.xres == 640) { // Special case for 320x240 mode, emulated by doubling.
+	const uint8_t* ls (src);
+	for (uoff_t y = 0; y < 480; ++y, dest+=m_Fix.line_length-640) {
+	    for (const uint8_t* s = ls; s < ls + 320; s += 8, dest += 16) {
+		for (uoff_t i = 0; i < 8; ++ i)
+		    dest[i * 2] = s[i];
+	    }
+	    if (y % 2)
+		ls += 320;
+	}
+    }
 
     m_Device.MSync (m_Screen);
 }

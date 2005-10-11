@@ -82,7 +82,7 @@ void CConsoleState::LeaveGraphicsMode (void)
     if (!m_Kb.IsInUIMode())
 	return;
     m_Kb.LeaveUIMode();
-    cout << m_TI.ShowCursor();
+    cout << m_TI.ShowCursor() << endl;
     cout.flush();
 }
 

@@ -10,6 +10,13 @@
 
 namespace fbgl {
 
+enum EStdFbMode {
+    stdmode_Text,
+    stdmode_320x240x8,
+    stdmode_640x480x8,
+    stdmode_Last
+};
+
 /// \class CFramebuffer fb.h fbgl/fb.h
 /// \brief Abstract framebuffer interface.
 class CFramebuffer {
@@ -19,7 +26,8 @@ public:
     virtual void		CheckEvents (CEventProcessor* evp) const = 0;
     virtual void		Flush (void) = 0;
     virtual void		OnFocus (bool bFocus);
-    virtual void		SetMode (CFbMode m, size_t depth);
+    virtual void		SetMode (CFbMode m, size_t depth = 8);
+    virtual void		SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
     const CFbMode&		FindClosestMode (size_t w, size_t h, size_t freq) const;
     void			LoadModes (void);
     inline const CGC&		GC (void) const	{ return (m_GC); }
