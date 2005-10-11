@@ -20,6 +20,7 @@ public:
     virtual void	ProcessArguments (argc_t argc, argv_t argv);
 protected:
 			GJID (void);
+    virtual void	OnCreate (void);
     virtual void	OnIdle (void);
     virtual void	OnDraw (CGC& gc);
     virtual void	OnKey (key_t key, keystate_t ks);
@@ -75,6 +76,12 @@ GJID::GJID (void)
 {
     static GJID s_App;
     return (s_App);
+}
+
+void GJID::OnCreate (void)
+{
+    CApplication::OnCreate();
+    SetMode (stdmode_320x240x8);
 }
 
 void GJID::ProcessArguments (argc_t argc, argv_t argv)
