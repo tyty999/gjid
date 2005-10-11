@@ -350,11 +350,12 @@ void GJID::LevelKeys (key_t key, keystate_t)
 
 void GJID::DrawEditor (CGC& gc)
 {
-    levels[m_Level].Draw (gc);
+    gc.Clear();
+    m_CurLevel.Draw (gc);
     gc.Box (Rect (m_SelectedTile[0] * SQUARE_SIDE, m_SelectedTile[1] * SQUARE_SIDE, (m_SelectedTile[0] + 1) * SQUARE_SIDE - 1, (m_SelectedTile[1] + 1) * SQUARE_SIDE - 1), 15);
     for (uoff_t i = 0; i < NumberOfMapPics; ++ i)
-	pics[i].Put (gc, i * SQUARE_SIDE, 184);
-    gc.Box (Rect (m_SelectedPic * SQUARE_SIDE, 184, (m_SelectedPic + 1) * SQUARE_SIDE - 1, 184 + SQUARE_SIDE - 1), 15);
+	pics[i].Put (gc, i * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
+    gc.Box (Rect (m_SelectedPic * SQUARE_SIDE, gc.Height() - SQUARE_SIDE, (m_SelectedPic + 1) * SQUARE_SIDE - 1, gc.Height() - SQUARE_SIDE + SQUARE_SIDE - 1), 15);
 }
 
 void GJID::EditorKeys (key_t key, keystate_t)
@@ -419,5 +420,6 @@ void GJID::EditorKeys (key_t key, keystate_t)
 	    m_SelectedPic = PicIndex ((m_SelectedPic + 1) % NumberOfMapPics);
 	    break;
     }
+    Update();
 }
 
