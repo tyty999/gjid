@@ -1,260 +1,191 @@
-/* level.cc
-**
-**	Implements the level class.
-*/
+// level.cc
+//
+//	Implements the level class.
+//
 
-#include <unistd.h>
 #include "gjid.h"
 
-Level :: Level (void)
+//----------------------------------------------------------------------
+
+void ObjectType::read (istream& is)
 {
-WORD x, y;
-    for (y = 0; y < MAP_HEIGHT; ++ y)
-       for (x = 0; x < MAP_WIDTH; ++ x)
-	  Map[x][y] = FloorPix;
-    Robot.x = 0;
-    Robot.y = 0;
-    Robot.pic = RobotNorthPix;
-    nCrates = 0;
+    is >> x >> y >> pic;
 }
 
-Level& Level :: operator= (Level& ToBe)
+void ObjectType::write (ostream& os) const
 {
-WORD x, y;
-ObjectType * NewCrate, * CurCrate;
-
-    for (y = 0; y < MAP_HEIGHT; ++ y)
-       for (x = 0; x < MAP_WIDTH; ++ x)
-	  Map[x][y] = ToBe.Map[x][y];
-    Robot.x = ToBe.Robot.x;
-    Robot.y = ToBe.Robot.y;
-    Robot.pic = ToBe.Robot.pic;
-    nCrates = ToBe.nCrates;
-    
-    while (!Crates.IsEmpty()) {
-       Crates.Head();
-       Crates.Delete();
-    }
-
-    ToBe.Crates.Head();
-    for (x = 0; x < nCrates; ++ x) {
-       CurCrate = ToBe.Crates.LookAt();
-       ToBe.Crates.Next();
-       NewCrate = new ObjectType;
-       NewCrate->x = CurCrate->x;
-       NewCrate->y = CurCrate->y;
-       NewCrate->pic = CurCrate->pic;
-       Crates.Tail();
-       Crates.InsertAfter (NewCrate);
-    }
-    Crates.Head();
-
-    return (*this);
+    os << x << y << pic;
 }
 
-void Level :: Draw (WORD x, WORD y)
+size_t ObjectType::stream_size (void) const
 {
-Icon combo;
-ObjectType * cc;
-WORD i;
+    return (stream_size_of(x) + stream_size_of(y) + stream_size_of(pic));
+}
 
-    pics [Map [x][y]].Put (x * SQUARE_SIDE, y * SQUARE_SIDE);
-    Crates.Head();
-    for (i = 0; i < nCrates; ++ i) {
-       cc = Crates.LookAt();
-       if (cc->x == int(x) && cc->y == int(y)) {
-	  combo = pics [cc->pic];
-	  combo.BlendWith (pics [FloorPix], SeeThroughBlend);
-          combo.Put (x * SQUARE_SIDE, y * SQUARE_SIDE);
-	  break;	// One crate per block
-       }
-       Crates.Next();
+//----------------------------------------------------------------------
+
+Level::Level (void)
+: m_Map (MAP_WIDTH * MAP_HEIGHT),
+  m_Crates (),
+  m_Robot (0, 0, RobotNorthPix),
+  m_nCrates (0)
+{
+    fill (m_Map, FloorPix);
+}
+
+void Level::Draw (CGC& gc, coord_t x, coord_t y) const
+{
+    pics [At(x,y)].Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
+    vector<ObjectType>::const_iterator ic (m_Crates.begin());
+    foreach (, ic, m_Crates)
+	if (ic->x == x && ic->y == y)
+	    break;	// One crate per block
+    if (ic < m_Crates.end()) {
+	Icon combo (pics [ic->pic]);
+	combo.BlendWith (pics [FloorPix], SeeThroughBlend);
+	combo.Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
     }
-    if (Robot.x == int(x) && Robot.y == int(y)) {
-       combo = pics [Robot.pic];
-       combo.BlendWith (pics [Map [x][y]], SeeThroughBlend);
-       combo.Put (x * SQUARE_SIDE, y * SQUARE_SIDE);
+    if (m_Robot.x == x && m_Robot.y == y) {
+	Icon combo (pics [m_Robot.pic]);
+	combo.BlendWith (pics [At(x,y)], SeeThroughBlend);
+	combo.Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
     }
 }
 
-void Level :: Draw (void)
+void Level::Draw (CGC& gc) const
 {
-WORD x, y;
-    for (y = 0; y < MAP_HEIGHT; ++ y)
-       for (x = 0; x < MAP_WIDTH; ++ x)
-	  Draw (x, y);
+    for (uoff_t y = 0; y < MAP_HEIGHT; ++ y)
+	for (uoff_t x = 0; x < MAP_WIDTH; ++ x)
+	    Draw (gc, x, y);
 }
 
-BOOL Level :: CanMoveTo (WORD x, WORD y, RobotDir where)
+bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
 {
-BOOL Can = FALSE;
-
-    switch (Map[x][y]) {
-       case DisposePix:
-       case ExitPix:
-       case FloorPix:		Can = TRUE; break;
-       case OWDNorthPix:	if (where == North)
-       				   Can = TRUE;
-				break;
-       case OWDSouthPix:	if (where == South)
-       				   Can = TRUE;
-				break;
-       case OWDEastPix:		if (where == East)
-       				   Can = TRUE;
-				break;
-       case OWDWestPix:		if (where == West)
-       				   Can = TRUE;
-				break;
-       default: 		break;
-    }
-
-    return (Can);
+    if (x < 0 || y < 0 || x >= MAP_WIDTH || y >= MAP_HEIGHT)
+	return (false);
+    const PicIndex tpic (At(x,y));
+    if (tpic == DisposePix || tpic == ExitPix || tpic == FloorPix)
+	return (true);
+    else if (tpic == OWDNorthPix)	return (where == North);
+    else if (tpic == OWDSouthPix)	return (where == South);
+    else if (tpic == OWDEastPix)	return (where == East);
+    else if (tpic == OWDWestPix)	return (where == West);
+    return (false);
 }
 
-int Level :: FindCrate (WORD x, WORD y)
+int Level::FindCrate (coord_t x, coord_t y) const
 {
-    Crates.Head();
-    for (WORD i = 0; i < nCrates; ++ i) {
-	ObjectType * cc = Crates.LookAt();
-	Crates.Next();
-	if (cc->x == int(x) && cc->y == int(y))
-	    return (i);
-    }
+    foreach (vector<ObjectType>::const_iterator, ic, m_Crates)
+	if (ic->x == x && ic->y == y)
+	    return (distance (m_Crates.begin(), ic));
     return (-1);
 }
 
-void Level :: SetCell (WORD x, WORD y, PicIndex pic)
+void Level::SetCell (coord_t x, coord_t y, PicIndex pic)
 {
-    Map [x][y] = pic;
+    m_Map [y * MAP_WIDTH + x] = pic;
 }
 
-BOOL Level :: Finished (void)
+bool Level::Finished (void) const
 {
-    return (nCrates == 0 && Map [Robot.x][Robot.y] == ExitPix);
+    return (!m_nCrates && At(m_Robot.x, m_Robot.y) == ExitPix);
 }
 
-void Level :: MoveRobot (RobotDir where)
+void Level::MoveRobot (RobotDir where)
 {
-int dx = 0, dy = 0;
-int ciw;
-ObjectType * CurCrate;
-
+    int dx = 0, dy = 0;
     switch (where) {
-        case North:	dy = -1;
-			Robot.pic = RobotNorthPix;
+	case North:	dy = -1;
+			m_Robot.pic = RobotNorthPix;
 			break;
-        case South:	dy = 1;
-			Robot.pic = RobotSouthPix;
+	case South:	dy = 1;
+			m_Robot.pic = RobotSouthPix;
 			break;
-        case East:	dx = 1;
-			Robot.pic = RobotEastPix;
+	case East:	dx = 1;
+			m_Robot.pic = RobotEastPix;
 			break;
-        case West:	dx = -1;
-			Robot.pic = RobotWestPix;
+	case West:	dx = -1;
+			m_Robot.pic = RobotWestPix;
 			break;
     }
 
     // Check if map square can be moved on
-    if (!CanMoveTo (Robot.x + dx, Robot.y + dy, where)) {
-       Draw (Robot.x, Robot.y);
-       return;
-    }
+    if (!CanMoveTo (m_Robot.x + dx, m_Robot.y + dy, where))
+	return;
 
     // Check if a crate needs to be moved
-    ciw = FindCrate (Robot.x + dx, Robot.y + dy);
-    if (ciw < 0) {
-       Robot.x += dx;
-       Robot.y += dy;
-       Draw (Robot.x - dx, Robot.y - dy);
-       Draw (Robot.x, Robot.y);
-    }
-    else {
-       // Can only move one crate - this checks for another one behind ciw
-       //	also checks if the square behind crate can be moved into
-       if (FindCrate (Robot.x + 2 * dx, Robot.y + 2 * dy) < 0 &&
-	   CanMoveTo (Robot.x + 2 * dx, Robot.y + 2 * dy, where)) {
-	  Crates.Head();
-	  Crates.Skip (ciw);
-	  CurCrate = Crates.LookAt();
-	  CurCrate->x += dx;
-	  CurCrate->y += dy;
-	  Robot.x += dx;
-	  Robot.y += dy;
-	  Draw (Robot.x - dx, Robot.y - dy);
-	  Draw (Robot.x, Robot.y);
-	  Draw (Robot.x + dx, Robot.y + dy);
-
-	  if (Map [CurCrate->x][CurCrate->y] == DisposePix) {
-	     usleep (100);
-	     DisposeCrate (ciw);
-	     Draw (Robot.x + dx, Robot.y + dy);
-	  }
-       }
+    int ciw = FindCrate (m_Robot.x + dx, m_Robot.y + dy);
+    if (ciw >= 0) {
+	// Can only move one crate - this checks for another one behind ciw
+	//	also checks if the square behind crate can be moved into
+	if (FindCrate (m_Robot.x + 2 * dx, m_Robot.y + 2 * dy) < 0 && CanMoveTo (m_Robot.x + 2 * dx, m_Robot.y + 2 * dy, where)) {
+	    m_Crates[ciw].x += dx;
+	    m_Crates[ciw].y += dy;
+	    m_Robot.x += dx;
+	    m_Robot.y += dy;
+	    if (At(m_Crates[ciw].x, m_Crates[ciw].y) == DisposePix)
+		DisposeCrate (ciw);
+	}
+    } else {
+	m_Robot.x += dx;
+	m_Robot.y += dy;
     }
 }
 
-void Level :: MoveRobot (WORD x, WORD y, PicIndex pic)
+void Level::MoveRobot (coord_t x, coord_t y, PicIndex pic)
 {
-WORD oldx, oldy;
-
     if (CanMoveTo (x, y, North)) {
-       oldx = Robot.x;
-       oldy = Robot.y;
-       Robot.x = x;
-       Robot.y = y;
-       Robot.pic = pic;
-       Draw (oldx, oldy);
-       Draw (Robot.x, Robot.y);
+	m_Robot.x = x;
+	m_Robot.y = y;
+	m_Robot.pic = pic;
     }
 }
 
-void Level :: DisposeCrate (WORD index)
+void Level::DisposeCrate (uoff_t index)
 {
-    Crates.Head();
-    Crates.Skip (index);
-    Crates.Delete();
-    -- nCrates;
+    m_Crates.erase (m_Crates.begin() + index);
+    -- m_nCrates;
 }
 
-void Level :: AddCrate (WORD x, WORD y, PicIndex pic)
+void Level::AddCrate (coord_t x, coord_t y, PicIndex pic)
 {
-ObjectType * NewCrate;
-
-    NewCrate = new ObjectType;
-    NewCrate->x = x;
-    NewCrate->y = y;
-    NewCrate->pic = pic;
-    Crates.Tail();
-    Crates.InsertAfter (NewCrate);
-    ++ nCrates;
+    m_Crates.push_back();
+    m_Crates.back().x = x;
+    m_Crates.back().y = y;
+    m_Crates.back().pic = pic;
+    ++ m_nCrates;
 }
 
-void Level :: Read (ifstream& is)
+void Level::read (istream& is)
 {
-    is.read ((char*) Map, MAP_HEIGHT * MAP_WIDTH * sizeof(PicIndex));
-    is.read ((char*) &nCrates, sizeof(WORD));
-    for (WORD i = 0; i < nCrates; ++ i) {
-	ObjectType* NewCrate = new ObjectType;
-	is.read ((char*) NewCrate, sizeof(ObjectType));
-	Crates.Tail();
-	Crates.InsertAfter (NewCrate);
-    }
-    is.read ((char*) &Robot, sizeof(ObjectType));
+    foreach (vector<PicIndex>::iterator, i, m_Map)
+	is >> *i;
+    is >> m_nCrates;
+    m_Crates.resize (m_nCrates);
+    foreach (vector<ObjectType>::iterator, i, m_Crates)
+	is >> *i;
+    is >> m_Robot;
 }
 
-void Level :: Write (ofstream& os)
+void Level::write (ostream& os) const
 {
-    os.write ((const char*) Map, MAP_HEIGHT * MAP_WIDTH * sizeof(PicIndex));
-    os.write ((const char*) &nCrates, sizeof(WORD));
-    Crates.Head();
-    for (WORD i = 0; i < nCrates; ++ i) {
-	os.write ((const char*) Crates.LookAt(), sizeof(ObjectType));
-	Crates.Next();
-    }
-    os.write ((const char*) &Robot, sizeof(ObjectType));
+    foreach (vector<PicIndex>::const_iterator, i, m_Map)
+	os << *i;
+    os << m_nCrates;
+    foreach (vector<ObjectType>::const_iterator, i, m_Crates)
+	os << *i;
+    os << m_Robot;
 }
 
-Level :: ~Level (void)
+size_t Level::stream_size (void) const
 {
+    size_t s (0);
+    foreach (vector<PicIndex>::const_iterator, i, m_Map)
+	s += stream_size_of (*i);
+    s += stream_size_of (m_nCrates);
+    foreach (vector<ObjectType>::const_iterator, i, m_Crates)
+	s += stream_size_of (*i);
+    s += stream_size_of (m_Robot);
+    return (s);
 }
 

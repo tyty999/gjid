@@ -1,89 +1,76 @@
-/* datafile.cc
-**
-**	Implements data file routines.
-*/
+// datafile.cc
+//
+//	Implements data file routines.
+//
 
-#include <mdefs.h>
 #include <font.h>
 #include "gjid.h"
 
-extern char * story;
-extern WORD StorySize;
-
-void LoadData (char * filename)
+void LoadData (const char* filename)
 {
-Level * NewLevel;
-ifstream is;
-
-    is.open (filename); 
+    memblock buf;
+    buf.read_file (filename);
+    istream is (buf);
 
     cout << "Reading palette.\n";
     // Special palette is used
-    pal.Read (is);
-    
+    is >> pal;
+
     cout << "Reading font.\n";
     // Font
-    font.Read (is);
+    is >> font;
 
-    cout << "Reading " << NumberOfPics << " pictures";
+    cout << "Reading " << size_t(NumberOfPics) << " pictures";
     // Read the pictures
-    for (WORD i = 0; i < NumberOfPics; ++ i) {
-       pics[i].Read (is);
-       cout << ".";
+    for (uoff_t i = 0; i < NumberOfPics; ++ i) {
+	is >> pics[i];
+	cout << ".";
     }
     cout << "\n";
 
     // Read the story
     cout << "Reading story.\n";
-    is.read ((char*) &StorySize, sizeof(WORD));
-    story = new char [StorySize];
-    is.read (story, StorySize);
+    is >> StorySize;
+    story.resize (StorySize);
+    is.read (story.begin(), story.size());
 
     // Read the levels
-    is.read ((char*) &nLevels, sizeof(WORD));
+    is >> nLevels;
     if (nLevels == 0)
-       cout << "No levels found in data file!";
-    else if (nLevels > MAX_LEVELS) {
-       cout << "Too many levels! (" << nLevels;
-       cout << ", maximum is " << MAX_LEVELS << ")\n";
-       exit (1);
-    }
+	throw runtime_error ("no levels found in data file!");
+    else if (nLevels > MAX_LEVELS)
+	throw runtime_error ("too many levels in the input file");
     else
-       cout << "Reading " << nLevels << " levels";
+	cout << "Reading " << nLevels << " levels";
 
-    for (WORD i = 0; i < nLevels; ++ i) {
-       NewLevel = new Level;
-       NewLevel->Read (is);
-       levels.Tail();
-       levels.InsertAfter (NewLevel);
-       cout << ".";
+    levels.resize (nLevels);
+    foreach (vector<Level>::iterator, l, levels) {
+	is >> *l;
+	cout << ".";
     }
     cout << "\n";
-
-    is.close();
 }
 
-void SaveData (char * filename)
+void SaveData (const char* filename)
 {
-ofstream os;
+    size_t dataSize = stream_size_of(pal) + stream_size_of(font);
+    for (uoff_t i = 0; i < NumberOfPics; ++ i)
+	dataSize += stream_size_of (pics[i]);
+    dataSize += stream_size_of (nLevels);
+    foreach (vector<Level>::const_iterator, l, levels)
+	dataSize += stream_size_of (*l);
 
-    os.open (filename); 
+    memblock buf (dataSize);
+    ostream os (buf);
 
-    pal.Write (os);
-    font.Write (os);
+    os << pal;
+    os << font;
+    for (uoff_t i = 0; i < NumberOfPics; ++ i)
+	os << pics[i];
+    os << nLevels;
+    foreach (vector<Level>::const_iterator, l, levels)
+	os << *l;
 
-    // Write the pictures
-    for (WORD i = 0; i < NumberOfPics; ++ i)
-       pics[i].Write (os);
-
-    // Read the levels
-    os.write ((const char*) &nLevels, sizeof(WORD));
-    levels.Head (1);
-    for (WORD i = 0; i < nLevels; ++ i) {
-       levels.LookAt (1)->Write (os);
-       levels.Next (1);
-    }
-
-    os.close();
+    buf.write_file (filename);
 }
 
