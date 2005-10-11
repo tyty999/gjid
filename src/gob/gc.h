@@ -32,6 +32,8 @@ public:
     inline iterator		at (Point pt)		{ return (begin() + pt[1] * m_Size[0] + pt[0]); }
     inline const_iterator	at (Point pt) const	{ return (begin() + pt[1] * m_Size[0] + pt[0]); }
     inline const Size2d&	Size (void) const	{ return (m_Size); }
+    inline dim_t		Width (void) const	{ return (m_Size[0]); }
+    inline dim_t		Height (void) const	{ return (m_Size[1]); }
     void			link (memlink l, Size2d sz);
     void			unlink (void);
     inline CPalette&		Palette (void)		{ return (m_Pal); }
