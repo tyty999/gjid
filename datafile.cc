@@ -3,7 +3,7 @@
 //	Implements data file routines.
 //
 
-#include <font.h>
+#include "font.h"
 #include "gjid.h"
 
 void LoadData (const char* filename)

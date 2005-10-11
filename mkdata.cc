@@ -1,5 +1,5 @@
 #include "gjid.h"
-#include <font.h>
+#include "font.h"
 
 picvec_t		pics;
 

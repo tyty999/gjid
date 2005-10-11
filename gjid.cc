@@ -3,7 +3,7 @@
 //	Implements a puzzle game based on DOS shareware version.
 //
 
-#include <font.h>
+#include "font.h"
 #include "gjid.h"
 #include <time.h>
 

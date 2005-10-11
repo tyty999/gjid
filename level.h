@@ -4,7 +4,7 @@
 #ifndef LEVEL_H_31AE019508B493103BF90EFB5C5BDDE0
 #define LEVEL_H_31AE019508B493103BF90EFB5C5BDDE0
 
-#include <icon.h>
+#include "icon.h"
 
 #define SQUARE_SIDE	16
 #define MAP_WIDTH	20
