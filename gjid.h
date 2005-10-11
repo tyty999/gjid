@@ -8,7 +8,7 @@
 
 #include "level.h"
 
-#define DATAFILE	"gjid.dat"
+#define DATAFILE	"data/gjid.dat"
 
 //----------------------------------------------------------------------
 

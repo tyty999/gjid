@@ -13,6 +13,6 @@ mkdata:	mkdata.o level.o font.o icon.o
 	@echo "Linking $@ ... "
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-gjid.dat:	mkdata data/* gjid.story gjid.levels
+gjid.dat:	mkdata data/*
 	@echo "Creating the data file ... "
 	@./mkdata

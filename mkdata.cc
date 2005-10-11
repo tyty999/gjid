@@ -29,7 +29,7 @@ private:
 void CDataBuilder::Run (void)
 {
     LoadFromFiles();
-    SaveToDat ("gjid.dat");
+    SaveToDat ("data/gjid.dat");
 }
 
 template <typename T>
@@ -72,8 +72,8 @@ void CDataBuilder::LoadFromFiles (void)
     };
     for (uoff_t i = 0; i < VectorSize(pix); ++ i)
 	Load (pics[i], pix[i]);
-    Load (m_Levels, "gjid.levels");
-    m_Story.read_file ("gjid.story");
+    Load (m_Levels, "data/levels.dat");
+    m_Story.read_file ("data/story.txt");
 }
 
 void CDataBuilder::SaveToDat (const char* filename)
