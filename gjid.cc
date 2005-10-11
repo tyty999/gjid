@@ -193,25 +193,22 @@ void GJID::LoserKeys (key_t, keystate_t)
 
 void GJID::PrintStory (CGC& gc)
 {
-    coord_t x, y, i, row = 0;
-    uoff_t offset = 0;
-    char buffer[80], c;
+    coord_t x, y, row = 0;
     Icon blend, backgr (50, 50);
 
+    gc.Clear (68);
+    for (y = 0; y < 240; y += SQUARE_SIDE) {
+	pics [Wall1Pix].Put (gc, 0, y);
+	pics [Wall1Pix].Put (gc, 320 - SQUARE_SIDE, y);
+    }
+    for (x = SQUARE_SIDE; x < 320 - SQUARE_SIDE; x += SQUARE_SIDE) {
+	pics [Wall1Pix].Put (gc, x, 0);
+	pics [Wall1Pix].Put (gc, x, 240 - SQUARE_SIDE);
+    }
+    font.PrintString (gc, 145, 231, "Hit any key", 16);
+    font.PrintString (gc, 144, 230, "Hit any key", 25);
+
     if (m_StoryPage == 0) {
-	gc.Clear (68);
-	for (y = 0; y < 200; y += SQUARE_SIDE) {
-	    pics [Wall1Pix].Put (gc, 0, y);
-	    pics [Wall1Pix].Put (gc, 304, y);
-	}
-	for (x = 0; x < 320; x += SQUARE_SIDE) {
-	    pics [Wall1Pix].Put (gc, x, 0);
-	    pics [Wall1Pix].Put (gc, x, 184);
-	}
-
-	font.PrintString (gc, 145, 191, "Hit any key", 16);
-	font.PrintString (gc, 144, 190, "Hit any key", 25);
-
 	backgr.Get (gc, 40, SQUARE_SIDE * 2);
 	blend = pics [LogoGPix];
 	blend.BlendWith (backgr, SeeThroughBlend);
@@ -230,38 +227,26 @@ void GJID::PrintStory (CGC& gc)
 	blend.Put (gc, 220, SQUARE_SIDE * 2); 
 	row = 8;
 
-	while (offset < StorySize) {
-	    i = 0;
-	    while ((c = story [offset++]) != '\n' && offset < StorySize) {
-		buffer[i] = c;
-		++ i;
-	    }
-	    buffer[i] = '\x0';
-
-	    if (strcmp (buffer, "$") == 0)
+	string line;
+	for (string::const_iterator ist = story.begin(); ist != story.end(); ++ ist) {
+	    string::const_iterator iend = story.find ('\n', ist);
+	    line.assign (ist, iend);
+	    ist = iend;
+	    if (line == "$")
 		break;
-	    font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, buffer, 140);
+	    font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, 140);
 	    ++ row;
 	}
     } else if (m_StoryPage == 1) {
-	gc.Clear (68);
-	offset = distance (story.begin(), story.find ('$')) + 1;
-	while (offset < StorySize) {
-	    i = 0;
-	    while ((c = story [offset++]) != '\n' && offset < StorySize) {
-		buffer[i] = c;
-		++ i;
-	    }
-	    buffer[i] = '\x0';
-
-	    if (strcmp (buffer, "$") == 0)
-		break;
-	    else
-		font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, buffer, 140);
+	string line;
+	for (string::const_iterator ist = story.find('$') + 2; ist != story.end(); ++ ist) {
+	    string::const_iterator iend = story.find ('\n', ist);
+	    line.assign (ist, iend);
+	    ist = iend;
+	    font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, 140);
 	    ++ row;
 	}
     } else if (m_StoryPage == 2) {
-	gc.Clear (68);
 	x = SQUARE_SIDE * 2;
 	y = SQUARE_SIDE * 2 + 7;
 	font.PrintString (gc, x + 50, y, "Things you will find in the maze:", 15);
@@ -339,6 +324,7 @@ void GJID::LevelKeys (key_t key, keystate_t)
 	case key_Down:	m_CurLevel.MoveRobot (South);	break;
 	case key_Right:	m_CurLevel.MoveRobot (East);	break;
 	case key_Left:	m_CurLevel.MoveRobot (West);	break;
+	case key_F1:	GoToState (state_Story);	break;
 	case key_F10:	GoToState (state_Loser);	break;
 	case key_F8:	m_Level = (m_Level + 1) % levels.size();
 	case key_F6:	m_CurLevel = levels [m_Level];	break;
