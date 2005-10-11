@@ -81,13 +81,15 @@ uninstall-incs:
 
 %.s:	%.cc
 	@echo "    Compiling $< to assembly ..."
-	@${CXX} ${CXXFLAGS} -S -Os -g0 -fomit-frame-pointer -o $@ -c $<
+	@${CXX} ${CXXFLAGS} -S ${OPTIMIZATION} -g0 -Os -DNDEBUG=1 -fomit-frame-pointer -o $@ -c $<
 
 .PHONY:	gch clean depend dox dist dist-clean maintainer-clean
 
 depend: ${SRCS}
-	@${CXX} ${CXXFLAGS} -M ${SRCS} > .depend;
-	@+make -C bvt depend
+	@${RM} -f .depend
+	@for i in ${SRCS}; do	\
+	    ${CXX} ${CXXFLAGS} -M -MT $${i%%.cc}.o $$i >> .depend;	\
+	done
 
 clean:
 	@echo "Removing generated files ..."
