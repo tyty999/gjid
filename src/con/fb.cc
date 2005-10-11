@@ -140,44 +140,44 @@ void CConsoleFramebuffer::Flush (void)
 static key_t TranslateKeycode (wchar_t key)
 {
     struct SKMap {
-	utio::EKeyDataValue	utioValue;
-	EKeyDataValue		fbglValue;
+	utio::EKeyDataValue		utioValue;
+	CEventProcessor::EKeyDataValue	fbglValue;
     };
     static const SKMap kmap[] = {
-	{ utio::kv_Space,	key_Space	},
-	{ utio::kv_Tab,		key_Tab		},
-	{ utio::kv_Enter,	key_Enter	},
-	{ utio::kv_Esc,		key_Esc		},
-	{ utio::kv_Backspace,	key_Backspace	},
-	{ utio::kv_Center,	key_Center	},
-	{ utio::kv_Close,	key_Close	},
-	{ utio::kv_Delete,	key_Delete	},
-	{ utio::kv_Down,	key_Down	},
-	{ utio::kv_DownLeft,	key_DownLeft	},
-	{ utio::kv_DownRight,	key_DownRight	},
-	{ utio::kv_End,		key_End		},
-	{ utio::kv_F0,		key_F0		},
-	{ utio::kv_F1,		key_F1		},
-	{ utio::kv_F2,		key_F2		},
-	{ utio::kv_F3,		key_F3		},
-	{ utio::kv_F4,		key_F4		},
-	{ utio::kv_F5,		key_F5		},
-	{ utio::kv_F6,		key_F6		},
-	{ utio::kv_F7,		key_F7		},
-	{ utio::kv_F8,		key_F8		},
-	{ utio::kv_F9,		key_F9		},
-	{ utio::kv_F10,		key_F10		},
-	{ utio::kv_F11,		key_F11		},
-	{ utio::kv_F12,		key_F12		},
-	{ utio::kv_Home,	key_Home	},
-	{ utio::kv_Insert,	key_Insert	},
-	{ utio::kv_Left,	key_Left	},
-	{ utio::kv_PageDown,	key_PageDown	},
-	{ utio::kv_PageUp,	key_PageUp	},
-	{ utio::kv_Right,	key_Right	},
-	{ utio::kv_Up,		key_Up		},
-	{ utio::kv_UpLeft,	key_UpLeft	},
-	{ utio::kv_UpRight,	key_UpRight	}
+	{ utio::kv_Space,	CEventProcessor::key_Space	},
+	{ utio::kv_Tab,		CEventProcessor::key_Tab	},
+	{ utio::kv_Enter,	CEventProcessor::key_Enter	},
+	{ utio::kv_Esc,		CEventProcessor::key_Esc	},
+	{ utio::kv_Backspace,	CEventProcessor::key_Backspace	},
+	{ utio::kv_Center,	CEventProcessor::key_Center	},
+	{ utio::kv_Close,	CEventProcessor::key_Close	},
+	{ utio::kv_Delete,	CEventProcessor::key_Delete	},
+	{ utio::kv_Down,	CEventProcessor::key_Down	},
+	{ utio::kv_DownLeft,	CEventProcessor::key_DownLeft	},
+	{ utio::kv_DownRight,	CEventProcessor::key_DownRight	},
+	{ utio::kv_End,		CEventProcessor::key_End	},
+	{ utio::kv_F0,		CEventProcessor::key_F0		},
+	{ utio::kv_F1,		CEventProcessor::key_F1		},
+	{ utio::kv_F2,		CEventProcessor::key_F2		},
+	{ utio::kv_F3,		CEventProcessor::key_F3		},
+	{ utio::kv_F4,		CEventProcessor::key_F4		},
+	{ utio::kv_F5,		CEventProcessor::key_F5		},
+	{ utio::kv_F6,		CEventProcessor::key_F6		},
+	{ utio::kv_F7,		CEventProcessor::key_F7		},
+	{ utio::kv_F8,		CEventProcessor::key_F8		},
+	{ utio::kv_F9,		CEventProcessor::key_F9		},
+	{ utio::kv_F10,		CEventProcessor::key_F10	},
+	{ utio::kv_F11,		CEventProcessor::key_F11	},
+	{ utio::kv_F12,		CEventProcessor::key_F12	},
+	{ utio::kv_Home,	CEventProcessor::key_Home	},
+	{ utio::kv_Insert,	CEventProcessor::key_Insert	},
+	{ utio::kv_Left,	CEventProcessor::key_Left	},
+	{ utio::kv_PageDown,	CEventProcessor::key_PageDown	},
+	{ utio::kv_PageUp,	CEventProcessor::key_PageUp	},
+	{ utio::kv_Right,	CEventProcessor::key_Right	},
+	{ utio::kv_Up,		CEventProcessor::key_Up		},
+	{ utio::kv_UpLeft,	CEventProcessor::key_UpLeft	},
+	{ utio::kv_UpRight,	CEventProcessor::key_UpRight	}
     };
     for (uoff_t i = 0; i < VectorSize(kmap); ++ i)
 	if (kmap[i].utioValue == key)
@@ -186,14 +186,14 @@ static key_t TranslateKeycode (wchar_t key)
 };
 
 /// Translates utio key metastate to fbgl equivalents.
-static keystate_t TranslateKeystate (utio::CKeyboard::metastate_t kbms)
+static CEventProcessor::keystate_t TranslateKeystate (utio::CKeyboard::metastate_t kbms)
 {
     static const uint8_t metamap[] = {
-	ks_Shift,
-	ks_Alt,
-	ks_Ctrl
+	CEventProcessor::ks_Shift,
+	CEventProcessor::ks_Alt,
+	CEventProcessor::ks_Ctrl
     };
-    keystate_t ks;
+    CEventProcessor::keystate_t ks;
     for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
 	if (kbms[i])
 	    ks.set (metamap[i]);
