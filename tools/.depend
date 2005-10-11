@@ -1,6 +1,0 @@
-aiv.o: aiv.cc
-amv.o: amv.cc
-mkai.o: mkai.cc
-mkmap.o: mkmap.cc
-mkpix.o: mkpix.cc
-vgatest.o: vgatest.cc
