@@ -6,7 +6,6 @@
 #ifndef GJID_H_70CAC3810A6C8B6422EDC4165A5EA40C
 #define GJID_H_70CAC3810A6C8B6422EDC4165A5EA40C
 
-#include <palette.h>
 #include "level.h"
 
 #define DATAFILE	"gjid.dat"
@@ -22,7 +21,7 @@ void 	PlayGame (void);
 
 typedef tuple<NumberOfPics,Icon>	picvec_t;
 extern picvec_t pics;
-extern PaletteType pal;
+extern CPalette pal;
 extern vector<Level> levels;
 extern size_t nLevels;
 extern string story;

@@ -14,7 +14,7 @@ private:
     void		LoadFromFiles (void);
     void		SaveToDat (const char* filename);
 private:
-    PaletteType		m_Palette;
+    CPalette		m_Palette;
     Font		m_Font;
     vector<Level>	m_Levels;
     string		m_Story;

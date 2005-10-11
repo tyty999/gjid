@@ -8,7 +8,7 @@
 #include <time.h>
 
 picvec_t pics;
-PaletteType pal;
+CPalette pal;
 vector<Level> levels;
 size_t nLevels = 0;
 string story;
