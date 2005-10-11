@@ -1,2 +1,0 @@
-#!/bin/sh
-rm -f getascii grabpal mkpal mkpix pixrotate
