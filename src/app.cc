@@ -84,7 +84,6 @@ void CApplication::Update (void)
 void CApplication::OnCreate (void)
 {
     m_pFb->Open();
-    m_pFb->SetMode (m_pFb->FindClosestMode (640, 480, 60), 8);
 }
 
 void CApplication::OnDestroy (void)
@@ -108,6 +107,11 @@ void CApplication::OnKey (key_t key, keystate_t ks)
 void CApplication::OnIdle (void) {}
 void CApplication::OnQuit (void) { SetFlag (f_QuitRequested); }
 void CApplication::OnDraw (CGC&) {}
+
+void CApplication::SetMode (EStdFbMode m, size_t freq)
+{
+    m_pFb->SetStandardMode (m, freq);
+}
 
 } // namespace fbgl
 

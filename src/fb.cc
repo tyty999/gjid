@@ -21,12 +21,10 @@ CFramebuffer::~CFramebuffer (void)
 void CFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 {
     if (m == stdmode_320x240x8) {
+	SetMode (FindClosestMode (640, 480, freq), 8);
 	m_Buffer.resize (320 * 240);
 	m_GC.link (m_Buffer, Size2d(320, 240));
-	SetMode (FindClosestMode (640, 480, freq), 8);
     } else if (m == stdmode_640x480x8) {
-	m_Buffer.resize (640 * 480);
-	m_GC.link (m_Buffer, Size2d(640, 480));
 	SetMode (FindClosestMode (640, 480, freq), 8);
     } else {
 	m_GC.unlink();
