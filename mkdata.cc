@@ -13,6 +13,7 @@ private:
 			CDataBuilder (void) {}
     void		LoadFromFiles (void);
     void		SaveToDat (const char* filename);
+    void		RotatePixClockwise (PicIndex src, PicIndex dest);
 private:
     CPalette		m_Palette;
     Font		m_Font;
@@ -49,20 +50,20 @@ void CDataBuilder::LoadFromFiles (void)
 	"data/dispose.pix",
 	"data/exit.pix",
 	"data/floor.pix",
-	"data/oneway_n.pix",
-	"data/oneway_s.pix",
-	"data/oneway_e.pix",
-	"data/oneway_w.pix",
+	"data/oneway.pix",
+	"data/oneway.pix",
+	"data/oneway.pix",
+	"data/oneway.pix",
 	"data/wall1.pix",
 	"data/wall2.pix",
 	"data/wall3.pix",
 	"data/back1.pix",
 	"data/back2.pix",
 	"data/back3.pix",
-	"data/robot_n.pix",
-	"data/robot_s.pix",
-	"data/robot_e.pix",
-	"data/robot_w.pix",
+	"data/robot.pix",
+	"data/robot.pix",
+	"data/robot.pix",
+	"data/robot.pix",
 	"data/barrel1.pix",
 	"data/barrel2.pix",
 	"data/logo_g.pix",
@@ -72,8 +73,24 @@ void CDataBuilder::LoadFromFiles (void)
     };
     for (uoff_t i = 0; i < VectorSize(pix); ++ i)
 	Load (pics[i], pix[i]);
+
+    RotatePixClockwise (OWDNorthPix, OWDEastPix);
+    RotatePixClockwise (OWDEastPix, OWDSouthPix);
+    RotatePixClockwise (OWDSouthPix, OWDWestPix);
+    RotatePixClockwise (RobotNorthPix, RobotEastPix);
+    RotatePixClockwise (RobotEastPix, RobotSouthPix);
+    RotatePixClockwise (RobotSouthPix, RobotWestPix);
+
     Load (m_Levels, "data/levels.dat");
     m_Story.read_file ("data/story.txt");
+}
+
+void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
+{
+    pics[dest].SetImage (pics[src].Height(), pics[src].Width(), pics[src].GetRow(0));
+    for (dim_t y = 0; y < pics[src].Height(); ++ y)
+	for (dim_t x = 0; x < pics[src].Width(); ++ x)
+	    pics[dest].SetPixel (pics[src].Height() - (y + 1), x, pics[src].GetPixel (x, y));
 }
 
 void CDataBuilder::SaveToDat (const char* filename)

@@ -33,7 +33,6 @@ public:
     void			SetCol (coord_t col, const color_t* p);
     inline const color_t*	GetRow (coord_t row) const	{ return (m_Bits.begin() + row * Width()); }
     inline color_t*		GetRow (coord_t row)		{ return (m_Bits.begin() + row * Width()); }
-
     void			BlendWith (const Icon& src, BlendType how);
     void			read (istream& is);
     void			write (ostream& os) const;
