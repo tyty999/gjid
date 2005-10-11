@@ -5,6 +5,7 @@ class CAppTest : public CApplication {
 public:
     static CAppTest&	Instance (void);
 protected:
+    virtual void	OnCreate (void);
     virtual void	OnIdle (void);
     virtual void	OnDraw (CGC& gc);
 };
@@ -13,6 +14,12 @@ protected:
 {
     static CAppTest s_App;
     return (s_App);
+}
+
+void CAppTest::OnCreate (void)
+{
+    CApplication::OnCreate();
+    SetMode (stdmode_640x480x8);
 }
 
 void CAppTest::OnIdle (void)
