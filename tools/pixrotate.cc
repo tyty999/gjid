@@ -19,7 +19,7 @@ int main (int argc, char ** argv)
     is >> pix;
 
     if (pix.Height() != pix.Width()) {
-	cout << "Sorry, only square pictures are supported.\n";
+	cout.format ("Sorry, only square pictures are supported. (this one is %ux%u)\n", pix.Width(), pix.Height());
 	return (1);
     }
 
