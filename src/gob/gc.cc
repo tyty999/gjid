@@ -26,6 +26,11 @@ void CGC::unlink (void)
     m_Size = Size2d();
 }
 
+void CGC::Clear (color_t c)
+{
+    fill (m_Pix, c);
+}
+
 void CGC::SetPixel (Point pt, color_t c)
 {
     *at(pt) = c;

@@ -29,8 +29,8 @@ public:
     inline size_type		size (void) const	{ return (m_Pix.size()); }
     inline iterator		end (void)		{ return (begin() + size()); }
     inline const_iterator	end (void) const	{ return (begin() + size()); }
-    inline iterator		at (Point pt)		{ return (begin() + pt[1] * m_Size[1] + pt[0]); }
-    inline const_iterator	at (Point pt) const	{ return (begin() + pt[1] * m_Size[1] + pt[0]); }
+    inline iterator		at (Point pt)		{ return (begin() + pt[1] * m_Size[0] + pt[0]); }
+    inline const_iterator	at (Point pt) const	{ return (begin() + pt[1] * m_Size[0] + pt[0]); }
     inline const Size2d&	Size (void) const	{ return (m_Size); }
     void			link (memlink l, Size2d sz);
     void			unlink (void);
@@ -38,6 +38,7 @@ public:
     inline const CPalette&	Palette (void) const	{ return (m_Pal); }
     void			SetPixel (Point pt, color_t c);
     color_t			GetPixel (Point pt) const;
+    void			Clear (color_t c = 0);
     void			Bar (Rect r, color_t c);
     void			Box (Rect r, color_t c);
     void			HLine (Point pt, size_t l, color_t c);
