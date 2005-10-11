@@ -9,7 +9,7 @@
 #include <palette.h>
 #include "level.h"
 
-#define DATAFILE	"/usr/games/lib/gjid.dat"
+#define DATAFILE	"gjid.dat"
 
 //----------------------------------------------------------------------
 
@@ -20,12 +20,13 @@ void 	PlayGame (void);
 
 //----------------------------------------------------------------------
 
-extern Icon pics[];
+typedef tuple<NumberOfPics,Icon>	picvec_t;
+extern picvec_t pics;
 extern PaletteType pal;
 extern vector<Level> levels;
-extern uint16_t nLevels;
+extern size_t nLevels;
 extern string story;
-extern uint16_t StorySize;
+extern size_t StorySize;
 
 #endif
 
