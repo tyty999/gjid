@@ -24,7 +24,7 @@ protected:
     virtual		       ~CConsoleFramebuffer (void);
     void			DetectDefaultDevice (string& deviceName) const;
     void			SetColormap (void);
-    void			SyncScreeninfo (void);
+    void			SetScreeninfo (const struct fb_var_screeninfo& newInfo);
 private:
     struct fb_fix_screeninfo	m_Fix;
     struct fb_var_screeninfo	m_OrigVar;

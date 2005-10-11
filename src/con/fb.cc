@@ -56,8 +56,7 @@ void CConsoleFramebuffer::Close (void)
     if (m_Screen.data())
 	m_Device.Unmap (m_Screen);
     if (m_Device.IsOpen()) {
-	m_Var = m_OrigVar;
-	SyncScreeninfo();
+	SetScreeninfo (m_OrigVar);
 	m_Device.Close();
     }
     CConsoleState::Instance().LeaveGraphicsMode();
@@ -80,9 +79,22 @@ void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
 }
 
-/// Writes the varinfo to the fb and reads the parameters back.
-void CConsoleFramebuffer::SyncScreeninfo (void)
+bool operator== (const struct fb_var_screeninfo& v1, const struct fb_var_screeninfo& v2)
 {
+    return (v1.xres == v2.xres &&
+	    v1.yres == v2.yres &&
+	    v1.bits_per_pixel == v2.bits_per_pixel &&
+	    v1.xoffset == v2.xoffset &&
+	    v1.yoffset == v2.yoffset &&
+	    v1.pixclock == v2.pixclock);
+}
+
+/// Writes the varinfo to the fb and reads the parameters back.
+void CConsoleFramebuffer::SetScreeninfo (const struct fb_var_screeninfo& newInfo)
+{
+    if (!m_Device.IsOpen() || newInfo == m_Var)
+	return;
+    m_Var = newInfo;
     m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
     m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
     m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
@@ -93,8 +105,9 @@ void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
 {
     assert (m_Device.IsOpen());
     newMode.SetDepth (depth);
-    newMode.CreateVarinfo (m_Var);
-    SyncScreeninfo();
+    struct fb_var_screeninfo newInfo;
+    newMode.CreateVarinfo (newInfo);
+    SetScreeninfo (newInfo);
     SetColormap();
     m_Device.MSync (m_Screen);
     CFramebuffer::SetMode (newMode, depth);
@@ -104,8 +117,7 @@ void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
 void CConsoleFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 {
     if (m == stdmode_Text) {
-	m_Var = m_OrigVar;
-	SyncScreeninfo();
+	SetScreeninfo (m_OrigVar);
 	CConsoleState::Instance().LeaveGraphicsMode();
     }
     CFramebuffer::SetStandardMode (m, freq);
@@ -126,8 +138,11 @@ void CConsoleFramebuffer::SetColormap (void)
 /// Resets the old mode when refocused.
 void CConsoleFramebuffer::OnFocus (bool bFocused)
 {
-    if (bFocused && m_Device.IsOpen())
-	SyncScreeninfo();
+    if (bFocused && m_Device.IsOpen()) {
+	const struct fb_var_screeninfo curInfo (m_Var);
+	m_Device.Ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_Var);
+	SetScreeninfo (curInfo);
+    }
     CFramebuffer::OnFocus (bFocused);
 }
 
@@ -154,8 +169,28 @@ void CConsoleFramebuffer::Flush (void)
 	const uint8_t* ls (src);
 	for (uoff_t y = 0; y < 480; ++y, dest+=m_Fix.line_length-640) {
 	    for (const uint8_t* s = ls; s < ls + 320; s += 8, dest += 16) {
-		for (uoff_t i = 0; i < 8; ++ i)
+	    #if CPU_HAS_MMX
+		asm (
+		    "movq\t%2, %%mm0	\n\t"
+		    "movq\t%%mm0, %%mm1	\n\t"
+		    "punpckhbw\t%%mm0, %%mm1\n\t"
+		    "punpcklbw\t%%mm0, %%mm0\n\t"
+		#if CPU_HAS_SSE
+		    "movntq\t%%mm0, %0	\n\t"
+		    "movntq\t%%mm1, %1"
+		#else
+		    "movq\t%%mm0, %0	\n\t"
+		    "movq\t%%mm1, %1"
+		#endif
+		    : "=o"(dest[0]), "=o"(dest[8])
+		    : "o"(s[0])
+		    : "mm0", "mm1", "st", "st(1)");
+	    #else
+		for (uoff_t i = 0; i < 8; ++ i) {
 		    dest[i * 2] = s[i];
+		    dest[i * 2 + 1] = s[i];
+		}
+	    #endif
 	    }
 	    if (y % 2)
 		ls += 320;
