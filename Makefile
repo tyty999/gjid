@@ -14,6 +14,7 @@ all:	${EXE} gjid.dat
 include Comrubin.mk
 
 mkdata:	mkdata.o level.o
+	@echo "Linking $@ ... "
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
 gjid.dat:	mkdata data/* gjid.story gjid.levels
