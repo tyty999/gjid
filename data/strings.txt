@@ -20,8 +20,9 @@ When you have recycled all the crates on the level you should use the
 exit door to move on to the next. In this first mission you will go
 through 14 levels.
 
-     Controls:   Cursor keys
+     Controls:   Cursor keys to move
+                 F1 takes you back here
                  F6 will restart the level
-                 F8 will skip the level (don't even think about it!)
-                 F10 will quit the game (Loser!!!)
+                 F8 will skip the level
+                 F10 will quit the game
  
