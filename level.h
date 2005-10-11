@@ -80,7 +80,7 @@ private:
     vector<PicIndex>	m_Map;
     vector<ObjectType>	m_Crates;
     ObjectType		m_Robot;
-    uint16_t		m_nCrates;
+    size_t		m_nCrates;
 };
 
 STD_STREAMABLE (ObjectType)

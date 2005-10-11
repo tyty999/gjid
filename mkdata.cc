@@ -1,6 +1,8 @@
 #include "gjid.h"
 #include <font.h>
 
+picvec_t		pics;
+
 class CDataBuilder {
 public:
    static CDataBuilder&	Instance (void);
@@ -8,11 +10,10 @@ public:
 private:
     typedef tuple<NumberOfPics,Icon>	picvec_t;
 private:
-			CDataBuilder (void);
+			CDataBuilder (void) {}
     void		LoadFromFiles (void);
     void		SaveToDat (const char* filename);
 private:
-    picvec_t		m_Pics;
     PaletteType		m_Palette;
     Font		m_Font;
     vector<Level>	m_Levels;
@@ -70,7 +71,7 @@ void CDataBuilder::LoadFromFiles (void)
 	"data/logo_d.pix"
     };
     for (uoff_t i = 0; i < VectorSize(pix); ++ i)
-	Load (m_Pics[i], pix[i]);
+	Load (pics[i], pix[i]);
     Load (m_Levels, "gjid.levels");
     m_Story.read_file ("gjid.story");
 }
@@ -79,7 +80,7 @@ void CDataBuilder::SaveToDat (const char* filename)
 {
     size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font);
     for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	dataSize += stream_size_of (m_Pics[i]);
+	dataSize += stream_size_of (pics[i]);
     dataSize += Align (stream_size_of (m_Story));
     dataSize += stream_size_of (m_Levels);
 
@@ -89,7 +90,7 @@ void CDataBuilder::SaveToDat (const char* filename)
     os << m_Palette;
     os << m_Font;
     for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	os << m_Pics[i];
+	os << pics[i];
     os << m_Story;
     os.align();
     os << m_Levels;
