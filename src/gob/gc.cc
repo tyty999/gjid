@@ -51,8 +51,8 @@ void CGC::Bar (Rect r, color_t c)
 void CGC::Box (Rect r, color_t c)
 {
     HLine (r[0], r.Width(), c);
-    VLine (r[1], r.Height(), c);
-    HLine (Point(r[0][0],r[1][1]), r.Width(), c);
+    VLine (r[0], r.Height(), c);
+    HLine (Point(r[0][0],r[1][1]), r.Width()+1, c);
     VLine (Point(r[1][0],r[0][1]), r.Height(), c);
 }
 
