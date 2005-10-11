@@ -55,3 +55,4 @@ depend: ${SRCS}
 confclean:
 	rm -f bsconf Common.mk config.h
 
+-include .depend
