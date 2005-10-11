@@ -44,6 +44,7 @@ CConsoleState::CConsoleState (void)
 : m_pFramebuffer (NULL),
   m_TI (),
   m_Kb (),
+  m_OrigVtMode (KD_TEXT),
   m_bActive (true)
 {
 }
@@ -65,25 +66,30 @@ void CConsoleState::SetTerm (const char* termname)
 /// Puts the console into graphical mode.
 void CConsoleState::EnterGraphicsMode (void)
 {
-    if (m_Kb.IsInUIMode())
+    if (m_Kb.IsInUIMode() || !isatty(STDIN_FILENO))
 	return;
-    cout << m_TI.HideCursor();
-    cout.flush();
+    if (isatty(STDOUT_FILENO)) {
+	cout << m_TI.HideCursor();
+	cout.flush();
+    }
     m_Kb.EnterUIMode();
-    if (isatty(STDIN_FILENO))
-	if (!getenv("IN_DEBUGGER") && ioctl (STDIN_FILENO, KDSETMODE, KD_GRAPHICS))
-	    throw file_exception ("ioctl(KDSETMODE)", "stdin");
+    ioctl (STDIN_FILENO, KDGETMODE, &m_OrigVtMode);
+    if (m_OrigVtMode != KD_GRAPHICS && !getenv("IN_DEBUGGER") && ioctl (STDIN_FILENO, KDSETMODE, KD_GRAPHICS))
+	throw file_exception ("ioctl(KDSETMODE)", "stdin");
 }
 
 /// Leaves graphical mode.
 void CConsoleState::LeaveGraphicsMode (void)
 {
-    ioctl (STDIN_FILENO, KDSETMODE, KD_TEXT);
+    if (m_OrigVtMode != KD_GRAPHICS)
+	ioctl (STDIN_FILENO, KDSETMODE, m_OrigVtMode);
     if (!m_Kb.IsInUIMode())
 	return;
     m_Kb.LeaveUIMode();
-    cout << m_TI.ShowCursor() << endl;
-    cout.flush();
+    if (isatty (STDOUT_FILENO)) {
+	cout << m_TI.ShowCursor();
+	cout.flush();
+    }
 }
 
 void CConsoleState::RegisterFramebuffer (CFramebuffer* pFb)

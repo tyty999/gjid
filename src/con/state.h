@@ -38,6 +38,7 @@ private:
     CFramebuffer*		m_pFramebuffer;	///< Pointer to the root window.
     utio::CTerminfo		m_TI;
     utio::CKeyboard		m_Kb;
+    long int			m_OrigVtMode;	///< KD_TEXT or KD_GRAPHICS
     bool			m_bActive;	///< True if the console is currently active.
 };
 
