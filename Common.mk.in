@@ -1,0 +1,31 @@
+CXX		= @CXX@ 
+LD		= @CXX@ 
+RM		= @RM@
+LN		= @LN@
+INSTALL		= @INSTALL@
+
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+INCDIR		= @includedir@
+LIBDIR		= @libdir@
+
+INSTALLDIR	= ${INSTALL} -d
+INSTALLLIB	= ${INSTALL} -p -m 644
+INSTALLDATA	= ${INSTALL} -p -m 644
+
+CXXWARNOPTS	= -Werror -Wall -W -Winline -Wpointer-arith -Wno-cast-align \
+		-Wcast-qual -Wwrite-strings -Wshadow -Wredundant-decls \
+		-Wconversion -Wsign-promo -Wsynth -Woverloaded-virtual \
+		-fno-enforce-eh-specs -fno-threadsafe-statics @SYSWARNS@
+OPTIMIZE	= @INLINE_OPTS@@PROCESSOR_OPTS@ 
+
+#DEBUG		= 1
+CXXFLAGS	= @CXXFLAGS@ ${CXXWARNOPTS} -I ${INCDIR} -nodefaultlibs
+LDFLAGS		= @LDFLAGS@  -L ${LIBDIR} -nodefaultlibs
+ifdef DEBUG
+    CFLAGS	+= -O0 -g
+    CXXFLAGS	+= -O0 -g
+else
+    CFLAGS	+= -Os -DNDEBUG=1 -fomit-frame-pointer ${OPTIMIZE}
+    LDFLAGS	+= -s
+endif

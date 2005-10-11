@@ -47,7 +47,7 @@ void Icon::read (istream& is)
 {   
     string s (ICON_ID_STRING_LENGTH);
     is.read (s.begin(), ICON_ID_STRING_LENGTH);
-    size_t w, h;
+    size_t w = 0, h = 0;
     if (s != ICON_ID_STRING || is.remaining() < stream_size_of(w) + stream_size_of(h))
 	throw runtime_error ("no image data found");
     is >> w >> h;
