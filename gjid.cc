@@ -14,50 +14,6 @@ size_t nLevels = 0;
 string story;
 size_t StorySize = 0;
 
-class GJID : public CApplication {
-public:
-    static GJID&	Instance (void);
-    virtual void	ProcessArguments (argc_t argc, argv_t argv);
-protected:
-			GJID (void);
-    virtual void	OnCreate (void);
-    virtual void	OnIdle (void);
-    virtual void	OnDraw (CGC& gc);
-    virtual void	OnKey (key_t key, keystate_t ks);
-private:
-    enum EGameState {
-	state_Title,
-	state_Story,
-	state_Game,
-	state_Winner,
-	state_Loser,
-	state_Editor,
-	state_Last
-    };
-private:
-    void		GoToState (EGameState state);
-    void		IntroScreen (CGC& gc);
-    void		LoserScreen (CGC& gc);
-    void		PrintStory (CGC& gc);
-    void		WinnerScreen (CGC& gc);
-    void		DrawLevel (CGC& gc);
-    void		DrawEditor (CGC& gc);
-    void		TitleKeys (key_t key, keystate_t ks);
-    void		StoryKeys (key_t key, keystate_t ks);
-    void		LevelKeys (key_t key, keystate_t ks);
-    void		WinnerKeys (key_t key, keystate_t ks);
-    void		LoserKeys (key_t key, keystate_t ks);
-    void		EditorKeys (key_t key, keystate_t ks);
-private:
-    EGameState		m_State;
-    string		m_EditedPackage;
-    uoff_t		m_StoryPage;
-    uoff_t		m_Level;
-    Level		m_CurLevel;
-    PicIndex		m_SelectedPic;
-    Point		m_SelectedTile;
-};
-
 FbglMain (GJID)
 
 GJID::GJID (void)
@@ -421,5 +377,42 @@ void GJID::EditorKeys (key_t key, keystate_t)
 	    break;
     }
     Update();
+}
+
+void GJID::LoadData (const char* filename)
+{
+    memblock buf;
+    buf.read_file (filename);
+    istream is (buf);
+    is >> pal;
+    is >> font;
+    for (uoff_t i = 0; i < NumberOfPics; ++ i)
+	is >> pics[i];
+    is >> story;
+    is.align();
+    is >> levels;
+    nLevels = levels.size();
+}
+
+void GJID::SaveData (const char* filename) const
+{
+    size_t dataSize = stream_size_of(pal) + stream_size_of(font);
+    for (uoff_t i = 0; i < NumberOfPics; ++ i)
+	dataSize += stream_size_of (pics[i]);
+    dataSize += Align (stream_size_of (story));
+    dataSize += stream_size_of (levels);
+
+    memblock buf (dataSize);
+    ostream os (buf);
+
+    os << pal;
+    os << font;
+    for (uoff_t i = 0; i < NumberOfPics; ++ i)
+	os << pics[i];
+    os << story;
+    os.align();
+    os << levels;
+
+    buf.write_file (filename);
 }
 

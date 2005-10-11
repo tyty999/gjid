@@ -1,8 +1,8 @@
 include Common.mk
 
 EXE	= gjid
-OBJS	= gjid.o datafile.o level.o font.o icon.o
-SRCS	= gjid.cc datafile.cc level.cc font.cc icon.cc mkdata.cc
+OBJS	= gjid.o level.o font.o icon.o
+SRCS	= gjid.cc level.cc font.cc icon.cc mkdata.cc
 LIBS	+= -lfbgl -lustl -lc
 
 all:	${EXE} data/gjid.dat
