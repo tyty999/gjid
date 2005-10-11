@@ -1,29 +1,25 @@
-/* palette.h
-**
-**	Defines VGA palette class.
-*/
+// palette.h
+//
+//	Defines VGA palette class.
+//
 
-#ifndef __PALETTE_H
-#define __PALETTE_H
+#ifndef PALETTE_H_736264782AE3F934764E322922DB7EB3
+#define PALETTE_H_736264782AE3F934764E322922DB7EB3
 
-#include <mdefs.h>
-#include <streamable.h>
+#include <fbgl.h>
+using namespace fbgl;
 
 #define MAXCOL               	256
 #define MAXBRIGHT		64
 
-class PaletteType : public Streamable {
-protected:
-    BYTE		colors [MAXCOL * 3];
-
+class PaletteType : public CPalette {
 public:
 			PaletteType (void);
-    void		SetAll (BYTE *new_palette);
-    void		FadeIn (WORD Start = 0, WORD End = MAXCOL);
-    void		FadeOut (WORD Start = 0, WORD End = MAXCOL);
-    virtual void	Read (ifstream& is);
-    virtual void	Write (ofstream& os) const;
-    virtual	       ~PaletteType (void);
+    void		SetAll (const ray_t* new_palette);
+    void		FadeIn (color_t first = 0, color_t last = MAXCOL);
+    void		FadeOut (color_t first = 0, color_t last = MAXCOL);
+private:
+    static CPalette	s_FadeBuffer;
 };
 
 #endif

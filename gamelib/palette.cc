@@ -3,67 +3,38 @@
 **	Implements VGA palette class.
 */
 
-#include <string.h>
 #include "palette.h"
-#include "graph.h"
 
-static BYTE FadeBuffer [MAXCOL * 3];
+CPalette PaletteType::s_FadeBuffer;
 
-PaletteType :: PaletteType (void)
+PaletteType::PaletteType (void)
+: CPalette ()
 {
 }
 
-void PaletteType :: SetAll (BYTE *new_palette)
+void PaletteType::SetAll (const ray_t* p)
 {
-    memcpy (colors, new_palette, MAXCOL * 3);
-    SetPaletteColors (0, MAXCOL, new_palette);
+    for (uoff_t i = 0; i < MAXCOL; ++ i)
+	Set (i, p[i*3], p[i*3+1], p[i*3+2]);
 }
 
-void PaletteType :: FadeOut (WORD Start, WORD End)
+void PaletteType::FadeOut (color_t first, color_t last)
 {
-    -- End;
-    memcpy (FadeBuffer, colors, MAXCOL * 3);
-    for (int lev = 0; lev < MAXBRIGHT; ++ lev) {
-       BYTE* curmap = colors;
-       for (WORD col = Start; col < End; ++ col) {
-	  for (int beam = 0; beam < 3; ++ beam)
-	     if (curmap[beam] > 0)
-		curmap[beam] -= 1;
-	  curmap += 3;
-       }
-       SetAll (colors);
+    for (uoff_t i = first; i < last; ++ i) {
+	ray_t r, g, b;
+	Get (i, r, g, b);
+	s_FadeBuffer.Set (i, r, g, b);
+    }
+    for (uoff_t i = 0; i < MAXCOL; ++ i)
+	Set (i, 0, 0, 0);
+}
+
+void PaletteType::FadeIn (color_t first, color_t last)
+{
+    for (uoff_t i = first; i < last; ++ i) {
+	ray_t r, g, b;
+	s_FadeBuffer.Get (i, r, g, b);
+	Set (i, r, g, b);
     }
 }
 
-void PaletteType :: FadeIn (WORD Start, WORD End)
-{
-    -- End;
-    for (int lev = 0; lev < MAXBRIGHT; ++ lev) {
-       BYTE* curmap = colors;
-       BYTE* bufmap = FadeBuffer;
-       for (WORD col = Start; col < End; ++ col) {
-	  for (int beam = 0; beam < 3; ++ beam)
-	     if (curmap[beam] < bufmap[beam])
-		++ curmap[beam];
-	  curmap += 3;
-	  bufmap += 3;
-       }
-       SetAll (colors);
-    }
-}
-
-void PaletteType :: Read (ifstream& is)
-{
-    BYTE buffer [MAXCOL * 3];
-    is.read ((char*) buffer, MAXCOL * 3 * sizeof(BYTE));
-    SetAll (buffer);
-}
-
-void PaletteType :: Write (ofstream& os) const
-{
-    os.write ((const char*) colors, MAXCOL * 3 * sizeof(BYTE));
-}
-
-PaletteType :: ~PaletteType (void)
-{
-}

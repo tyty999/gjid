@@ -1,40 +1,7 @@
-CC 	= g++
-AR 	= ar
-RANLIB	= ranlib
-CFLAGS 	= -Wall -W -Werror -g -DFB_GR -I../include
+include Common.mk
 
-LIBDIR	= $(HOME)/lib
-INCDIR	= $(HOME)/include
+LIBNAME	= game
+SRCS	= $(wildcard *.cc)
+OBJS 	= $(SRCS:.cc=.o)
 
-OBJS 	= icon.o mob.o font.o palette.o graph.o
-SRCS	= font.cc icon.cc mob.cc palette.cc graph.cc
-TARGET 	= libgame.a
-
-###########################################################
-
-$(TARGET):	$(OBJS)
-	rm -f $(TARGET)
-	$(AR) q $(TARGET) $(OBJS)
-	$(RANLIB) $(TARGET)
-
-install:	$(TARGET)
-	install -m 644 $(TARGET) $(LIBDIR)
-	install -d $(INCDIR)/game
-	install -m 644 *.h $(INCDIR)/game
-
-.cc.o:
-	$(CC) $(CFLAGS) -c $<
-.c.o:
-	$(CC) $(CFLAGS) -c $<
-
-clean:
-	rm -f *.bak core *~ $(TARGET) $(OBJS)
-
-DEPEND_FILE:=$(shell if [ -f .depend ]; then echo .depend; \
-		     else echo /dev/null; fi)
-
-depend:
-	$(CC) $(CFLAGS) -MM $(SRCS) > .depend
-
-include $(DEPEND_FILE)
-
+include Comrulib.mk

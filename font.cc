@@ -3,131 +3,106 @@
 **	Implements VGA font class.
 */
 
-#define FONT_UNIT
 #include "font.h"
-#include "graph.h"
 
-#ifndef NO_FONT
 Font font;
-#endif
 
-Font :: Font (void)
+Font::Font (void)
+: m_Data (),
+  m_LetterSize (0),
+  m_Width (0),
+  m_Height (0)
 {
-    width = 0;
-    height = 0;
-    data = NULL;
 }
 
-void Font :: Read (ifstream& is)
+void Font::read (istream& is)
 {
-BYTE w, h;
-    is.read ((char*) &w, sizeof(BYTE));
-    is.read ((char*) &h, sizeof(BYTE));
+    uint8_t w, h;
+    is >> w >> h;
     Resize (w, h);
-    is.read ((char*) data, LetterSize * NOL);
+    is.read (m_Data.begin(), m_LetterSize * 256);
 }
 
-void Font :: Write (ofstream& os) const
+void Font::write (ostream& os) const
 {
-    os.write ((const char*) &width, sizeof(BYTE));
-    os.write ((const char*) &height, sizeof(BYTE));
-    os.write ((const char*) data, LetterSize * NOL);
+    os << uint8_t(m_Width) << uint8_t(m_Height);
+    os.write (m_Data.begin(), m_LetterSize * 256);
 }
 
-BYTE * Font :: GetLetterStart (WORD letter)
+size_t Font::stream_size (void) const
 {
-    return (&data [letter * LetterSize]);
+    return (stream_size_of(uint8_t(m_Width)) +
+	    stream_size_of(uint8_t(m_Height)) +
+	    m_LetterSize * 256);
 }
 
-void Font :: ActivatePoint (WORD letter, WORD xpos, WORD ypos)
+memblock::iterator Font::GetLetterStart (wchar_t c)
 {
-BYTE * curlet = NULL;
-WORD offset;
-
-    curlet = GetLetterStart (letter);
-    offset = ypos * width + xpos;
-    curlet [offset / 8] |= (1 << offset % 8);
+    return (m_Data.begin() + c * m_LetterSize);
 }
 
-void Font :: DeactivatePoint (WORD letter, WORD xpos, WORD ypos)
+void Font::ActivatePoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
-BYTE *curlet = NULL;
-WORD offset;
-
-    curlet = GetLetterStart (letter);
-    offset = ypos * width + xpos;
-    curlet [offset / 8] &= (~(1 << offset % 8));
+    memblock::iterator li = GetLetterStart (c);
+    const uoff_t offset = ypos * m_Width + xpos;
+    li [offset / 8] |= (1 << offset % 8);
 }
 
-void Font :: TogglePoint (WORD letter, WORD xpos, WORD ypos)
+void Font::DeactivatePoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
-BYTE *curlet = NULL;
-WORD offset;
-
-    curlet = GetLetterStart (letter);
-    offset = ypos * width + xpos;
-    curlet [offset / 8] ^= (1 << offset % 8);
+    memblock::iterator li = GetLetterStart (c);
+    const uoff_t offset = ypos * m_Width + xpos;
+    li [offset / 8] &= (~(1 << offset % 8));
 }
 
-
-BOOL Font :: ReadPoint (WORD letter, WORD xpos, WORD ypos)
+void Font::TogglePoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
-BYTE *curlet = NULL;
-WORD offset;
-
-    curlet = GetLetterStart (letter);
-    offset = ypos * width + xpos;
-    return (curlet [offset / 8] & (1 << offset % 8) != 0);
+    memblock::iterator li = GetLetterStart (c);
+    const uoff_t offset = ypos * m_Width + xpos;
+    li [offset / 8] ^= (1 << offset % 8);
 }
 
-void Font :: Resize (BYTE NewWidth, BYTE NewHeight)
+bool Font::ReadPoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
-#define FIT_IN_BYTES(x)	(((x) % 8 == 0) ? ((x) / 8) : ((x) / 8 + 1))
-
-    width = NewWidth;
-    height = NewHeight;
-    LetterSize = FIT_IN_BYTES(width * height);
-
-    if (data != NULL)
-       delete [] data;
-    data = new BYTE [LetterSize * NOL];
+    memblock::iterator li = GetLetterStart (c);
+    const uoff_t offset = ypos * m_Width + xpos;
+    return (li [offset / 8] & (1 << offset % 8) != 0);
 }
 
-int Font :: PrintString (WORD x, WORD y, char * string, WORD color)
+void Font::Resize (dim_t w, dim_t h)
+{
+    m_Width = w;
+    m_Height = h;
+    m_LetterSize = (m_Width * m_Height + 7) / 8;
+    m_Data.resize (m_LetterSize * 256);
+}
+
+int Font::PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color)
 {
     size_t m = x;
-    for (size_t n = 0; n < strlen (string); ++ n)
-       m += PrintCharacter (m, y, (int) string[n], color);
+    for (uoff_t n = 0; n < strlen(s); ++ n)
+	m += PrintCharacter (gc, m, y, s[n], color);
     return (m - x);
 }
 
-int Font :: PrintCharacter (WORD x, WORD y, char ascii, WORD color)
+int Font::PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color)
 {
-BYTE * curlet;        	// Pointer to the letter bitmap.
-int xpos,ypos,pos = 0;  // Cycle variables.
-int mpos = 0;           // Maximum character width
-
-    curlet = GetLetterStart (ascii);
-
-    for (ypos = 0; ypos < height; ++ ypos) {
-       for (xpos = 0; xpos < width; ++ xpos) {
-	  if ((*curlet & (1 << pos)) > 0) {
-	     SetPixel (x + xpos, y + ypos, color);
-	     if (mpos < xpos)
-		 mpos = xpos;
-	  }
-	  if (pos < 7)
-	     ++ pos;
-	  else {
-	     pos = 0;
-	     ++ curlet;
-	  }
-       }
+    memblock::const_iterator li = GetLetterStart (c);
+    size_t bit = 0, cmw = 0;
+    for (uoff_t j = 0; j < m_Height; ++ j) {
+	for (uoff_t i = 0; i < m_Width; ++ i) {
+	    if ((*li & (1 << bit)) > 0) {
+		gc.SetPixel (Point(x + i, y + j), color);
+		cmw = max (i, cmw);
+	    }
+	    if (bit < 7)
+		++ bit;
+	    else {
+		bit = 0;
+		++ li;
+	    }
+	}
     }
-
-    return (mpos + 2);
+    return (cmw + 2);
 }
 
-Font :: ~Font (void)
-{
-}

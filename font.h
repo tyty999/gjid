@@ -3,54 +3,39 @@
 **	Defines user VGA font.
 */
 
-#ifndef __FONT_H
-#define __FONT_H
+#ifndef FONT_H_39BD3A88149536EF6573B7D448F4649E
+#define FONT_H_39BD3A88149536EF6573B7D448F4649E
 
-#include <mdefs.h>
-#include <streamable.h>
+#include <fbgl.h>
+using namespace fbgl;
 
-#define NOL			256      // Number of letters
-
-class Font : public Streamable {
-private:
-    BYTE *		data;
-    BYTE		width;
-    BYTE		height;
-    WORD		LetterSize;
-
-protected:
-    BYTE *		GetLetterStart (WORD letter);
-
+class Font {
 public:
 			Font (void);
-    int			PrintCharacter (WORD x, WORD y, char ascii, WORD color);
-    int			PrintString (WORD x, WORD y, char * string, WORD color);
-    void		ActivatePoint (WORD letter, WORD xpos, WORD ypos);
-    void		DeactivatePoint (WORD letter, WORD xpos, WORD ypos);
-    void		TogglePoint (WORD letter, WORD xpos, WORD ypos);
-    BOOL		ReadPoint (WORD letter, WORD xpos, WORD ypos);
-    void		Resize (BYTE NewWidth, BYTE NewHeight);
-    inline BYTE		Width (void);
-    inline BYTE		Height (void);
-    virtual void	Read (ifstream& is);
-    virtual void	Write (ofstream& os) const;
-    virtual	       ~Font (void);
+    int			PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color);
+    int			PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color);
+    void		ActivatePoint (wchar_t c, coord_t xpos, coord_t ypos);
+    void		DeactivatePoint (wchar_t c, coord_t xpos, coord_t ypos);
+    void		TogglePoint (wchar_t c, coord_t xpos, coord_t ypos);
+    bool		ReadPoint (wchar_t c, coord_t xpos, coord_t ypos);
+    void		Resize (dim_t w, dim_t h);
+    inline uint8_t	Width (void)	{ return (m_Width); }
+    inline uint8_t	Height (void)	{ return (m_Height); }
+    void		read (istream& is);
+    void		write (ostream& os) const;
+    size_t		stream_size (void) const;
+protected:
+    memblock::iterator	GetLetterStart (wchar_t c);
+private:
+    memblock		m_Data;
+    size_t		m_LetterSize;
+    dim_t		m_Width;
+    dim_t		m_Height;
 };
 
-//////////////////////////////////////////////////////
-inline BYTE Font :: Width (void)
-{
-    return (width);
-}
-
-inline BYTE Font :: Height (void)
-{
-    return (height);
-}
-
-//////////////////////////////////////////////////////
-
 extern Font font;
+
+STD_STREAMABLE (Font)
 
 #endif
 

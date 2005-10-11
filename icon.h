@@ -1,18 +1,11 @@
-/* icon.h
-**
-** 	Defines an Icon class
-**
-** includes:
-**	streamable.h	- base class
-**	mdefs.h		- for WORD, BYTE
-*/
+// icon.h
+//
 
-#ifndef __ICON_H
-#define __ICON_H
+#ifndef ICON_H_2BA53522369CAE38636AFA57387DDC64
+#define ICON_H_2BA53522369CAE38636AFA57387DDC64
 
-#include <mdefs.h>
-#include <streamable.h>	
-#include "graph.h"
+#include <fbgl.h>
+using namespace fbgl;
 
 #define ICON_ID_STRING			"ICON"
 #define ICON_ID_STRING_LENGTH		4		       
@@ -26,95 +19,32 @@ typedef enum {
     LastBlend
 } BlendType;
 
-class Icon : public Streamable {
+class Icon {
+public:
+				Icon (dim_t w = 1, dim_t h = 1, const color_t* p = NULL);
+    void			Put (CGC& gc, coord_t x, coord_t y) const;
+    void			Get (CGC& gc, coord_t x, coord_t y);
+    inline dim_t		Width (void) const	{ return (m_Width); }
+    inline dim_t		Height (void) const	{ return (m_Height); }
+    void			SetImage (dim_t Width, dim_t Height, const color_t* p = NULL);
+    void			SetPixel (coord_t x, coord_t y, color_t color);
+    color_t			GetPixel (coord_t x, coord_t y) const;
+    void			SetRow (coord_t row, const color_t* p);
+    void			SetCol (coord_t col, const color_t* p);
+    inline const color_t*	GetRow (coord_t row) const	{ return (m_Bits.begin() + row * Width()); }
+    inline color_t*		GetRow (coord_t row)		{ return (m_Bits.begin() + row * Width()); }
+
+    void			BlendWith (const Icon& src, BlendType how);
+    void			read (istream& is);
+    void			write (ostream& os) const;
+    size_t			stream_size (void) const;
 protected:
-    BYTE *			bits;		
-    WORD			width;
-    WORD			height;
-    
-public:
-    virtual void		Read (ifstream& is);
-    virtual void		Write (ofstream& os);
-    
-public:
-				Icon (WORD Width = 1, WORD Height = 1, 
-				      BYTE * NewBits = NULL);
-    inline void			Put (int x, int y) const;
-    inline void			Get (int x, int y);
-    inline WORD			Width (void) const;
-    inline WORD			Height (void) const;
-    void			SetImage (WORD Width, WORD Height,
-    					  BYTE * NewBits = NULL);
-
-    inline void			SetPixel (WORD x, WORD y, BYTE color);
-    inline BYTE			GetPixel (WORD x, WORD y) const;
-    inline void			SetRow (WORD row, BYTE * dots);
-    inline void			SetCol (WORD col, BYTE * dots);
-    inline BYTE *		GetRow (WORD row);
-
-    void			BlendWith (const Icon& AnIcon, BlendType how);
-    Icon&			operator= (const Icon& ToBe);
-
-    virtual	      	       ~Icon (void);
+    vector<color_t>		m_Bits;
+    dim_t			m_Width;
+    dim_t			m_Height;
 };	
-		    
-///////////////////////////////////////////////////////////////////////
-/////////////////// Functions /////////////////////////////////////////
 
-inline void Icon :: Put (int x, int y) const
-{	
-    PutImage (x, y, width, height, bits);
-}
-
-inline void Icon :: Get (int x, int y)
-{	
-    GetImage (x, y, width, height, bits);
-}
-
-inline WORD Icon :: Width (void) const
-{	
-    return (width);
-}
-
-inline WORD Icon :: Height (void) const
-{	
-    return (height);
-}
-
-inline void Icon :: SetPixel (WORD x, WORD y, BYTE color)
-{	
-    if (y < height && x < width)
-       bits [y * width + x] = color;
-}
-
-inline BYTE Icon :: GetPixel (WORD x, WORD y) const
-{	
-    return (bits [y * width + x]);
-}
-
-inline BYTE * Icon :: GetRow (WORD row)
-{	
-    return (&bits [row * width]);
-}
-
-inline void Icon :: SetRow (WORD row, BYTE * dots)
-{	
-    if (row < height)
-       memcpy (&bits [row * width], dots, width);
-}
-
-inline void Icon :: SetCol (WORD col, BYTE * dots)
-{	
-    if (col >= width)
-       return;
-    BYTE* bp = &bits [col];
-    BYTE* dp = dots;
-    for (WORD i = 0; i < height; ++ i) {
-       *bp = *dp;
-       ++ dp;
-       bp += width;
-    }
-}
+STD_STREAMABLE (Icon)
 
 #endif
 

@@ -1,104 +1,108 @@
-/* icon.cc
-**
-** 	Implements the Icon class
-**
-** includes:
-**	icon.h		- for WORD, BYTE
-*/
+// icon.cc
+//
+// 	Implements the Icon class
+//
 
 #include "icon.h"
-#include <string.h>
 
-Icon :: Icon (WORD Width, WORD Height, BYTE * NewBits)
-{			 
-    width = Width;
-    height = Height;
-    bits = new BYTE [width * height];
-    if (NewBits != NULL)
-       memcpy (bits, NewBits, width * height);
+Icon::Icon (dim_t w, dim_t h, const color_t* p)
+: m_Bits (),
+  m_Width (),
+  m_Height ()
+{
+    SetImage (w, h, p);
 }
 
-void Icon :: SetImage (WORD Width, WORD Height, BYTE * NewBits)
+void Icon::SetImage (dim_t w, dim_t h, const color_t* p)
 {
-    width = Width;
-    height = Height;
-    if (bits != NULL)
-       delete [] bits;
-    bits = new BYTE [width * height];
-    if (NewBits != NULL)
-       memcpy (bits, NewBits, width * height);
+    m_Width = w;
+    m_Height = h;
+    m_Bits.resize (w * h);
+    if (p)
+	copy_n (p, m_Bits.size(), m_Bits.begin());
 }
 
-Icon& Icon :: operator= (const Icon& ToBe)
+void Icon::BlendWith (const Icon& v, BlendType how)
 {
-    width = ToBe.width;
-    height = ToBe.height;
-    if (bits != NULL)
-       delete [] bits;
-    bits = new BYTE [width * height];
-    memcpy (bits, ToBe.bits, width * height);
-    return (*this);
-}
-
-void Icon :: BlendWith (const Icon& AnIcon, BlendType how)
-{
-    if (width != AnIcon.width || height != AnIcon.height)
-       return;
+    if (m_Width != v.m_Width || m_Height != v.m_Height)
+	return;
 
     if (how == SeeThroughBlend) {
-       for (WORD i = 0; i < width * height; ++ i) {
-	  if (bits[i] == 0)
-	     bits[i] = AnIcon.bits[i];
-       }
-    }
-    else if (how == AndBlend) {
-       for (WORD i = 0; i < width * height; ++ i)
-	  bits[i] &= AnIcon.bits[i];
-    }
-    else if (how == XorBlend) {
-       for (WORD i = 0; i < width * height; ++ i)
-	  bits[i] ^= AnIcon.bits[i];
-    }
-    else if (how == OrBlend) {
-       for (WORD i = 0; i < width * height; ++ i)
-	  bits[i] |= AnIcon.bits[i];
+	for (uoff_t i = 0; i < m_Bits.size(); ++ i)
+	    if (m_Bits[i] == 0)
+		m_Bits[i] = v.m_Bits[i];
+    } else if (how == AndBlend) {
+	for (uoff_t i = 0; i < m_Bits.size(); ++ i)
+	    m_Bits[i] &= v.m_Bits[i];
+    } else if (how == XorBlend) {
+	for (uoff_t i = 0; i < m_Bits.size(); ++ i)
+	    m_Bits[i] ^= v.m_Bits[i];
+    } else if (how == OrBlend) {
+	for (uoff_t i = 0; i < m_Bits.size(); ++ i)
+	    m_Bits[i] |= v.m_Bits[i];
     }
 }
 
-void Icon :: Read (ifstream& is)
+void Icon::read (istream& is)
 {   
-char IdStr [ICON_ID_STRING_LENGTH + 1];
-		
-    is.read (IdStr, sizeof(BYTE) * ICON_ID_STRING_LENGTH);
-    
-    if (strncmp (IdStr, ICON_ID_STRING, ICON_ID_STRING_LENGTH) == 0)
-    {
-       is.read ((char*) &width, sizeof(WORD));
-       is.read ((char*) &height, sizeof(WORD));
-       if (bits != NULL)
-          delete [] bits;
-       bits = new BYTE [width * height];
-       is.read ((char*) bits, sizeof(BYTE) * width * height);
-    }
-    else {
-       cout << "Icon: invalid icon file!\n";
-       exit (1);
-    }
+    string s (ICON_ID_STRING_LENGTH);
+    is.read (s.begin(), ICON_ID_STRING_LENGTH);
+    dim_t w, h;
+    if (s != ICON_ID_STRING || is.remaining() < stream_size_of(w) + stream_size_of(h))
+	throw runtime_error ("no image data found");
+    is >> w >> h;
+    if (is.remaining() < w * h * sizeof(color_t))
+	throw runtime_error ("image data is corrupt");
+    m_Width = w;
+    m_Height = h;
+    m_Bits.resize (w * h);
+    is.read (m_Bits.begin(), m_Bits.size() * sizeof(color_t));
 }
 
-void Icon :: Write (ofstream& os)
+void Icon::write (ostream& os) const
 {   
-char IdStr [ICON_ID_STRING_LENGTH + 1] = ICON_ID_STRING;
-		
-    os.write (IdStr, sizeof(BYTE) * ICON_ID_STRING_LENGTH);
-    os.write ((const char*) &width, sizeof(WORD));
-    os.write ((const char*) &height, sizeof(WORD));
-    os.write ((const char*) bits, sizeof(BYTE) * width * height);
+    os.write (ICON_ID_STRING, ICON_ID_STRING_LENGTH);
+    os << m_Width << m_Height;
+    os.write (m_Bits.begin(), m_Bits.size() * sizeof(color_t));
 }
 
-Icon :: ~Icon (void)
-{	       
-    if (bits != NULL)				      
-       delete [] bits;
+size_t Icon::stream_size (void) const
+{
+    return (ICON_ID_STRING_LENGTH +
+	    stream_size_of (m_Width) +
+	    stream_size_of (m_Height) +
+	    m_Bits.size() * sizeof(color_t));
+}
+
+void Icon::Put (CGC& gc, coord_t x, coord_t y) const
+{
+    gc.Image (Rect (x, y, x + Width(), y + Height()), m_Bits.begin());
+}
+
+void Icon::Get (CGC& gc, coord_t x, coord_t y)
+{
+    gc.GetImage (Rect (x, y, x + Width(), y + Height()), m_Bits.begin());
+}
+
+void Icon::SetPixel (coord_t x, coord_t y, color_t c)
+{
+    GetRow(y)[x] = c;
+}
+
+color_t Icon::GetPixel (coord_t x, coord_t y) const
+{
+    return (GetRow (y)[x]);
+}
+
+void Icon::SetRow (coord_t row, const color_t* p)
+{
+    copy_n (p, Width(), GetRow(row));
+}
+
+void Icon::SetCol (coord_t col, const color_t* p)
+{
+    vector<color_t>::iterator dest (m_Bits.begin() + col);
+    for (uoff_t i = 0; i < Height(); ++i, ++p, dest+=Width())
+	*dest = *p;
 }
 
