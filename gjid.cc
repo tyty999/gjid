@@ -157,7 +157,6 @@ void GJID::LoserKeys (key_t, keystate_t)
 void GJID::PrintStory (CGC& gc)
 {
     coord_t x, y, row = 0;
-    Icon blend, backgr (50, 50);
 
     gc.Clear (68);
     for (y = 0; y < 240; y += SQUARE_SIDE) {
@@ -172,22 +171,10 @@ void GJID::PrintStory (CGC& gc)
     font.PrintString (gc, 144, 230, "Hit any key", 25);
 
     if (m_StoryPage == 0) {
-	backgr.Get (gc, 40, SQUARE_SIDE * 2);
-	blend = pics [LogoGPix];
-	blend.BlendWith (backgr, SeeThroughBlend);
-	blend.Put (gc, 40, SQUARE_SIDE * 2); 
-	backgr.Get (gc, 100, SQUARE_SIDE * 2);
-	blend = pics [LogoJPix];
-	blend.BlendWith (backgr, SeeThroughBlend);
-	blend.Put (gc, 100, SQUARE_SIDE * 2); 
-	backgr.Get (gc, 160, SQUARE_SIDE * 2);
-	blend = pics [LogoIPix];
-	blend.BlendWith (backgr, SeeThroughBlend);
-	blend.Put (gc, 160, SQUARE_SIDE * 2); 
-	backgr.Get (gc, 220, SQUARE_SIDE * 2);
-	blend = pics [LogoDPix];
-	blend.BlendWith (backgr, SeeThroughBlend);
-	blend.Put (gc, 220, SQUARE_SIDE * 2); 
+	pics[LogoGPix].PutMasked (gc, 40, SQUARE_SIDE * 2); 
+	pics[LogoJPix].PutMasked (gc, 100, SQUARE_SIDE * 2); 
+	pics[LogoIPix].PutMasked (gc, 160, SQUARE_SIDE * 2); 
+	pics[LogoDPix].PutMasked (gc, 220, SQUARE_SIDE * 2); 
 	row = 8;
 
 	string line;
@@ -220,10 +207,10 @@ void GJID::PrintStory (CGC& gc)
 	pics [ExitPix].Put (gc, x, y);
 	font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- An exit door", 140);
 	y += 17;
-	pics [Barrel1Pix].Put (gc, x, y);
+	pics [Barrel1Pix].PutMasked (gc, x, y);
 	font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- Nuclear weapon", 140);
 	y += 17;
-	pics [Barrel2Pix].Put (gc, x, y);
+	pics [Barrel2Pix].PutMasked (gc, x, y);
 	font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- Photon disruptor", 140);
 	y += 17;
 	pics [OWDNorthPix].Put (gc, x, y);

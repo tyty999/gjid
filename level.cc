@@ -40,16 +40,10 @@ void Level::Draw (CGC& gc, coord_t x, coord_t y) const
     foreach (, ic, m_Crates)
 	if (ic->x == x && ic->y == y)
 	    break;	// One crate per block
-    if (ic < m_Crates.end()) {
-	Icon combo (pics [ic->pic]);
-	combo.BlendWith (pics [FloorPix], SeeThroughBlend);
-	combo.Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
-    }
-    if (m_Robot.x == x && m_Robot.y == y) {
-	Icon combo (pics [m_Robot.pic]);
-	combo.BlendWith (pics [At(x,y)], SeeThroughBlend);
-	combo.Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
-    }
+    if (ic < m_Crates.end())
+	pics[ic->pic].PutMasked (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
+    if (m_Robot.x == x && m_Robot.y == y)
+	pics[m_Robot.pic].PutMasked (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
 }
 
 void Level::Draw (CGC& gc) const
