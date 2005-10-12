@@ -6,11 +6,15 @@
 
 #include "icon.h"
 
+//----------------------------------------------------------------------
+
 #define SQUARE_SIDE	16
 #define MAP_WIDTH	20
 #define MAP_HEIGHT	12
 
 #define MAX_LEVELS	1000
+
+//----------------------------------------------------------------------
 
 typedef enum {
     DisposePix,
@@ -47,6 +51,12 @@ typedef enum {
     West
 } RobotDir;
 
+//----------------------------------------------------------------------
+
+typedef tuple<NumberOfPics,Icon>	picvec_t;
+
+//----------------------------------------------------------------------
+
 class ObjectType {
 public:
     inline	ObjectType (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
@@ -62,8 +72,7 @@ public:
 class Level {
 public:
 			Level (void);
-    void		Draw (CGC& gc) const;
-    void		Draw (CGC& gc, coord_t x, coord_t y) const;
+    void		Draw (CGC& gc, const picvec_t& tiles) const;
     void		MoveRobot (RobotDir where);
     void		MoveRobot (coord_t x, coord_t y, PicIndex pic);
     void		DisposeCrate (uoff_t index);
@@ -77,8 +86,11 @@ public:
     bool		CanMoveTo (coord_t x, coord_t y, RobotDir where) const;
     inline PicIndex	At (coord_t x, coord_t y) const	{ return (m_Map [y * MAP_WIDTH + x]); }
 private:
-    vector<PicIndex>	m_Map;
-    vector<ObjectType>	m_Crates;
+    typedef vector<PicIndex>	tilemap_t;
+    typedef vector<ObjectType>	objvec_t;
+private:
+    tilemap_t		m_Map;
+    objvec_t		m_Crates;
     ObjectType		m_Robot;
     size_t		m_nCrates;
 };

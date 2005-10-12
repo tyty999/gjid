@@ -1,8 +1,6 @@
 #include "gjid.h"
 #include "font.h"
 
-picvec_t		pics;
-
 class CDataBuilder {
 public:
    static CDataBuilder&	Instance (void);
@@ -19,6 +17,7 @@ private:
     Font		m_Font;
     vector<Level>	m_Levels;
     string		m_Story;
+    picvec_t		m_Pics;
 };
 
 /*static*/ CDataBuilder& CDataBuilder::Instance (void)
@@ -72,7 +71,7 @@ void CDataBuilder::LoadFromFiles (void)
 	"data/logo_d.pix"
     };
     for (uoff_t i = 0; i < VectorSize(pix); ++ i)
-	Load (pics[i], pix[i]);
+	Load (m_Pics[i], pix[i]);
 
     RotatePixClockwise (OWDNorthPix, OWDEastPix);
     RotatePixClockwise (OWDEastPix, OWDSouthPix);
@@ -87,17 +86,17 @@ void CDataBuilder::LoadFromFiles (void)
 
 void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
 {
-    pics[dest].SetImage (pics[src].Height(), pics[src].Width(), pics[src].GetRow(0));
-    for (dim_t y = 0; y < pics[src].Height(); ++ y)
-	for (dim_t x = 0; x < pics[src].Width(); ++ x)
-	    pics[dest].SetPixel (pics[src].Height() - (y + 1), x, pics[src].GetPixel (x, y));
+    m_Pics[dest].SetImage (m_Pics[src].Height(), m_Pics[src].Width(), m_Pics[src].GetRow(0));
+    for (dim_t y = 0; y < m_Pics[src].Height(); ++ y)
+	for (dim_t x = 0; x < m_Pics[src].Width(); ++ x)
+	    m_Pics[dest].SetPixel (m_Pics[src].Height() - (y + 1), x, m_Pics[src].GetPixel (x, y));
 }
 
 void CDataBuilder::SaveToDat (const char* filename)
 {
     size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font);
     for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	dataSize += stream_size_of (pics[i]);
+	dataSize += stream_size_of (m_Pics[i]);
     dataSize += Align (stream_size_of (m_Story));
     dataSize += stream_size_of (m_Levels);
 
@@ -107,7 +106,7 @@ void CDataBuilder::SaveToDat (const char* filename)
     os << m_Palette;
     os << m_Font;
     for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	os << pics[i];
+	os << m_Pics[i];
     os << m_Story;
     os.align();
     os << m_Levels;

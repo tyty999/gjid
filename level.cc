@@ -3,7 +3,7 @@
 //	Implements the level class.
 //
 
-#include "gjid.h"
+#include "level.h"
 
 //----------------------------------------------------------------------
 
@@ -33,24 +33,15 @@ Level::Level (void)
     fill (m_Map, FloorPix);
 }
 
-void Level::Draw (CGC& gc, coord_t x, coord_t y) const
+void Level::Draw (CGC& gc, const picvec_t& tiles) const
 {
-    pics [At(x,y)].Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
-    vector<ObjectType>::const_iterator ic (m_Crates.begin());
-    foreach (, ic, m_Crates)
-	if (ic->x == x && ic->y == y)
-	    break;	// One crate per block
-    if (ic < m_Crates.end())
-	pics[ic->pic].PutMasked (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
-    if (m_Robot.x == x && m_Robot.y == y)
-	pics[m_Robot.pic].PutMasked (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
-}
-
-void Level::Draw (CGC& gc) const
-{
-    for (uoff_t y = 0; y < MAP_HEIGHT; ++ y)
-	for (uoff_t x = 0; x < MAP_WIDTH; ++ x)
-	    Draw (gc, x, y);
+    tilemap_t::const_iterator it (m_Map.begin());
+    for (coord_t y = 0; y < MAP_HEIGHT; ++ y)
+	for (coord_t x = 0; x < MAP_WIDTH; ++ x)
+	    tiles [*it++].Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
+    foreach (objvec_t::const_iterator, i, m_Crates)
+	tiles[i->pic].PutMasked (gc, i->x * SQUARE_SIDE, i->y * SQUARE_SIDE);
+    tiles[m_Robot.pic].PutMasked (gc, m_Robot.x * SQUARE_SIDE, m_Robot.y * SQUARE_SIDE);
 }
 
 bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
@@ -69,7 +60,7 @@ bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
 
 int Level::FindCrate (coord_t x, coord_t y) const
 {
-    foreach (vector<ObjectType>::const_iterator, ic, m_Crates)
+    foreach (objvec_t::const_iterator, ic, m_Crates)
 	if (ic->x == x && ic->y == y)
 	    return (distance (m_Crates.begin(), ic));
     return (-1);
@@ -152,21 +143,21 @@ void Level::AddCrate (coord_t x, coord_t y, PicIndex pic)
 
 void Level::read (istream& is)
 {
-    foreach (vector<PicIndex>::iterator, i, m_Map)
+    foreach (tilemap_t::iterator, i, m_Map)
 	is >> *i;
     is >> m_nCrates;
     m_Crates.resize (m_nCrates);
-    foreach (vector<ObjectType>::iterator, i, m_Crates)
+    foreach (objvec_t::iterator, i, m_Crates)
 	is >> *i;
     is >> m_Robot;
 }
 
 void Level::write (ostream& os) const
 {
-    foreach (vector<PicIndex>::const_iterator, i, m_Map)
+    foreach (tilemap_t::const_iterator, i, m_Map)
 	os << *i;
     os << m_nCrates;
-    foreach (vector<ObjectType>::const_iterator, i, m_Crates)
+    foreach (objvec_t::const_iterator, i, m_Crates)
 	os << *i;
     os << m_Robot;
 }
@@ -174,10 +165,10 @@ void Level::write (ostream& os) const
 size_t Level::stream_size (void) const
 {
     size_t s (0);
-    foreach (vector<PicIndex>::const_iterator, i, m_Map)
+    foreach (tilemap_t::const_iterator, i, m_Map)
 	s += stream_size_of (*i);
     s += stream_size_of (m_nCrates);
-    foreach (vector<ObjectType>::const_iterator, i, m_Crates)
+    foreach (objvec_t::const_iterator, i, m_Crates)
 	s += stream_size_of (*i);
     s += stream_size_of (m_Robot);
     return (s);
