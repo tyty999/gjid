@@ -25,7 +25,6 @@ GJID::GJID (void)
   m_Pics (),
   m_Palette (),
   m_Levels (0),
-  m_nLevels (),
   m_Story ()
 {
 }
@@ -318,10 +317,8 @@ void GJID::EditorKeys (key_t key, keystate_t)
 		m_Levels [m_Level] = m_CurLevel;
 		++ m_Level;
 	    }
-	    if (m_Level >= m_Levels.size()) {
+	    if (m_Level >= m_Levels.size())
 		m_Levels.push_back();
-		++ m_nLevels;
-	    }
 	    m_CurLevel = m_Levels [m_Level];
 	    break;
 	case key_F7:
@@ -380,7 +377,6 @@ void GJID::LoadData (const char* filename)
     is >> m_Story;
     is.align();
     is >> m_Levels;
-    m_nLevels = m_Levels.size();
 }
 
 void GJID::SaveData (const char* filename) const

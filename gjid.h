@@ -61,7 +61,6 @@ private:
     picvec_t		m_Pics;
     CPalette		m_Palette;
     vector<Level>	m_Levels;
-    size_t		m_nLevels;
     string		m_Story;
 };
 
