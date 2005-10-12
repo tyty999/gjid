@@ -35,6 +35,8 @@ private:
     };
 private:
     void		GoToState (EGameState state);
+    void		FillWithTile (CGC& gc, PicIndex tidx) const;
+    void		DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx) const;
     void		IntroScreen (CGC& gc);
     void		LoserScreen (CGC& gc);
     void		PrintStory (CGC& gc);

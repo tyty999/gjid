@@ -101,25 +101,28 @@ void GJID::OnKey (key_t key, keystate_t ks)
     (this->*kfn[m_State])(key, ks);
 }
 
+void GJID::FillWithTile (CGC& gc, PicIndex tidx) const
+{
+    for (dim_t y = 0; y < gc.Height(); y += SQUARE_SIDE)
+	for (dim_t x = 0; x < gc.Width(); x += SQUARE_SIDE)
+	    m_Pics [tidx].Put (gc, x, y);
+}
+
+void GJID::DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx) const
+{
+    for (uoff_t y = 0; y < n; ++ y)
+	for (uoff_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
+	    if (p[y] & mask)
+		m_Pics [tidx].Put (gc, (x + 2) * SQUARE_SIDE, (y + 3) * SQUARE_SIDE);
+}
+
 void GJID::IntroScreen (CGC& gc)
 {
-    coord_t x, y;
-    static const int title [6][15] = {
-	{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0},
-	{1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1},
-	{1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1},
-	{1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1},
-	{1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1},
-	{1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0}};
-
-    for (y = 0; y < 200; y += SQUARE_SIDE)
-	for (x = 0; x < 320; x += SQUARE_SIDE)
-	    m_Pics [Back1Pix].Put (gc, x, y);
-
-    for (y = 0; y < 6; ++ y)
-	for (x = 0; x < 15; ++ x)
-	    if (title[y][x])
-		m_Pics [Wall2Pix].Put (gc, (x + 2) * SQUARE_SIDE, (y + 3) * SQUARE_SIDE);
+    static const uint16_t title[] = {	// "GJID"
+	0xEEEC, 0x824A, 0x824A, 0xA24A, 0xAA4A, 0xE6EC
+    };
+    FillWithTile (gc, Back1Pix);
+    DecodeBitmapWithTile (gc, title, VectorSize(title), Wall2Pix);
 }
 
 void GJID::TitleKeys (key_t key, keystate_t)
@@ -129,25 +132,27 @@ void GJID::TitleKeys (key_t key, keystate_t)
     GoToState (key == key_Esc ? state_Game : state_Story);
 }
 
+void GJID::WinnerScreen (CGC& gc)
+{
+    static const uint16_t title[] = {	// "WIN"
+	0x45D2, 0x449A, 0x449E, 0x5496, 0x5492, 0x29D2
+    };
+    FillWithTile (gc, Wall1Pix);
+    DecodeBitmapWithTile (gc, title, VectorSize(title), RobotNorthPix);
+}
+
+void GJID::WinnerKeys (key_t, keystate_t)
+{
+    Quit();
+}
+
 void GJID::LoserScreen (CGC& gc)
 {
-    coord_t x, y;
-    static const int title [6][16] = {
-	{1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1},
-	{1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0},
-	{1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0},
-	{1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0},
-	{1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0},
-	{1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1}};
-
-    for (y = 0; y < 200; y += SQUARE_SIDE)
-	for (x = 0; x < 320; x += SQUARE_SIDE)
-	    m_Pics [Back3Pix].Put (gc, x, y);
-
-    for (y = 0; y < 6; ++ y)
-	for (x = 0; x < 16; ++ x)
-	    if (title[y][x])
-		m_Pics [DisposePix].Put (gc, (x + 2) * SQUARE_SIDE, (y + 3) * SQUARE_SIDE);
+    static const uint16_t title[] = {	// "LOSE"
+	0x8F77, 0x8944, 0x8966, 0x8934, 0x8914, 0xEF77
+    };
+    FillWithTile (gc, Back3Pix);
+    DecodeBitmapWithTile (gc, title, VectorSize(title), DisposePix);
 }
 
 void GJID::LoserKeys (key_t, keystate_t)
@@ -160,16 +165,16 @@ void GJID::PrintStory (CGC& gc)
     coord_t x, y, row = 0;
 
     gc.Clear (68);
-    for (y = 0; y < 240; y += SQUARE_SIDE) {
+    for (y = 0; y < gc.Height(); y += SQUARE_SIDE) {
 	m_Pics [Wall1Pix].Put (gc, 0, y);
-	m_Pics [Wall1Pix].Put (gc, 320 - SQUARE_SIDE, y);
+	m_Pics [Wall1Pix].Put (gc, gc.Width() - SQUARE_SIDE, y);
     }
-    for (x = SQUARE_SIDE; x < 320 - SQUARE_SIDE; x += SQUARE_SIDE) {
+    for (x = SQUARE_SIDE; x < gc.Width() - SQUARE_SIDE; x += SQUARE_SIDE) {
 	m_Pics [Wall1Pix].Put (gc, x, 0);
-	m_Pics [Wall1Pix].Put (gc, x, 240 - SQUARE_SIDE);
+	m_Pics [Wall1Pix].Put (gc, x, gc.Height() - SQUARE_SIDE);
     }
-    m_Font.PrintString (gc, 145, 231, "Hit any key", 16);
-    m_Font.PrintString (gc, 144, 230, "Hit any key", 25);
+    m_Font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", 16);
+    m_Font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", 25);
 
     if (m_StoryPage == 0) {
 	m_Pics[LogoGPix].PutMasked (gc, 40, SQUARE_SIDE * 2); 
@@ -177,9 +182,13 @@ void GJID::PrintStory (CGC& gc)
 	m_Pics[LogoIPix].PutMasked (gc, 160, SQUARE_SIDE * 2); 
 	m_Pics[LogoDPix].PutMasked (gc, 220, SQUARE_SIDE * 2); 
 	row = 8;
-
+    }
+    if (m_StoryPage < 2) {
 	string line;
-	for (string::const_iterator ist = m_Story.begin(); ist != m_Story.end(); ++ ist) {
+	string::const_iterator ist = m_Story.begin();
+	for (uoff_t i = 0; i < m_StoryPage; ++ i)
+	    ist = m_Story.find ('$', ist) + 2;
+	for (; ist != m_Story.end(); ++ ist) {
 	    string::const_iterator iend = m_Story.find ('\n', ist);
 	    line.assign (ist, iend);
 	    ist = iend;
@@ -188,37 +197,23 @@ void GJID::PrintStory (CGC& gc)
 	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, 140);
 	    ++ row;
 	}
-    } else if (m_StoryPage == 1) {
-	string line;
-	for (string::const_iterator ist = m_Story.find('$') + 2; ist != m_Story.end(); ++ ist) {
-	    string::const_iterator iend = m_Story.find ('\n', ist);
-	    line.assign (ist, iend);
-	    ist = iend;
-	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, 140);
-	    ++ row;
-	}
     } else if (m_StoryPage == 2) {
 	x = SQUARE_SIDE * 2;
 	y = SQUARE_SIDE * 2 + 7;
 	m_Font.PrintString (gc, x + 50, y, "Things you will find in the maze:", 15);
 	y += 17;
-	m_Pics [DisposePix].Put (gc, x, y);
-	m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- A recycling bin", 140);
-	y += 17;
-	m_Pics [ExitPix].Put (gc, x, y);
-	m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- An exit door", 140);
-	y += 17;
-	m_Pics [Barrel1Pix].PutMasked (gc, x, y);
-	m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- Nuclear weapon", 140);
-	y += 17;
-	m_Pics [Barrel2Pix].PutMasked (gc, x, y);
-	m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, "- Photon disruptor", 140);
-	y += 17;
+	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
+	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
+	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
+	    m_Pics [pic[i]].PutMasked (gc, x, y);
+	    m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, desc[i], 140);
+	    y += 17;
+	}
 	m_Pics [OWDNorthPix].Put (gc, x, y);
-	m_Pics [OWDSouthPix].Put (gc, x + SQUARE_SIDE, y);
-	m_Pics [OWDEastPix].Put (gc, x + SQUARE_SIDE * 2, y);
-	m_Pics [OWDWestPix].Put (gc, x + SQUARE_SIDE * 3, y);
-	m_Font.PrintString (gc, x + SQUARE_SIDE * 5, y + 5, "- One-way doors", 140);
+	m_Pics [OWDSouthPix].Put (gc, x += SQUARE_SIDE, y);
+	m_Pics [OWDEastPix].Put (gc, x += SQUARE_SIDE, y);
+	m_Pics [OWDWestPix].Put (gc, x += SQUARE_SIDE, y);
+	m_Font.PrintString (gc, x += SQUARE_SIDE * 2, y + 5, "- One-way doors", 140);
     }
 }
 
@@ -234,32 +229,6 @@ void GJID::StoryKeys (key_t key, keystate_t ks)
 	}
     }
     Update();
-}
-
-void GJID::WinnerScreen (CGC& gc)
-{
-    coord_t x, y;
-    static const int title [6][15] = {
-	{0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1},
-	{0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1},
-	{0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1},
-	{0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1},
-	{0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1},
-	{0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1}};
-
-    for (y = 0; y < 200; y += SQUARE_SIDE)
-	for (x = 0; x < 320; x += SQUARE_SIDE)
-	    m_Pics [Wall1Pix].Put (gc, x, y);
-
-    for (y = 0; y < 6; ++ y)
-	for (x = 0; x < 15; ++ x)
-	    if (title[y][x])
-		m_Pics [RobotNorthPix].Put (gc, (x + 2) * SQUARE_SIDE, (y + 3) * SQUARE_SIDE);
-}
-
-void GJID::WinnerKeys (key_t, keystate_t)
-{
-    Quit();
 }
 
 void GJID::DrawLevel (CGC& gc)
@@ -296,10 +265,12 @@ void GJID::DrawEditor (CGC& gc)
 {
     gc.Clear();
     m_CurLevel.Draw (gc, m_Pics);
-    gc.Box (Rect (m_SelectedTile[0] * SQUARE_SIDE, m_SelectedTile[1] * SQUARE_SIDE, (m_SelectedTile[0] + 1) * SQUARE_SIDE - 1, (m_SelectedTile[1] + 1) * SQUARE_SIDE - 1), 15);
     for (uoff_t i = 0; i < NumberOfMapPics; ++ i)
 	m_Pics[i].Put (gc, i * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
-    gc.Box (Rect (m_SelectedPic * SQUARE_SIDE, gc.Height() - SQUARE_SIDE, (m_SelectedPic + 1) * SQUARE_SIDE - 1, gc.Height() - SQUARE_SIDE + SQUARE_SIDE - 1), 15);
+    const Point strtl (m_SelectedTile * SQUARE_SIDE);
+    const Point sprtl (m_SelectedPic * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
+    gc.Box (Rect (strtl, strtl + SQUARE_SIDE - 1), 15);
+    gc.Box (Rect (sprtl, sprtl + SQUARE_SIDE - 1), 15);
 }
 
 void GJID::EditorKeys (key_t key, keystate_t)
@@ -330,7 +301,7 @@ void GJID::EditorKeys (key_t key, keystate_t)
 	case key_F2:
 	case 's':
 	    m_Levels [m_Level] = m_CurLevel;
-	    SaveData ("gjid.dat");
+	    SaveData (DATAFILE);
 	    break;
 	case key_Left:	if (m_SelectedTile[0] > 0) -- m_SelectedTile[0];		break;
 	case key_Right:	if (m_SelectedTile[0] < MAP_WIDTH - 1) ++ m_SelectedTile[0];	break;
@@ -372,8 +343,7 @@ void GJID::LoadData (const char* filename)
     istream is (buf);
     is >> m_Palette;
     is >> m_Font;
-    for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	is >> m_Pics[i];
+    is >> m_Pics;
     is >> m_Story;
     is.align();
     is >> m_Levels;
@@ -381,19 +351,16 @@ void GJID::LoadData (const char* filename)
 
 void GJID::SaveData (const char* filename) const
 {
-    size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font);
-    for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	dataSize += stream_size_of (m_Pics[i]);
-    dataSize += Align (stream_size_of (m_Story));
-    dataSize += stream_size_of (m_Levels);
+    const size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font) +
+		stream_size_of (m_Pics) + Align (stream_size_of (m_Story)) +
+		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
     ostream os (buf);
 
     os << m_Palette;
     os << m_Font;
-    for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	os << m_Pics[i];
+    os << m_Pics;
     os << m_Story;
     os.align();
     os << m_Levels;

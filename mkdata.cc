@@ -94,19 +94,16 @@ void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
 
 void CDataBuilder::SaveToDat (const char* filename)
 {
-    size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font);
-    for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	dataSize += stream_size_of (m_Pics[i]);
-    dataSize += Align (stream_size_of (m_Story));
-    dataSize += stream_size_of (m_Levels);
+    const size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font) +
+		stream_size_of (m_Pics) + Align (stream_size_of (m_Story)) +
+		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
     ostream os (buf);
 
     os << m_Palette;
     os << m_Font;
-    for (uoff_t i = 0; i < NumberOfPics; ++ i)
-	os << m_Pics[i];
+    os << m_Pics;
     os << m_Story;
     os.align();
     os << m_Levels;
