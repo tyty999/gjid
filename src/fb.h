@@ -23,7 +23,7 @@ class CFramebuffer {
 public:
     virtual void		Open (void) = 0;
     virtual void		Close (void) = 0;
-    virtual void		CheckEvents (CEventProcessor* evp) const = 0;
+    virtual void		CheckEvents (CEventProcessor* evp) = 0;
     virtual void		Flush (void) = 0;
     virtual void		OnFocus (bool bFocus);
     virtual void		SetMode (CFbMode m, size_t depth = 8);

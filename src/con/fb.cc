@@ -265,7 +265,7 @@ static CEventProcessor::keystate_t TranslateKeystate (utio::CKeyboard::metastate
 }
 
 /// Waits for and reads any UI events.
-void CConsoleFramebuffer::CheckEvents (CEventProcessor* evp) const
+void CConsoleFramebuffer::CheckEvents (CEventProcessor* evp)
 {
     static const long defaultTimeout (200000);
     const utio::CKeyboard& rkb = CConsoleState::Instance().Keyboard();

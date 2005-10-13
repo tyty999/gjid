@@ -16,7 +16,7 @@ public:
     virtual void		Close (void);
     virtual void		SetMode (CFbMode m, size_t depth = 8);
     virtual void		SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
-    virtual void		CheckEvents (CEventProcessor* evp) const;
+    virtual void		CheckEvents (CEventProcessor* evp);
     virtual void		OnFocus (bool bFocused);
     virtual void		Flush (void);
 protected:

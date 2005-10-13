@@ -27,7 +27,7 @@ void CAppTest::OnIdle (void)
     static size_t idleCount = 0;
     if (++idleCount > 25)
 	Quit();
-    cout << "OnIdle called" << endl;
+    cout << "OnIdle called" << endl; cout.flush();
 }
 
 void CAppTest::OnDraw (CGC& gc)
@@ -35,7 +35,7 @@ void CAppTest::OnDraw (CGC& gc)
     CApplication::OnDraw (gc);
     foreach (CGC::iterator, i, gc)
 	*i = distance(gc.begin(), i) % 128;
-    cout << "OnDraw called" << endl;
+    cout << "OnDraw called" << endl; cout.flush();
 }
 
 FbglMain (CAppTest)
