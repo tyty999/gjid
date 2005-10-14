@@ -2,9 +2,9 @@
 //
 
 #include "app.h"
-#include "con/fbdrv.h"
-#include "con/constate.h"
-#include "x11/xfb.h"
+#include "con/fb.h"
+#include "con/state.h"
+#include "x11/fb.h"
 
 namespace fbgl {
 

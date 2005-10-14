@@ -1,10 +1,10 @@
 // Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
 //
-// constate.h
+// state.h
 //
 
-#ifndef CONSTATE_H_17C5725A6418797A3B7DD95B0A18BF4C
-#define CONSTATE_H_17C5725A6418797A3B7DD95B0A18BF4C
+#ifndef STATE_H_17C5725A6418797A3B7DD95B0A18BF4C
+#define STATE_H_17C5725A6418797A3B7DD95B0A18BF4C
 
 #include <utio.h>
 #include "../fb.h"

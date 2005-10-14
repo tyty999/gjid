@@ -1,9 +1,9 @@
 // Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
 //
-/// \file constate.cc
+/// \file state.cc
 /// \brief Console state management
 
-#include "constate.h"
+#include "state.h"
 #include <linux/vt.h>
 #include <linux/kd.h>
 #include <linux/kdev_t.h>	// MAJOR(rdev), MINOR(rdev) for tty validation.

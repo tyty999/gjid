@@ -1,9 +1,9 @@
-// fbdrv.cc
+// fb.cc
 //
 
-#include "fbdrv.h"
+#include "fb.h"
 #include "cmap.h"
-#include "constate.h"
+#include "state.h"
 #include "mode.h"
 
 namespace fbgl {

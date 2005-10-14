@@ -1,7 +1,7 @@
-// xfb.cc
+// fb.cc
 //
 
-#include "xfb.h"
+#include "fb.h"
 #include <unistd.h>
 #include <errno.h>
 #include <X11/keysym.h>
