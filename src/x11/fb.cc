@@ -95,6 +95,11 @@ void CXlibFramebuffer::OnIOError (void)
     cerr << "Error: the connection to the X server has been unexpectedly terminated" << endl;
 }
 
+/// Puts the main window into full screen mode, which basically means having
+/// no decorations, no visible WM parts, etc. X is _extremely_ hostile to
+/// this option, so many stupid hacks are required to do it. Obviously, X
+/// doesn't want people writing games for it.
+///
 void CXlibFramebuffer::SetFullscreenMode (bool v)
 {
     // Remove all window decorations. Due to lack of standardization, possibilities abound.
@@ -115,40 +120,48 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
 	e.xclient.data.l[0] = v;
 	e.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
 	XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureNotifyMask | SubstructureRedirectMask, &e);
-    } else if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
-	struct SMotifWMHints {
-	    uint32_t	m_Flags;
-	    uint32_t	m_Functions;
-	    uint32_t	m_Decorations;
-	    int32_t	m_InputMode;
-	    uint32_t	m_Status;
-	};
-	#define MWM_HINT_DECORATIONS	(1 << 1)
-	SMotifWMHints Motif_hints = { MWM_HINT_DECORATIONS, 0, 0, 0, 0 };
-	SET_WM_HINTS (Motif_hints);
-    } else if (None != (wmh = XInternAtom (m_pDisplay, "_WIN_HINTS", True))) {
-	int32_t GNOME_hints = 0;
-	SET_WM_HINTS (GNOME_hints);
-    } else if (None != (wmh = XInternAtom (m_pDisplay, "KWM_WIN_DECORATION", True))) {
-	int32_t KDE_hints = 0;
-	SET_WM_HINTS (KDE_hints);
+    } else {
+	// _NET_WM_STATE_FULLSCREEN is not supported by everyone, so here are some legacy methods.
+	if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
+	    struct SMotifWMHints {
+		uint32_t	m_Flags;
+		uint32_t	m_Functions;
+		uint32_t	m_Decorations;
+		int32_t	m_InputMode;
+		uint32_t	m_Status;
+	    };
+	    #define MWM_HINT_DECORATIONS	(1 << 1)
+	    SMotifWMHints Motif_hints = { MWM_HINT_DECORATIONS, 0, 0, 0, 0 };
+	    SET_WM_HINTS (Motif_hints);
+	} else if (None != (wmh = XInternAtom (m_pDisplay, "_WIN_HINTS", True))) {
+	    int32_t GNOME_hints = 0;
+	    SET_WM_HINTS (GNOME_hints);
+	} else if (None != (wmh = XInternAtom (m_pDisplay, "KWM_WIN_DECORATION", True))) {
+	    int32_t KDE_hints = 0;
+	    SET_WM_HINTS (KDE_hints);
+	}
+	// Legacy methods don't really support fullscreen mode (apparently it's
+	// against X Window policy), so removing the decorations does not
+	// resize the window, forcing the code to do that manually.
+	//
+	XWindowChanges wch;
+	wch.x = wch.y = 0;
+	wch.width = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
+	wch.height = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
+	wch.border_width = 0;
+	wch.stack_mode = Above;
+	XConfigureWindow (m_pDisplay, m_Window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWStackMode, &wch);
+	//
+	// Grab the pointer to prevent WM from taking the focus, scrolling the
+	// virtual desktop, and otherwise spoiling the game experience.
+	//
+	if (v)
+	    XGrabPointer (m_pDisplay, m_Window, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask, GrabModeAsync, GrabModeAsync, m_Window, None, CurrentTime);
+	else
+	    XUngrabPointer (m_pDisplay, CurrentTime);
+	// Ensure the window stays on top; while the pointer is grabbed there should be no way to circulate.
+	XRaiseWindow (m_pDisplay, m_Window);
     }
-
-    // Removing the decorations does not resize the window, so do that manually.
-    XWindowChanges wch;
-    wch.x = wch.y = 0;
-    wch.width = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
-    wch.height = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
-    wch.border_width = 0;
-    wch.stack_mode = Above;
-    XConfigureWindow (m_pDisplay, m_Window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWStackMode, &wch);
-
-    if (v) {
-	const long eventMask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
-	XGrabPointer (m_pDisplay, m_Window, False, eventMask, GrabModeAsync, GrabModeAsync, m_Window, None, CurrentTime);
-    } else
-	XUngrabPointer (m_pDisplay, CurrentTime);
-    XRaiseWindow (m_pDisplay, m_Window);
 }
 
 void CXlibFramebuffer::SetMode (CFbMode m, size_t depth)
