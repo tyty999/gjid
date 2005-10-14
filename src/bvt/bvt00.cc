@@ -1,4 +1,5 @@
 #include "stdtest.h"
+#include <fbgl/con/mode.h>
 
 void TestModeLoading (void)
 {
@@ -6,10 +7,11 @@ void TestModeLoading (void)
     modevec_t v;
     string mdbt, reader;
     mdbt.read_file ("bvt00.std");
+    CConsoleMode nm;
     foreach (string::const_iterator, i, mdbt) {
-	v.push_back();
 	reader.link (i, mdbt.end());
-	--(i = v.back().ReadFromModedb (reader));
+	--(i = nm.ReadFromModedb (reader));
+	v.push_back (nm);
     }
     if (!v.empty() && v.back().Name().empty())
 	v.pop_back();

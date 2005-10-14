@@ -4,6 +4,7 @@
 #include "fbdrv.h"
 #include "cmap.h"
 #include "constate.h"
+#include "mode.h"
 
 namespace fbgl {
 
@@ -104,21 +105,23 @@ void CConsoleFramebuffer::SetScreeninfo (const struct fb_var_screeninfo& newInfo
 void CConsoleFramebuffer::LoadModes (modevec_t& mv)
 {
     string mdbt, reader;
-    mdbt.read_file ("/etc/fb.modes");
+    mdbt.read_file (MODEDB_FILE);
     mv.clear();
+    CConsoleMode nm;
     foreach (string::const_iterator, i, mdbt) {
-	mv.push_back();
 	reader.link (i, mdbt.end());
-	i = mv.back().ReadFromModedb (reader);
+	--(i = nm.ReadFromModedb (reader));
+	mv.push_back (nm);
     }
     if (!mv.empty() && mv.back().Name().empty())
 	mv.pop_back();
 }
 
 /// Changes to another mode.
-void CConsoleFramebuffer::SetMode (CMode newMode, size_t depth)
+void CConsoleFramebuffer::SetMode (CMode nm, size_t depth)
 {
     assert (m_Device.IsOpen());
+    CConsoleMode newMode (nm);
     newMode.SetDepth (depth);
     struct fb_var_screeninfo newInfo;
     newMode.CreateVarinfo (newInfo);

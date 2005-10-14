@@ -9,8 +9,6 @@
 #include "file.h"
 #include "primi.h"
 
-struct fb_var_screeninfo;
-
 namespace fbgl {
 
 /// \class CMode mode.h "mode.h"
@@ -32,11 +30,9 @@ public:
     };
     typedef string::const_iterator	mdbiter_t;
     typedef const string&		rcname_t;
-    static const CMode		null_Mode;
+    static const CMode			null_Mode;
 public:
 			CMode (void);
-    void		CreateVarinfo (struct fb_var_screeninfo& vi) const;
-    mdbiter_t		ReadFromModedb (const string& i);
     void		read (istream& is);
     void		write (ostream& os) const;
     size_t		stream_size (void) const;
@@ -67,6 +63,20 @@ protected:
     uint16_t		m_Flags;	///< See EFlags for values.
     static const char*	s_FlagText [flag_Last];
 };
+
+//----------------------------------------------------------------------
+
+/// Sets flag \p f to \p v.
+inline void CMode::SetFlag (EFlag f, bool v)
+{
+    const uint16_t mask = 1 << f;
+    if (v)
+	m_Flags |= mask;
+    else
+	m_Flags &= ~mask;
+}
+
+//----------------------------------------------------------------------
 
 } // namespace fbgl
 
