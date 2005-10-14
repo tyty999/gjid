@@ -21,6 +21,7 @@ public:
     virtual void		SetMode (CFbMode m, size_t depth);
     virtual void		CheckEvents (CEventProcessor* evp);
     virtual void		Flush (void);
+    void			OnIOError (void);
 protected:
 				CXlibFramebuffer (void);
     virtual		       ~CXlibFramebuffer (void);
@@ -28,6 +29,7 @@ protected:
     void			DecodeButton (CEventProcessor* pep, const XButtonEvent& e);
     void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);
     void			WaitForEvents (void);
+    void			SetFullscreenMode (bool v = true);
 private:
     typedef ::GC		XGC;
 private:

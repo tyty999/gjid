@@ -5,8 +5,34 @@
 #include <unistd.h>
 #include <errno.h>
 #include <X11/keysym.h>
+#include <X11/Xutil.h>
+#include "xept.h"
 
 namespace fbgl {
+
+//----------------------------------------------------------------------
+// Can't throw an exception through a C callstack, hence this junk.
+static XErrorEvent g_ErrorEvent;
+static bool g_bErrorHappened = false;
+
+static int OnXlibError (Display*, XErrorEvent* e)
+{
+    if (!g_bErrorHappened && e) {
+	g_bErrorHappened = true;
+	g_ErrorEvent = *e;
+    }
+    return (EXIT_SUCCESS);
+}
+
+static int OnXIOError (Display*)
+{
+    // Xlib will terminate anyway after this call returns (the $^#$ers!), so there is no way to throw.
+    CXlibFramebuffer::Instance().OnIOError();
+    exit (EXIT_FAILURE);
+    return (EXIT_FAILURE);
+}
+
+//----------------------------------------------------------------------
 
 CXlibFramebuffer::CXlibFramebuffer (void)
 : CFramebuffer (),
@@ -30,17 +56,24 @@ CXlibFramebuffer::~CXlibFramebuffer (void)
 
 void CXlibFramebuffer::Open (void)
 {
+    XSetErrorHandler (OnXlibError);
+    XSetIOErrorHandler (OnXIOError);
+
     m_pDisplay = XOpenDisplay (NULL);
     if (!m_pDisplay)
 	throw runtime_error ("unable to open an X display, either X is not running or DISPLAY environment variable is not set");
 
-    int blackColor = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
-    m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, 640, 480, 0, blackColor, blackColor);
+    const int black = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
+    const int w = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
+    const int h = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
+    m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, w, h, 0, black, black);
 
-    XSelectInput (m_pDisplay, m_Window, StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask);
-    XMapWindow (m_pDisplay, m_Window);
-
+    const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
+	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+    XSelectInput (m_pDisplay, m_Window, eventMask);
     m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
+
+    XMapRaised (m_pDisplay, m_Window);
     XFlush (m_pDisplay);
 }
 
@@ -48,9 +81,61 @@ void CXlibFramebuffer::Close (void)
 {
     if (!m_pDisplay)
 	return;
+    XFreeGC (m_pDisplay, m_XGC);
     XUnmapWindow (m_pDisplay, m_Window);
+    XDestroyWindow (m_pDisplay, m_Window);
     XCloseDisplay (m_pDisplay);
     m_pDisplay = NULL;
+}
+
+void CXlibFramebuffer::OnIOError (void)
+{
+    cout.flush();
+    cerr << "Error: the connection to the X server has been unexpectedly terminated" << endl;
+}
+
+void CXlibFramebuffer::SetFullscreenMode (bool v)
+{
+    // Remove all window decorations. Due to lack of standardization, possibilities abound.
+    #define SET_WM_HINTS(hints)	\
+	if (v)			\
+	    XChangeProperty (m_pDisplay, m_Window, wmh, wmh, 32, PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(long));	\
+	else			\
+	    XDeleteProperty (m_pDisplay, m_Window, wmh)
+    Atom wmh;
+    if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
+	struct SMotifWMHints {
+	    unsigned long	m_Flags;
+	    unsigned long	m_Functions;
+	    unsigned long	m_Decorations;
+	    long		m_InputMode;
+	    unsigned long	m_Status;
+	};
+	#define MWM_HINT_DECORATIONS	(1 << 1)
+	SMotifWMHints Motif_hints = { MWM_HINT_DECORATIONS, 0, 0, 0, 0 };
+	SET_WM_HINTS (Motif_hints);
+    } else if (None != (wmh = XInternAtom (m_pDisplay, "_WIN_HINTS", True))) {
+	long GNOME_hints = 0;
+	SET_WM_HINTS (GNOME_hints);
+    } else if (None != (wmh = XInternAtom (m_pDisplay, "KWM_WIN_DECORATION", True))) {
+	long KDE_hints = 0;
+	SET_WM_HINTS (KDE_hints);
+    }
+
+    // Removing the decorations does not resize the window, so do that manually.
+    XWindowChanges wch;
+    wch.x = wch.y = 0;
+    wch.width = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
+    wch.height = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
+    wch.border_width = 0;
+    wch.stack_mode = Above;
+    XConfigureWindow (m_pDisplay, m_Window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWStackMode, &wch);
+
+    if (v) {
+	const long eventMask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+	XGrabPointer (m_pDisplay, m_Window, False, eventMask, GrabModeAsync, GrabModeAsync, m_Window, None, CurrentTime);
+    } else
+	XUngrabPointer (m_pDisplay, CurrentTime);
 }
 
 void CXlibFramebuffer::SetMode (CFbMode m, size_t depth)
@@ -61,10 +146,12 @@ void CXlibFramebuffer::SetMode (CFbMode m, size_t depth)
 void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
 {
     while (XPending (m_pDisplay)) {
+	if (g_bErrorHappened)
+	    throw XlibError (g_ErrorEvent);
 	XEvent e;
 	XNextEvent (m_pDisplay, &e);
 	switch (e.type) {
-	    case MapNotify:
+	    case MapNotify:	SetFullscreenMode();
 	    case Expose:	Flush();			break;
 	    case ButtonPress:	DecodeButton (pep, e.xbutton);	break;
 	    case MotionNotify:	DecodeMotion (pep, e.xmotion);	break;
