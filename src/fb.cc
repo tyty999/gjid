@@ -18,6 +18,11 @@ CFramebuffer::~CFramebuffer (void)
 {
 }
 
+void CFramebuffer::Open (void)
+{
+    LoadModes (m_Modes);
+}
+
 void CFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 {
     if (m == stdmode_320x240x8) {
@@ -33,7 +38,7 @@ void CFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 }
 
 /// Sets mode \p m with \p depth.
-void CFramebuffer::SetMode (CFbMode m, size_t depth)
+void CFramebuffer::SetMode (CMode m, size_t depth)
 {
     m_Buffer.resize (m.Width() * m.Height() * depth / 8);
     m_GC.link (m_Buffer, Size2d(m.Width(), m.Height()));
@@ -46,22 +51,8 @@ void CFramebuffer::OnFocus (bool bFocus)
 	Flush();
 }
 
-/// Loads available video modes from /etc/fb.modes
-void CFramebuffer::LoadModes (void)
-{
-    string mdbt, reader;
-    mdbt.read_file ("/etc/fb.modes");
-    foreach (string::const_iterator, i, mdbt) {
-	m_Modes.push_back();
-	reader.link (i, mdbt.end());
-	i = m_Modes.back().ReadFromModedb (reader);
-    }
-    if (!m_Modes.empty() && m_Modes.back().Name().empty())
-	m_Modes.pop_back();
-}
-
 /// Looks up a video mode closest to the given parameters.
-const CFbMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
+const CMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
 {
     uoff_t found (m_Modes.size());
     size_t diff (SIZE_MAX);
@@ -74,7 +65,7 @@ const CFbMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) c
 	    diff = md;
 	}
     }
-    return (found < m_Modes.size() ? m_Modes[found] : CFbMode::null_Mode);
+    return (found < m_Modes.size() ? m_Modes[found] : CMode::null_Mode);
 }
 
 } // namespace fbgl

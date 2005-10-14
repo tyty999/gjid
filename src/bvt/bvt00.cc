@@ -2,7 +2,7 @@
 
 void TestModeLoading (void)
 {
-    typedef vector<CFbMode> modevec_t;
+    typedef vector<CMode> modevec_t;
     modevec_t v;
     string mdbt, reader;
     mdbt.read_file ("bvt00.std");

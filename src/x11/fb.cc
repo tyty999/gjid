@@ -89,6 +89,10 @@ void CXlibFramebuffer::Close (void)
     m_pDisplay = NULL;
 }
 
+void CXlibFramebuffer::LoadModes (modevec_t&)
+{
+}
+
 void CXlibFramebuffer::OnIOError (void)
 {
     cout.flush();
@@ -164,7 +168,7 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
     }
 }
 
-void CXlibFramebuffer::SetMode (CFbMode m, size_t depth)
+void CXlibFramebuffer::SetMode (CMode m, size_t depth)
 {
     CFramebuffer::SetMode (m, depth);
 }

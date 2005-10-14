@@ -14,7 +14,7 @@ public:
     static CConsoleFramebuffer&	Instance (void);
     virtual void		Open (void);
     virtual void		Close (void);
-    virtual void		SetMode (CFbMode m, size_t depth = 8);
+    virtual void		SetMode (CMode m, size_t depth = 8);
     virtual void		SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
     virtual void		CheckEvents (CEventProcessor* evp);
     virtual void		OnFocus (bool bFocused);
@@ -25,6 +25,7 @@ protected:
     void			DetectDefaultDevice (string& deviceName) const;
     void			SetColormap (void);
     void			SetScreeninfo (const struct fb_var_screeninfo& newInfo);
+    virtual void		LoadModes (modevec_t& mv);
 private:
     struct fb_fix_screeninfo	m_Fix;
     struct fb_var_screeninfo	m_OrigVar;

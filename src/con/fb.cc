@@ -46,8 +46,8 @@ void CConsoleFramebuffer::Open (void)
     m_Device.Ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_OrigVar);
     m_Var = m_OrigVar;
     m_Screen = m_Device.Map (m_Fix.smem_len);
-    LoadModes();
     CConsoleState::Instance().EnterGraphicsMode();
+    CFramebuffer::Open();
 }
 
 /// Leaves graphics mode and closes the device.
@@ -100,8 +100,23 @@ void CConsoleFramebuffer::SetScreeninfo (const struct fb_var_screeninfo& newInfo
     m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
 }
 
+/// Loads available video modes from /etc/fb.modes
+void CConsoleFramebuffer::LoadModes (modevec_t& mv)
+{
+    string mdbt, reader;
+    mdbt.read_file ("/etc/fb.modes");
+    mv.clear();
+    foreach (string::const_iterator, i, mdbt) {
+	mv.push_back();
+	reader.link (i, mdbt.end());
+	i = mv.back().ReadFromModedb (reader);
+    }
+    if (!mv.empty() && mv.back().Name().empty())
+	mv.pop_back();
+}
+
 /// Changes to another mode.
-void CConsoleFramebuffer::SetMode (CFbMode newMode, size_t depth)
+void CConsoleFramebuffer::SetMode (CMode newMode, size_t depth)
 {
     assert (m_Device.IsOpen());
     newMode.SetDepth (depth);

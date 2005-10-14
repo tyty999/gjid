@@ -18,7 +18,7 @@ public:
     static CXlibFramebuffer&	Instance (void);
     virtual void		Open (void);
     virtual void		Close (void);
-    virtual void		SetMode (CFbMode m, size_t depth);
+    virtual void		SetMode (CMode m, size_t depth);
     virtual void		CheckEvents (CEventProcessor* evp);
     virtual void		Flush (void);
     void			OnIOError (void);
@@ -30,6 +30,7 @@ protected:
     void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);
     void			WaitForEvents (void);
     void			SetFullscreenMode (bool v = true);
+    virtual void		LoadModes (modevec_t& mv);
 private:
     typedef ::GC		XGC;
 private:

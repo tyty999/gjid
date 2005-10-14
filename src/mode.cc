@@ -10,7 +10,7 @@ namespace fbgl {
 
 //----------------------------------------------------------------------
 
-const char* CFbMode::s_FlagText [flag_Last] = {
+const char* CMode::s_FlagText [flag_Last] = {
     "hsync high",	// flag_HSyncHigh
     "vsync high",	// flag_VSyncHigh
     "csync high",	// flag_CSync
@@ -20,12 +20,12 @@ const char* CFbMode::s_FlagText [flag_Last] = {
     "gsync true",	// flag_SyncOnGreen
     "bcast true"	// flag_Broadcast
 };
-const CFbMode CFbMode::null_Mode;
+const CMode CMode::null_Mode;
 
 //----------------------------------------------------------------------
 
 /// Default constructor.
-CFbMode::CFbMode (void)
+CMode::CMode (void)
 : m_Name (),
   m_PixClock (0),
   m_LeftMargin (0),
@@ -44,7 +44,7 @@ CFbMode::CFbMode (void)
 }
 
 /// Sets flag \p f to \p v.
-inline void CFbMode::SetFlag (EFlag f, bool v)
+inline void CMode::SetFlag (EFlag f, bool v)
 {
     const uint16_t mask = 1 << f;
     if (v)
@@ -54,7 +54,7 @@ inline void CFbMode::SetFlag (EFlag f, bool v)
 }
 
 /// Writes in mode values into \p vi.
-void CFbMode::CreateVarinfo (struct fb_var_screeninfo& vi) const
+void CMode::CreateVarinfo (struct fb_var_screeninfo& vi) const
 {
     memset (&vi, 0, sizeof(vi));
     vi.xres = m_Width;
@@ -110,7 +110,7 @@ void CFbMode::CreateVarinfo (struct fb_var_screeninfo& vi) const
 }
 
 /// Reads mode information in modedb format.
-CFbMode::mdbiter_t CFbMode::ReadFromModedb (const string& s)
+CMode::mdbiter_t CMode::ReadFromModedb (const string& s)
 {
     #define find_end_of(s)	find(s,i) + VectorSize(s)
     #define get_number(i)	strtoul (i, const_cast<char**>(&i), 10)
@@ -146,7 +146,7 @@ CFbMode::mdbiter_t CFbMode::ReadFromModedb (const string& s)
 }
 
 /// Returns the frame refresh rate for this mode in Hz.
-size_t CFbMode::RefreshRate (void) const
+size_t CMode::RefreshRate (void) const
 {
     const size_t htotal = m_LeftMargin + m_Width + m_RightMargin + m_HSyncLen;
     size_t vtotal = m_UpperMargin + m_Height + m_LowerMargin + m_VSyncLen;
@@ -158,7 +158,7 @@ size_t CFbMode::RefreshRate (void) const
 }
 
 /// Reads the object from stream \p is.
-void CFbMode::read (istream& is)
+void CMode::read (istream& is)
 {
     is >> m_Name >> ios::talign<uint32_t>();
     is >> m_PixClock;
@@ -169,7 +169,7 @@ void CFbMode::read (istream& is)
 }
 
 /// Writes the object to stream \p os.
-void CFbMode::write (ostream& os) const
+void CMode::write (ostream& os) const
 {
     os << m_Name << ios::talign<uint32_t>();
     os << m_PixClock;
@@ -180,7 +180,7 @@ void CFbMode::write (ostream& os) const
 }
 
 /// Returns the size of the written object.
-size_t CFbMode::stream_size (void) const
+size_t CMode::stream_size (void) const
 {
     return (Align (
 		Align (stream_size_of(m_Name), alignof(m_PixClock)) +
@@ -200,7 +200,7 @@ size_t CFbMode::stream_size (void) const
 }
 
 /// Writes information about the this mode.
-void CFbMode::text_write (ostringstream& os) const
+void CMode::text_write (ostringstream& os) const
 {
     os << "mode \"" << m_Name << "\"\n";
     os.format ("    # VRate %u Hz\n", RefreshRate());

@@ -13,11 +13,11 @@ struct fb_var_screeninfo;
 
 namespace fbgl {
 
-/// \class CFbMode fbmode.h "fbmode.h"
+/// \class CMode fbmode.h "fbmode.h"
 ///
 /// \brief Stores information about a framebuffer mode from fb.modes
 ///
-class CFbMode {
+class CMode {
 public:
     enum EFlag {
 	flag_HSyncHigh,
@@ -32,9 +32,9 @@ public:
     };
     typedef string::const_iterator	mdbiter_t;
     typedef const string&		rcname_t;
-    static const CFbMode		null_Mode;
+    static const CMode		null_Mode;
 public:
-			CFbMode (void);
+			CMode (void);
     void		CreateVarinfo (struct fb_var_screeninfo& vi) const;
     mdbiter_t		ReadFromModedb (const string& i);
     void		read (istream& is);
@@ -48,9 +48,9 @@ public:
     inline void		SetDepth (size_t v)	{ m_Depth = v; }
     inline bool		Flag (EFlag f) const	{ return (m_Flags & (1 << f)); }
     size_t		RefreshRate (void) const;
-private:
+protected:
     inline void		SetFlag (EFlag f, bool v = true);
-private:
+protected:
     string		m_Name;		///< Mode name; as in "800x600-16@75"
     uint32_t		m_PixClock;	///< Clock frequency in MHz
     uint16_t		m_LeftMargin;	///< Time in us from hsync to picture
@@ -70,7 +70,7 @@ private:
 
 } // namespace fbgl
 
-TEXT_STREAMABLE(fbgl::CFbMode)
+TEXT_STREAMABLE(fbgl::CMode)
 
 #endif
 
