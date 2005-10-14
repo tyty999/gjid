@@ -1,9 +1,9 @@
 // Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 //
-// fbmode.h
+// mode.cc
 //
 
-#include "fbmode.h"
+#include "mode.h"
 #include <linux/fb.h>
 
 namespace fbgl {

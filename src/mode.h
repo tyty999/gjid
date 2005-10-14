@@ -1,10 +1,10 @@
 // Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
 //
-// fbmode.h
+// mode.h
 //
 
-#ifndef FBMODE_H_305B7A305F04122E318379A84269939F
-#define FBMODE_H_305B7A305F04122E318379A84269939F
+#ifndef MODE_H_305B7A305F04122E318379A84269939F
+#define MODE_H_305B7A305F04122E318379A84269939F
 
 #include "file.h"
 #include "primi.h"
@@ -13,7 +13,7 @@ struct fb_var_screeninfo;
 
 namespace fbgl {
 
-/// \class CMode fbmode.h "fbmode.h"
+/// \class CMode mode.h "mode.h"
 ///
 /// \brief Stores information about a framebuffer mode from fb.modes
 ///

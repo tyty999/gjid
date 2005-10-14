@@ -4,7 +4,7 @@
 #ifndef FB_H_7338CBBF13B535483C54DF471B2E407C
 #define FB_H_7338CBBF13B535483C54DF471B2E407C
 
-#include "fbmode.h"
+#include "mode.h"
 #include "evp.h"
 #include "gc.h"
 
