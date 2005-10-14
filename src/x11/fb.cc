@@ -82,6 +82,7 @@ void CXlibFramebuffer::Close (void)
     if (!m_pDisplay)
 	return;
     XFreeGC (m_pDisplay, m_XGC);
+    XUngrabPointer (m_pDisplay, CurrentTime);
     XUnmapWindow (m_pDisplay, m_Window);
     XDestroyWindow (m_pDisplay, m_Window);
     XCloseDisplay (m_pDisplay);
@@ -99,26 +100,37 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
     // Remove all window decorations. Due to lack of standardization, possibilities abound.
     #define SET_WM_HINTS(hints)	\
 	if (v)			\
-	    XChangeProperty (m_pDisplay, m_Window, wmh, wmh, 32, PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(long));	\
+	    XChangeProperty (m_pDisplay, m_Window, wmh, wmh, BitsInType(int32_t), PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(int32_t));	\
 	else			\
 	    XDeleteProperty (m_pDisplay, m_Window, wmh)
     Atom wmh;
-    if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
+    if (None != (wmh = XInternAtom (m_pDisplay, "_NET_WM_STATE", True))) {
+	XEvent e;	// ICCCM requires an event to be sent to the root window (as if we needed yet another method to set properties...)
+	memset (&e, 0, sizeof(e));
+	e.xclient.type = ClientMessage;
+	e.xclient.message_type = wmh;
+	e.xclient.display = m_pDisplay;
+	e.xclient.window = m_Window;
+	e.xclient.format = 32;
+	e.xclient.data.l[0] = v;
+	e.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
+	XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureNotifyMask | SubstructureRedirectMask, &e);
+    } else if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
 	struct SMotifWMHints {
-	    unsigned long	m_Flags;
-	    unsigned long	m_Functions;
-	    unsigned long	m_Decorations;
-	    long		m_InputMode;
-	    unsigned long	m_Status;
+	    uint32_t	m_Flags;
+	    uint32_t	m_Functions;
+	    uint32_t	m_Decorations;
+	    int32_t	m_InputMode;
+	    uint32_t	m_Status;
 	};
 	#define MWM_HINT_DECORATIONS	(1 << 1)
 	SMotifWMHints Motif_hints = { MWM_HINT_DECORATIONS, 0, 0, 0, 0 };
 	SET_WM_HINTS (Motif_hints);
     } else if (None != (wmh = XInternAtom (m_pDisplay, "_WIN_HINTS", True))) {
-	long GNOME_hints = 0;
+	int32_t GNOME_hints = 0;
 	SET_WM_HINTS (GNOME_hints);
     } else if (None != (wmh = XInternAtom (m_pDisplay, "KWM_WIN_DECORATION", True))) {
-	long KDE_hints = 0;
+	int32_t KDE_hints = 0;
 	SET_WM_HINTS (KDE_hints);
     }
 
@@ -136,6 +148,7 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
 	XGrabPointer (m_pDisplay, m_Window, False, eventMask, GrabModeAsync, GrabModeAsync, m_Window, None, CurrentTime);
     } else
 	XUngrabPointer (m_pDisplay, CurrentTime);
+    XRaiseWindow (m_pDisplay, m_Window);
 }
 
 void CXlibFramebuffer::SetMode (CFbMode m, size_t depth)
