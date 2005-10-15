@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
+#include "mode.h"
 #include "xept.h"
 
 namespace fbgl {
@@ -75,6 +76,7 @@ void CXlibFramebuffer::Open (void)
 
     XMapRaised (m_pDisplay, m_Window);
     XFlush (m_pDisplay);
+    CFramebuffer::Open();
 }
 
 void CXlibFramebuffer::Close (void)
@@ -89,8 +91,27 @@ void CXlibFramebuffer::Close (void)
     m_pDisplay = NULL;
 }
 
-void CXlibFramebuffer::LoadModes (modevec_t&)
+void CXlibFramebuffer::LoadModes (modevec_t& mv)
 {
+    int event_base = 0, error_base = 0;
+    if (!XF86VidModeQueryExtension (m_pDisplay, &event_base, &error_base))
+	throw runtime_error ("this application requires the XF86VidMode server extension");
+    int nModes = 0;
+    XF86VidModeModeInfo** ppModes = NULL;
+    if (!XF86VidModeGetAllModeLines (m_pDisplay, DefaultScreen(m_pDisplay), &nModes, &ppModes) || !ppModes)
+	throw runtime_error ("unable to get the video mode list");
+    try {
+	mv.reserve (nModes);
+	CXlibMode m;
+	for (int i = 0; i < nModes; ++ i) {
+	    m.ReadFromX (*ppModes[i]);
+	    mv.push_back (m);
+	}
+    } catch (...) {
+	XFree (ppModes);
+	throw;
+    }
+    XFree (ppModes);
 }
 
 void CXlibFramebuffer::OnIOError (void)
@@ -106,12 +127,6 @@ void CXlibFramebuffer::OnIOError (void)
 ///
 void CXlibFramebuffer::SetFullscreenMode (bool v)
 {
-    // Remove all window decorations. Due to lack of standardization, possibilities abound.
-    #define SET_WM_HINTS(hints)	\
-	if (v)			\
-	    XChangeProperty (m_pDisplay, m_Window, wmh, wmh, BitsInType(int32_t), PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(int32_t));	\
-	else			\
-	    XDeleteProperty (m_pDisplay, m_Window, wmh)
     Atom wmh;
     if (None != (wmh = XInternAtom (m_pDisplay, "_NET_WM_STATE", True))) {
 	XEvent e;	// ICCCM requires an event to be sent to the root window (as if we needed yet another method to set properties...)
@@ -125,7 +140,13 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
 	e.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
 	XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureNotifyMask | SubstructureRedirectMask, &e);
     } else {
-	// _NET_WM_STATE_FULLSCREEN is not supported by everyone, so here are some legacy methods.
+	// _NET_WM_STATE_FULLSCREEN is not supported by everyone, so here are some legacy methods
+	// to remove all window decorations. Due to lack of standardization, possibilities abound.
+	#define SET_WM_HINTS(hints)	\
+	    if (v)			\
+		XChangeProperty (m_pDisplay, m_Window, wmh, wmh, BitsInType(int32_t), PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(int32_t));	\
+	    else			\
+		XDeleteProperty (m_pDisplay, m_Window, wmh)
 	if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
 	    struct SMotifWMHints {
 		uint32_t	m_Flags;
@@ -170,6 +191,7 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
 
 void CXlibFramebuffer::SetMode (CMode m, size_t depth)
 {
+    //XF86VidModeSwitchToMode ();
     CFramebuffer::SetMode (m, depth);
 }
 

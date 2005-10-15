@@ -8,7 +8,7 @@ BUILD	= 0
 SRCS	= $(wildcard *.cc con/*.cc x11/*.cc)
 INCS	= $(filter-out bsconf.%,$(wildcard *.h con/*.h x11/*.h))
 OBJS	= $(SRCS:.cc=.o)
-LIBS	= -L /usr/X11R6/lib -lutio -lustl -lsupc++ -lX11
+LIBS	= -L /usr/X11R6/lib -lutio -lustl -lsupc++ -lX11 -lXxf86vm
 
 ########################################################################
 
