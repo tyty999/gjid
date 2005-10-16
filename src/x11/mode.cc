@@ -10,7 +10,7 @@ namespace fbgl {
 /// Writes in mode values into \p vi.
 void CXlibMode::WriteToX (XF86VidModeModeInfo& vi) const
 {
-    vi.dotclock = 1000000000 / m_PixClock;
+    vi.dotclock = (100000000 / m_PixClock) * 10;	// To round down the result
     vi.hdisplay = m_Width;
     vi.hsyncstart = vi.hdisplay + m_RightMargin;
     vi.hsyncend = vi.hsyncstart + m_HSyncLen;
@@ -28,7 +28,6 @@ void CXlibMode::WriteToX (XF86VidModeModeInfo& vi) const
     #define MAP_FLAG(flag, xflag)			if (Flag(flag)) SET_XFLAG(xflag)
     MAP_NEGPOS_FLAG (flag_HSyncHigh, xflag_PosHSync, xflag_NegHSync);
     MAP_NEGPOS_FLAG (flag_VSyncHigh, xflag_PosVSync, xflag_NegVSync);
-    MAP_NEGPOS_FLAG (flag_SyncOnGreen, xflag_PosCSync, xflag_NegCSync);
     MAP_FLAG (flag_CSync, xflag_CSync);
     MAP_FLAG (flag_Interlaced, xflag_Interlaced);
     MAP_FLAG (flag_Doublescan, xflag_Doublescan);
@@ -57,7 +56,6 @@ void CXlibMode::ReadFromX (const XF86VidModeModeInfo& vi)
     MAP_FLAG (xflag_PosHSync,	flag_HSyncHigh);
     MAP_FLAG (xflag_PosVSync,	flag_VSyncHigh);
     MAP_FLAG (xflag_CSync,	flag_CSync);
-    MAP_FLAG (xflag_PosCSync,	flag_SyncOnGreen);
     MAP_FLAG (xflag_Interlaced,	flag_Interlaced);
     MAP_FLAG (xflag_Doublescan,	flag_Doublescan);
     #undef MAP_FLAG

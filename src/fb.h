@@ -37,8 +37,14 @@ protected:
 				CFramebuffer (void);
     virtual		       ~CFramebuffer (void);
     virtual void		LoadModes (modevec_t& mv) = 0;
+    inline void			SetOrigMode (const CMode& m)	{ m_OrigMode = m; }
+    inline const CMode&		OrigMode (void) const		{ return (m_OrigMode); }
+    inline void			SetCurMode (const CMode& m)	{ m_CurMode = m; }
+    inline const CMode&		CurMode (void) const		{ return (m_CurMode); }
 private:
     modevec_t			m_Modes;
+    CMode			m_OrigMode;
+    CMode			m_CurMode;
     CGC				m_GC;
     memblock			m_Buffer;
 };

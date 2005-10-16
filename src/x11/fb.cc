@@ -64,18 +64,16 @@ void CXlibFramebuffer::Open (void)
     if (!m_pDisplay)
 	throw runtime_error ("unable to open an X display, either X is not running or DISPLAY environment variable is not set");
 
-    const int black = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
-    const int w = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
-    const int h = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
-    m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, w, h, 0, black, black);
+    XF86VidModeModeInfo omi;
+    if (!XF86VidModeGetModeLine (m_pDisplay, DefaultScreen(m_pDisplay), (int*) &omi.dotclock, (XF86VidModeModeLine*) &omi.hdisplay))
+	throw runtime_error ("unable to determine the current video mode");
+    CXlibMode omim;
+    omim.ReadFromX (omi);
+    SetOrigMode (omim);
+    SetCurMode (omim);
+    if (omi.c_private)
+	XFree (omi.c_private);
 
-    const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
-	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
-    XSelectInput (m_pDisplay, m_Window, eventMask);
-    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
-
-    XMapRaised (m_pDisplay, m_Window);
-    XFlush (m_pDisplay);
     CFramebuffer::Open();
 }
 
@@ -87,6 +85,14 @@ void CXlibFramebuffer::Close (void)
     XUngrabPointer (m_pDisplay, CurrentTime);
     XUnmapWindow (m_pDisplay, m_Window);
     XDestroyWindow (m_pDisplay, m_Window);
+    if (OrigMode() != CurMode()) {
+	XF86VidModeModeInfo omi;
+	const CXlibMode om (OrigMode());
+	om.WriteToX (omi);
+	XF86VidModeSwitchToMode (m_pDisplay, DefaultScreen(m_pDisplay), &omi);
+	SetCurMode (OrigMode());
+    }
+    XSync (m_pDisplay, DefaultScreen(m_pDisplay));
     XCloseDisplay (m_pDisplay);
     m_pDisplay = NULL;
 }
@@ -127,71 +133,77 @@ void CXlibFramebuffer::OnIOError (void)
 ///
 void CXlibFramebuffer::SetFullscreenMode (bool v)
 {
+    // ICCCM standard _NET_WM_STATE_FULLSCREEN does not work here because it
+    // fixes the window size to screen size, which is larger than the real
+    // resolution. Therefore here are some legacy methods to just remove all
+    // window decorations. Due to lack of standardization, possibilities abound.
+    //
+    #define SET_WM_HINTS(hints)	\
+	if (v)			\
+	    XChangeProperty (m_pDisplay, m_Window, wmh, wmh, BitsInType(int32_t), PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(int32_t));	\
+	else			\
+	    XDeleteProperty (m_pDisplay, m_Window, wmh)
     Atom wmh;
-    if (None != (wmh = XInternAtom (m_pDisplay, "_NET_WM_STATE", True))) {
-	XEvent e;	// ICCCM requires an event to be sent to the root window (as if we needed yet another method to set properties...)
-	memset (&e, 0, sizeof(e));
-	e.xclient.type = ClientMessage;
-	e.xclient.message_type = wmh;
-	e.xclient.display = m_pDisplay;
-	e.xclient.window = m_Window;
-	e.xclient.format = 32;
-	e.xclient.data.l[0] = v;
-	e.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
-	XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureNotifyMask | SubstructureRedirectMask, &e);
-    } else {
-	// _NET_WM_STATE_FULLSCREEN is not supported by everyone, so here are some legacy methods
-	// to remove all window decorations. Due to lack of standardization, possibilities abound.
-	#define SET_WM_HINTS(hints)	\
-	    if (v)			\
-		XChangeProperty (m_pDisplay, m_Window, wmh, wmh, BitsInType(int32_t), PropModeReplace, (const uint8_t*) &hints, sizeof(hints)/sizeof(int32_t));	\
-	    else			\
-		XDeleteProperty (m_pDisplay, m_Window, wmh)
-	if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
-	    struct SMotifWMHints {
-		uint32_t	m_Flags;
-		uint32_t	m_Functions;
-		uint32_t	m_Decorations;
-		int32_t	m_InputMode;
-		uint32_t	m_Status;
-	    };
-	    #define MWM_HINT_DECORATIONS	(1 << 1)
-	    SMotifWMHints Motif_hints = { MWM_HINT_DECORATIONS, 0, 0, 0, 0 };
-	    SET_WM_HINTS (Motif_hints);
-	} else if (None != (wmh = XInternAtom (m_pDisplay, "_WIN_HINTS", True))) {
-	    int32_t GNOME_hints = 0;
-	    SET_WM_HINTS (GNOME_hints);
-	} else if (None != (wmh = XInternAtom (m_pDisplay, "KWM_WIN_DECORATION", True))) {
-	    int32_t KDE_hints = 0;
-	    SET_WM_HINTS (KDE_hints);
-	}
-	// Legacy methods don't really support fullscreen mode (apparently it's
-	// against X Window policy), so removing the decorations does not
-	// resize the window, forcing the code to do that manually.
-	//
-	XWindowChanges wch;
-	wch.x = wch.y = 0;
-	wch.width = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
-	wch.height = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
-	wch.border_width = 0;
-	wch.stack_mode = Above;
-	XConfigureWindow (m_pDisplay, m_Window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWStackMode, &wch);
-	//
-	// Grab the pointer to prevent WM from taking the focus, scrolling the
-	// virtual desktop, and otherwise spoiling the game experience.
-	//
-	if (v)
-	    XGrabPointer (m_pDisplay, m_Window, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask, GrabModeAsync, GrabModeAsync, m_Window, None, CurrentTime);
-	else
-	    XUngrabPointer (m_pDisplay, CurrentTime);
-	// Ensure the window stays on top; while the pointer is grabbed there should be no way to circulate.
-	XRaiseWindow (m_pDisplay, m_Window);
+    if (None != (wmh = XInternAtom (m_pDisplay, "_MOTIF_WM_HINTS", True))) {
+	struct SMotifWMHints {
+	    uint32_t	m_Flags;
+	    uint32_t	m_Functions;
+	    uint32_t	m_Decorations;
+	    int32_t	m_InputMode;
+	    uint32_t	m_Status;
+	};
+	#define MWM_HINT_DECORATIONS	(1 << 1)
+	SMotifWMHints Motif_hints = { MWM_HINT_DECORATIONS, 0, 0, 0, 0 };
+	SET_WM_HINTS (Motif_hints);
+    } else if (None != (wmh = XInternAtom (m_pDisplay, "_WIN_HINTS", True))) {
+	int32_t GNOME_hints = 0;
+	SET_WM_HINTS (GNOME_hints);
+    } else if (None != (wmh = XInternAtom (m_pDisplay, "KWM_WIN_DECORATION", True))) {
+	int32_t KDE_hints = 0;
+	SET_WM_HINTS (KDE_hints);
     }
+    // Legacy methods don't really support fullscreen mode (apparently it's
+    // against X Window policy), so removing the decorations does not
+    // resize the window, forcing the code to do that manually.
+    //
+    XWindowChanges wch;
+    wch.x = wch.y = 0;
+    wch.width = CurMode().Width();
+    wch.height = CurMode().Height();
+    wch.border_width = 0;
+    wch.stack_mode = Above;
+    XConfigureWindow (m_pDisplay, m_Window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWStackMode, &wch);
+    //
+    // Grab the pointer to prevent WM from taking the focus, scrolling the
+    // virtual desktop, and otherwise spoiling the game experience.
+    //
+    if (v)
+	XGrabPointer (m_pDisplay, m_Window, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask, GrabModeAsync, GrabModeAsync, m_Window, None, CurrentTime);
+    else
+	XUngrabPointer (m_pDisplay, CurrentTime);
+    // Ensure the window stays on top; while the pointer is grabbed there should be no way to circulate.
+    XRaiseWindow (m_pDisplay, m_Window);
 }
 
 void CXlibFramebuffer::SetMode (CMode m, size_t depth)
 {
-    //XF86VidModeSwitchToMode ();
+    XF86VidModeModeInfo nmi;
+    const CXlibMode nm (m);
+    nm.WriteToX (nmi);
+    if (!XF86VidModeSwitchToMode (m_pDisplay, DefaultScreen(m_pDisplay), &nmi))
+	throw runtime_error ("unable to switch to the specified video mode");
+    XF86VidModeSetViewPort (m_pDisplay, DefaultScreen(m_pDisplay), 0, 0);
+    SetCurMode (m);
+
+    const int black = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
+    m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, m.Width(), m.Height(), 0, black, black);
+    XMapRaised (m_pDisplay, m_Window);
+
+    const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
+	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+    XSelectInput (m_pDisplay, m_Window, eventMask);
+    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
+
     CFramebuffer::SetMode (m, depth);
 }
 

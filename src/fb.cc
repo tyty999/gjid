@@ -8,6 +8,8 @@ namespace fbgl {
 /// Default constructor.
 CFramebuffer::CFramebuffer (void)
 : m_Modes(),
+  m_OrigMode (),
+  m_CurMode (),
   m_GC (),
   m_Buffer ()
 {

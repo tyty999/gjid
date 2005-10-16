@@ -33,6 +33,7 @@ public:
     static const CMode			null_Mode;
 public:
 			CMode (void);
+    bool		operator== (const CMode& m) const;
     void		read (istream& is);
     void		write (ostream& os) const;
     size_t		stream_size (void) const;

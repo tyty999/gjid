@@ -42,6 +42,24 @@ CMode::CMode (void)
 {
 }
 
+/// Returns true if equal to \p m.
+bool CMode::operator== (const CMode& m) const
+{
+    return (m_PixClock == m.m_PixClock &&
+	    m_LeftMargin == m.m_LeftMargin &&
+	    m_RightMargin == m.m_RightMargin &&
+	    m_UpperMargin == m.m_UpperMargin &&
+	    m_LowerMargin == m.m_LowerMargin &&
+	    m_HSyncLen == m.m_HSyncLen &&
+	    m_VSyncLen == m.m_VSyncLen &&
+	    m_Width == m.m_Width &&
+	    m_Height == m.m_Height &&
+	    m_VWidth == m.m_VWidth &&
+	    m_VHeight == m.m_VHeight &&
+	    m_Depth == m.m_Depth &&
+	    m_Flags == m.m_Flags);
+}
+
 /// Returns the frame refresh rate for this mode in Hz.
 size_t CMode::RefreshRate (void) const
 {
