@@ -33,6 +33,8 @@ public:
     static const CMode			null_Mode;
 public:
 			CMode (void);
+			CMode (const CMode& m);
+    const CMode&	operator= (const CMode& m);
     bool		operator== (const CMode& m) const;
     void		read (istream& is);
     void		write (ostream& os) const;
