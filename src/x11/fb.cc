@@ -349,7 +349,7 @@ void CXlibFramebuffer::InitColormap (PixelType* cmap) const
 	if (BitsInType (PixelType) == 32)
 	    cmap[i] = r << 16 | g << 8 | b;
 	else if (BitsInType (PixelType) == 16)
-	    cmap[i] = (r & 0xF8) << 8 | (g & 0xF3) << 3 | (b & 0xF8) >> 3;
+	    cmap[i] = (r >> 3) << 11 | (g >> 2) << 5 | b >> 3;
     }
 }
 
@@ -364,12 +364,13 @@ void CXlibFramebuffer::CopyGCToImage (void)
     if (nPixels == 320 * 240) {
 	const color_t* ls (src);
 	for (uoff_t y = 0; y < 480; ++y) {
-	    for (const color_t* s = ls; s < ls + 320; ++s) {
-		*dest++ = cmap[*s];
-		*dest++ = cmap[*s];
+	    const color_t* lsend (ls + 320);
+	    for (const color_t* s = ls; s < lsend; ++s, dest+=2) {
+		const PixelType v (cmap[*s]);
+		dest[0] = v; dest[1] = v;
 	    }
 	    if (y % 2)
-		ls += 320;
+		ls = lsend;
 	}
     } else {
 	for (uoff_t i = 0; i < nPixels; ++ i)
