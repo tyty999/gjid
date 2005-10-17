@@ -5,7 +5,7 @@
 #define FB_H_03AB4F7E09259B61062C6ACD0AB3CC92
 
 #include "../fb.h"
-#include <X11/Xlib.h>
+#include "mode.h"
 
 namespace fbgl {
 
@@ -27,9 +27,11 @@ protected:
     virtual		       ~CXlibFramebuffer (void);
     virtual void		LoadModes (modevec_t& mv);
 private:
-    void			DecodeMotion (CEventProcessor* pep, const XMotionEvent& e);
-    void			DecodeButton (CEventProcessor* pep, const XButtonEvent& e);
-    void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);
+    void			CloseWindow (void);
+    void			SwitchToMode (CXlibMode nm);
+    inline void			DecodeMotion (CEventProcessor* pep, const XMotionEvent& e);
+    inline void			DecodeButton (CEventProcessor* pep, const XButtonEvent& e);
+    inline void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);
     void			WaitForEvents (void);
     void			SetFullscreenMode (bool v = true);
     template <typename PixelType>

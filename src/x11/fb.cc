@@ -13,6 +13,7 @@ namespace fbgl {
 
 //----------------------------------------------------------------------
 // Can't throw an exception through a C callstack, hence this junk.
+//
 static XErrorEvent g_ErrorEvent;
 static bool g_bErrorHappened = false;
 
@@ -27,14 +28,17 @@ static int OnXlibError (Display*, XErrorEvent* e)
 
 static int OnXIOError (Display*)
 {
-    // Xlib will terminate anyway after this call returns (the $^#$ers!), so there is no way to throw.
+    // Xlib will terminate anyway after this call returns, so there is no way to throw.
     CXlibFramebuffer::Instance().OnIOError();
     exit (EXIT_FAILURE);
     return (EXIT_FAILURE);
 }
 
 //----------------------------------------------------------------------
+// Window and mode management
+//----------------------------------------------------------------------
 
+/// Default constructor.
 CXlibFramebuffer::CXlibFramebuffer (void)
 : CFramebuffer (),
   m_pDisplay (NULL),
@@ -46,17 +50,20 @@ CXlibFramebuffer::CXlibFramebuffer (void)
 {
 }
 
+/// Virtual destructor. Closes if still open.
 CXlibFramebuffer::~CXlibFramebuffer (void)
 {
     Close();
 }
 
+/// Singleton instance accessor.
 /*static*/ CXlibFramebuffer& CXlibFramebuffer::Instance (void)
 {
     static CXlibFramebuffer s_Fb;
     return (s_Fb);
 }
 
+/// Opens a connection to the X server (no windows opened)
 void CXlibFramebuffer::Open (void)
 {
     XSetErrorHandler (OnXlibError);
@@ -67,6 +74,7 @@ void CXlibFramebuffer::Open (void)
 	throw runtime_error ("unable to open an X display, either X is not running or DISPLAY environment variable is not set");
     m_pVisual = DefaultVisual (m_pDisplay, DefaultScreen(m_pDisplay));
 
+    // Save the original video mode.
     XF86VidModeModeInfo omi;
     if (!XF86VidModeGetModeLine (m_pDisplay, DefaultScreen(m_pDisplay), (int*) &omi.dotclock, (XF86VidModeModeLine*) &omi.hdisplay))
 	throw runtime_error ("unable to determine the current video mode");
@@ -80,34 +88,20 @@ void CXlibFramebuffer::Open (void)
     CFramebuffer::Open();
 }
 
+/// Closes all active resources, windows, and server connections.
 void CXlibFramebuffer::Close (void)
 {
     if (!m_pDisplay)
 	return;
-    XFreeGC (m_pDisplay, m_XGC);
-    XUngrabPointer (m_pDisplay, CurrentTime);
-    if (m_pImage) {
-	m_pImage->data = NULL;
-	XDestroyImage (m_pImage);
-	m_pImage = NULL;
-    }
-    if (m_Window != None) {
-	XUnmapWindow (m_pDisplay, m_Window);
-	XDestroyWindow (m_pDisplay, m_Window);
-	m_Window = None;
-    }
-    if (OrigMode() != CurMode()) {
-	XF86VidModeModeInfo omi;
-	const CXlibMode om (OrigMode());
-	om.WriteToX (omi);
-	XF86VidModeSwitchToMode (m_pDisplay, DefaultScreen(m_pDisplay), &omi);
-	SetCurMode (OrigMode());
-    }
+    CloseWindow();
+    if (OrigMode() != CurMode())
+	SwitchToMode (OrigMode());
     XSync (m_pDisplay, DefaultScreen(m_pDisplay));
     XCloseDisplay (m_pDisplay);
     m_pDisplay = NULL;
 }
 
+/// Loads available modes from the X server.
 void CXlibFramebuffer::LoadModes (modevec_t& mv)
 {
     int event_base = 0, error_base = 0;
@@ -131,10 +125,24 @@ void CXlibFramebuffer::LoadModes (modevec_t& mv)
     XFree (ppModes);
 }
 
-void CXlibFramebuffer::OnIOError (void)
+/// Closes the application window and frees its resources.
+void CXlibFramebuffer::CloseWindow (void)
 {
-    cout.flush();
-    cerr << "Error: the connection to the X server has been unexpectedly terminated" << endl;
+    if (!m_pDisplay || m_Window == None)
+	return;
+    if (m_XGC) {
+	XFreeGC (m_pDisplay, m_XGC);
+	m_XGC = NULL;
+    }
+    XUngrabPointer (m_pDisplay, CurrentTime);
+    if (m_pImage) {
+	m_pImage->data = NULL;	// Managed by m_ImageData
+	XDestroyImage (m_pImage);
+	m_pImage = NULL;
+    }
+    XUnmapWindow (m_pDisplay, m_Window);
+    XDestroyWindow (m_pDisplay, m_Window);
+    m_Window = None;
 }
 
 /// Puts the main window into full screen mode, which basically means having
@@ -196,56 +204,54 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
     XRaiseWindow (m_pDisplay, m_Window);
 }
 
-void CXlibFramebuffer::SetMode (CMode m, size_t depth)
+/// Switches to mode \p nm.
+void CXlibFramebuffer::SwitchToMode (CXlibMode nm)
 {
     XF86VidModeModeInfo nmi;
-    const CXlibMode nm (m);
     nm.WriteToX (nmi);
-    if (!XF86VidModeSwitchToMode (m_pDisplay, DefaultScreen(m_pDisplay), &nmi))
-	throw runtime_error ("unable to switch to the specified video mode");
+    XF86VidModeSwitchToMode (m_pDisplay, DefaultScreen(m_pDisplay), &nmi);
     XF86VidModeSetViewPort (m_pDisplay, DefaultScreen(m_pDisplay), 0, 0);
-    SetCurMode (m);
+    SetCurMode (nm);
+}
 
+/// Switches to mode \p m. X does not support depth switching so that is ignored.
+void CXlibFramebuffer::SetMode (CMode m, size_t depth)
+{
+    SwitchToMode (m);
+    CloseWindow();	// The old one, if exists.
+
+    // Create the window with full-screen dimensions (not the X screen, the real resolution)
     const int black = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
     m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, m.Width(), m.Height(), 0, black, black);
+    if (m_Window == None)
+	throw runtime_error ("unable to create the application window");
     XMapRaised (m_pDisplay, m_Window);
 
+    // Get all relevant events.
     const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
 	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
     XSelectInput (m_pDisplay, m_Window, eventMask);
-    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
 
+    // Create a gc and a backbuffer image.
+    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
     const int imageDepth = DefaultDepth (m_pDisplay, DefaultScreen(m_pDisplay));
     m_ImageData.resize (m.Width() * m.Height() * (imageDepth == 24 ? 32 : imageDepth) / 8);
     m_pImage = XCreateImage (m_pDisplay, m_pVisual, imageDepth, ZPixmap, 0, m_ImageData.begin(), m.Width(), m.Height(), 8, 0);
     if (!m_pImage)
 	throw bad_alloc (sizeof(XImage));
 
+    // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
     for (uoff_t i = 0; i < 256; ++ i)
 	GC().Palette().Set (i, i, i, i);
 
     CFramebuffer::SetMode (m, depth);
 }
 
-void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
-{
-    while (XPending (m_pDisplay)) {
-	if (g_bErrorHappened)
-	    throw XlibError (g_ErrorEvent);
-	XEvent e;
-	XNextEvent (m_pDisplay, &e);
-	switch (e.type) {
-	    case MapNotify:	SetFullscreenMode();
-	    case Expose:	Flush();			break;
-	    case ButtonPress:	DecodeButton (pep, e.xbutton);	break;
-	    case MotionNotify:	DecodeMotion (pep, e.xmotion);	break;
-	    case KeyPress:
-	    case KeyRelease:	DecodeKey (pep, e.xkey);	break;
-	}
-    }
-    WaitForEvents();
-}
+//----------------------------------------------------------------------
+// Event processing
+//----------------------------------------------------------------------
 
+/// Translates Xlib keycode to fbgl equivalent.
 static CEventProcessor::key_t TranslateKeycode (int key)
 {
     struct SKMap {
@@ -295,11 +301,7 @@ static CEventProcessor::key_t TranslateKeycode (int key)
 /// Translates xlib key metastate to fbgl equivalents.
 static CEventProcessor::keystate_t TranslateKeystate (int kbms)
 {
-    static const int metamap[] = {
-	Mod1Mask,
-	ControlMask,
-	ShiftMask
-    };
+    static const int metamap[] = { Mod1Mask, ControlMask, ShiftMask };
     CEventProcessor::keystate_t ks;
     for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
 	if (kbms & metamap[i])
@@ -307,17 +309,20 @@ static CEventProcessor::keystate_t TranslateKeystate (int kbms)
     return (ks);
 }
 
-void CXlibFramebuffer::DecodeButton (CEventProcessor* pep, const XButtonEvent& e)
+/// Decodes and executes a button event.
+inline void CXlibFramebuffer::DecodeButton (CEventProcessor* pep, const XButtonEvent& e)
 {
     pep->OnButtonDown (e.button, e.x, e.y, TranslateKeystate (e.state));
 }
 
-void CXlibFramebuffer::DecodeMotion (CEventProcessor* pep, const XMotionEvent& e)
+/// Decodes and executes a motion event.
+inline void CXlibFramebuffer::DecodeMotion (CEventProcessor* pep, const XMotionEvent& e)
 {
     pep->OnMouseMove (e.x, e.y, TranslateKeystate (e.state));
 }
 
-void CXlibFramebuffer::DecodeKey (CEventProcessor* pep, const XKeyEvent& e)
+/// Decodes and executes a key event.
+inline void CXlibFramebuffer::DecodeKey (CEventProcessor* pep, const XKeyEvent& e)
 {
     if (e.type == KeyRelease)
 	return;
@@ -325,6 +330,27 @@ void CXlibFramebuffer::DecodeKey (CEventProcessor* pep, const XKeyEvent& e)
     pep->OnKey (TranslateKeycode (ksym), TranslateKeystate (e.state));
 }
 
+void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
+{
+    while (XPending (m_pDisplay)) {
+	if (g_bErrorHappened)
+	    throw XlibError (g_ErrorEvent);
+	XEvent e;
+	XNextEvent (m_pDisplay, &e);
+	switch (e.type) {
+	    case MapNotify:	SetFullscreenMode();
+	    case Expose:	Flush();			break;
+	    case ButtonPress:
+	    case ButtonRelease:	DecodeButton (pep, e.xbutton);	break;
+	    case MotionNotify:	DecodeMotion (pep, e.xmotion);	break;
+	    case KeyPress:
+	    case KeyRelease:	DecodeKey (pep, e.xkey);	break;
+	}
+    }
+    WaitForEvents();
+}
+
+/// Waits for X events with timeout.
 void CXlibFramebuffer::WaitForEvents (void)
 {
     fd_set fds;
@@ -340,6 +366,18 @@ void CXlibFramebuffer::WaitForEvents (void)
 	throw file_exception ("select", "X server connection");
 }
 
+/// Called when X server connection is abruptly terminated.
+void CXlibFramebuffer::OnIOError (void)
+{
+    cout.flush();
+    cerr << "Error: the connection to the X server has been unexpectedly terminated" << endl;
+}
+
+//----------------------------------------------------------------------
+// Drawing and colormap translation.
+//----------------------------------------------------------------------
+
+/// Creates a list of truecolor values from GC palette entries.
 template <typename PixelType>
 void CXlibFramebuffer::InitColormap (PixelType* cmap) const
 {
@@ -353,6 +391,7 @@ void CXlibFramebuffer::InitColormap (PixelType* cmap) const
     }
 }
 
+/// Copies GC contents to the image.
 template <typename PixelType>
 void CXlibFramebuffer::CopyGCToImage (void)
 {
@@ -361,7 +400,7 @@ void CXlibFramebuffer::CopyGCToImage (void)
     const color_t* src = GC().begin();
     PixelType* dest = (PixelType*) m_pImage->data;
     const size_t nPixels = GC().Width() * GC().Height();
-    if (nPixels == 320 * 240) {
+    if (nPixels == 320 * 240) {	// emulated mode
 	const color_t* ls (src);
 	for (uoff_t y = 0; y < 480; ++y) {
 	    const color_t* lsend (ls + 320);
@@ -378,6 +417,7 @@ void CXlibFramebuffer::CopyGCToImage (void)
     }
 }
 
+/// Copies the GC to an XImage and flushes the image to the server.
 void CXlibFramebuffer::Flush (void)
 {
     if (!m_pDisplay || m_Window == None || !m_pImage)
