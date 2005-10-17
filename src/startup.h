@@ -11,7 +11,6 @@
 namespace fbgl {
 
 extern "C" void InstallCleanupHandlers (void);
-extern "C" void ClearEnvironment (void);
 
 } // namespace pl
 

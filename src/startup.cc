@@ -79,13 +79,6 @@ extern "C" void InstallCleanupHandlers (void)
     std::set_unexpected (OnUnexpected);
 }
 
-/// Removes all environment strings and resets the needed ones to safe values.
-extern "C" void ClearEnvironment (void)
-{
-    if (clearenv())
-	throw libc_exception ("clearenv");
-}
-
 #ifndef HAVE_STRSIGNAL
 /// Returns the textual description of a system signal \p sig.
 static const char* strsignal (int sig)
