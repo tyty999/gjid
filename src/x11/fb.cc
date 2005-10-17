@@ -347,9 +347,9 @@ void CXlibFramebuffer::InitColormap (PixelType* cmap) const
 	ray_t r, g, b;
 	GC().Palette().Get (i, r, g, b);
 	if (BitsInType (PixelType) == 32)
-	    cmap[i] = b << 16 | g << 8 | r;
+	    cmap[i] = r << 16 | g << 8 | b;
 	else if (BitsInType (PixelType) == 16)
-	    cmap[i] = (b & 0xF8) << 8 | (g & 0xF3) << 3 | (r & 0xF8) >> 3;
+	    cmap[i] = (r & 0xF8) << 8 | (g & 0xF3) << 3 | (b & 0xF8) >> 3;
     }
 }
 
@@ -365,8 +365,8 @@ void CXlibFramebuffer::CopyGCToImage (void)
 	const color_t* ls (src);
 	for (uoff_t y = 0; y < 480; ++y) {
 	    for (const color_t* s = ls; s < ls + 320; ++s) {
-		*dest++ = *s;
-		*dest++ = *s;
+		*dest++ = cmap[*s];
+		*dest++ = cmap[*s];
 	    }
 	    if (y % 2)
 		ls += 320;
