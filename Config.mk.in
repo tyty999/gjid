@@ -23,7 +23,7 @@ INSTALLDATA	= ${INSTALL} -p -m 644
 CWARNOPTS	= -Werror -Wall -W -Winline -Wpointer-arith -Wno-cast-align \
 		-Wcast-qual -Wwrite-strings -Wshadow -Wredundant-decls @SYSWARNS@
 CXXWARNOPTS	= ${CWARNOPTS} -Wconversion -Wsign-promo -Wsynth -Woverloaded-virtual \
-		-fno-enforce-eh-specs -fno-threadsafe-statics \
+		-fno-enforce-eh-specs -fno-threadsafe-statics
 OPTIMIZATION	= @INLINE_OPTS@@PROCESSOR_OPTS@ 
 
 #BUILD_SHARED	= 1
