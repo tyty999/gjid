@@ -40,7 +40,9 @@ CXlibFramebuffer::CXlibFramebuffer (void)
   m_pDisplay (NULL),
   m_pVisual (NULL),
   m_XGC (NULL),
-  m_Window ()
+  m_ImageData (),
+  m_pImage (NULL),
+  m_Window (None)
 {
 }
 
@@ -63,6 +65,7 @@ void CXlibFramebuffer::Open (void)
     m_pDisplay = XOpenDisplay (NULL);
     if (!m_pDisplay)
 	throw runtime_error ("unable to open an X display, either X is not running or DISPLAY environment variable is not set");
+    m_pVisual = DefaultVisual (m_pDisplay, DefaultScreen(m_pDisplay));
 
     XF86VidModeModeInfo omi;
     if (!XF86VidModeGetModeLine (m_pDisplay, DefaultScreen(m_pDisplay), (int*) &omi.dotclock, (XF86VidModeModeLine*) &omi.hdisplay))
@@ -83,8 +86,16 @@ void CXlibFramebuffer::Close (void)
 	return;
     XFreeGC (m_pDisplay, m_XGC);
     XUngrabPointer (m_pDisplay, CurrentTime);
-    XUnmapWindow (m_pDisplay, m_Window);
-    XDestroyWindow (m_pDisplay, m_Window);
+    if (m_pImage) {
+	m_pImage->data = NULL;
+	XDestroyImage (m_pImage);
+	m_pImage = NULL;
+    }
+    if (m_Window != None) {
+	XUnmapWindow (m_pDisplay, m_Window);
+	XDestroyWindow (m_pDisplay, m_Window);
+	m_Window = None;
+    }
     if (OrigMode() != CurMode()) {
 	XF86VidModeModeInfo omi;
 	const CXlibMode om (OrigMode());
@@ -204,6 +215,15 @@ void CXlibFramebuffer::SetMode (CMode m, size_t depth)
     XSelectInput (m_pDisplay, m_Window, eventMask);
     m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
 
+    const int imageDepth = DefaultDepth (m_pDisplay, DefaultScreen(m_pDisplay));
+    m_ImageData.resize (m.Width() * m.Height() * (imageDepth == 24 ? 32 : imageDepth) / 8);
+    m_pImage = XCreateImage (m_pDisplay, m_pVisual, imageDepth, ZPixmap, 0, m_ImageData.begin(), m.Width(), m.Height(), 8, 0);
+    if (!m_pImage)
+	throw bad_alloc (sizeof(XImage));
+
+    for (uoff_t i = 0; i < 256; ++ i)
+	GC().Palette().Set (i, i, i, i);
+
     CFramebuffer::SetMode (m, depth);
 }
 
@@ -320,11 +340,52 @@ void CXlibFramebuffer::WaitForEvents (void)
 	throw file_exception ("select", "X server connection");
 }
 
+template <typename PixelType>
+void CXlibFramebuffer::InitColormap (PixelType* cmap) const
+{
+    for (uoff_t i = 0; i < 256; ++ i) {
+	ray_t r, g, b;
+	GC().Palette().Get (i, r, g, b);
+	if (BitsInType (PixelType) == 32)
+	    cmap[i] = b << 16 | g << 8 | r;
+	else if (BitsInType (PixelType) == 16)
+	    cmap[i] = (b & 0xF8) << 8 | (g & 0xF3) << 3 | (r & 0xF8) >> 3;
+    }
+}
+
+template <typename PixelType>
+void CXlibFramebuffer::CopyGCToImage (void)
+{
+    PixelType cmap [256];
+    InitColormap (cmap);
+    const color_t* src = GC().begin();
+    PixelType* dest = (PixelType*) m_pImage->data;
+    const size_t nPixels = GC().Width() * GC().Height();
+    if (nPixels == 320 * 240) {
+	const color_t* ls (src);
+	for (uoff_t y = 0; y < 480; ++y) {
+	    for (const color_t* s = ls; s < ls + 320; ++s) {
+		*dest++ = *s;
+		*dest++ = *s;
+	    }
+	    if (y % 2)
+		ls += 320;
+	}
+    } else {
+	for (uoff_t i = 0; i < nPixels; ++ i)
+	    *dest++ = cmap [*src++];
+    }
+}
+
 void CXlibFramebuffer::Flush (void)
 {
-    XSetForeground (m_pDisplay, m_XGC, WhitePixel (m_pDisplay, DefaultScreen (m_pDisplay)));
-    XDrawLine (m_pDisplay, m_Window, m_XGC, 10, 60, 180, 20);
-    XFlush (m_pDisplay);
+    if (!m_pDisplay || m_Window == None || !m_pImage)
+	return;
+    if (m_pImage->depth == 16)
+	CopyGCToImage<uint16_t>();
+    else if (m_pImage->depth == 24 || m_pImage->depth == 32)
+	CopyGCToImage<uint32_t>();
+    XPutImage (m_pDisplay, m_Window, m_XGC, m_pImage, 0, 0, 0, 0, m_pImage->width, m_pImage->height);
 }
 
 } // namespace fbgl

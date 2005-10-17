@@ -25,18 +25,25 @@ public:
 protected:
 				CXlibFramebuffer (void);
     virtual		       ~CXlibFramebuffer (void);
+    virtual void		LoadModes (modevec_t& mv);
+private:
     void			DecodeMotion (CEventProcessor* pep, const XMotionEvent& e);
     void			DecodeButton (CEventProcessor* pep, const XButtonEvent& e);
     void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);
     void			WaitForEvents (void);
     void			SetFullscreenMode (bool v = true);
-    virtual void		LoadModes (modevec_t& mv);
+    template <typename PixelType>
+    void			InitColormap (PixelType* cmap) const;
+    template <typename PixelType>
+    void			CopyGCToImage (void);
 private:
     typedef ::GC		XGC;
 private:
     Display*			m_pDisplay;
     Visual*			m_pVisual;
     XGC				m_XGC;
+    memblock			m_ImageData;
+    XImage*			m_pImage;
     Window			m_Window;
 };
 
