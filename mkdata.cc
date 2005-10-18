@@ -41,6 +41,16 @@ void Load (T& v, const char* filename)
     is >> v;
 }
 
+template <typename T>
+void Save (const T& v, const char* filename)
+{
+    static memblock buf;
+    buf.resize (stream_size_of (v));
+    ostream os (buf);
+    os << v;
+    buf.write_file (filename);
+}
+
 void CDataBuilder::LoadFromFiles (void)
 {
     Load (m_Palette, "data/rgb.pal");
