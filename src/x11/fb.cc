@@ -241,8 +241,9 @@ void CXlibFramebuffer::SetMode (CMode m, size_t depth)
 	throw bad_alloc (sizeof(XImage));
 
     // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
-    for (uoff_t i = 0; i < 256; ++ i)
-	GC().Palette().Set (i, i, i, i);
+    GC().Palette().resize (256);
+    for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
+	GC().Palette()[i] = RGB (i, i, i);
 
     CFramebuffer::SetMode (m, depth);
 }
@@ -381,13 +382,15 @@ void CXlibFramebuffer::OnIOError (void)
 template <typename PixelType>
 void CXlibFramebuffer::InitColormap (PixelType* cmap) const
 {
-    for (uoff_t i = 0; i < 256; ++ i) {
-	ray_t r, g, b;
-	GC().Palette().Get (i, r, g, b);
+    const CPalette& rpal (GC().Palette());
+    for (uoff_t i = 0; i < min (256U, rpal.size()); ++ i) {
 	if (BitsInType (PixelType) == 32)
-	    cmap[i] = r << 16 | g << 8 | b;
-	else if (BitsInType (PixelType) == 16)
+	    cmap[i] = rpal[i];
+	else if (BitsInType (PixelType) == 16) {
+	    ray_t r, g, b;
+	    unRGB (rpal[i], r, g, b);
 	    cmap[i] = (r >> 3) << 11 | (g >> 2) << 5 | b >> 3;
+	}
     }
 }
 

@@ -79,8 +79,10 @@ void CColormap::CopyFrom (const CPalette& pal)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
     ++ pr; ++ pg; ++ pb;
 #endif
-    for (uoff_t i = 0; i < 256; ++i, pr+=2, pg+=2, pb+=2)
-	pal.Get (i, *pr, *pg, *pb);
+    foreach (CPalette::const_iterator, c, pal) {
+	unRGB (*c, *pr, *pg, *pb);
+	pr+=2, pg+=2, pb+=2;
+    }
 }
 
 void CColormap::CopyTo (CPalette& pal) const
@@ -91,8 +93,11 @@ void CColormap::CopyTo (CPalette& pal) const
 #if __BYTE_ORDER == __LITTLE_ENDIAN
     ++ pr; ++ pg; ++ pb;
 #endif
-    for (uoff_t i = 0; i < 256; ++i, pr+=2, pg+=2, pb+=2)
-	pal.Set (i, *pr, *pg, *pb);
+    pal.resize (len);
+    foreach (CPalette::iterator, c, pal) {
+	*c = RGB (*pr, *pg, *pb);
+	pr+=2, pg+=2, pb+=2;
+    }
 }
 
 //----------------------------------------------------------------------
