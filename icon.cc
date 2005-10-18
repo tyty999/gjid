@@ -4,9 +4,11 @@
 //
 
 #include "icon.h"
+#include "targa.h"
 
 Icon::Icon (dim_t w, dim_t h, const color_t* p)
 : m_Bits (),
+  m_Palette (),
   m_Width (),
   m_Height ()
 {
@@ -20,6 +22,10 @@ void Icon::SetImage (dim_t w, dim_t h, const color_t* p)
     m_Bits.resize (w * h);
     if (p)
 	copy_n (p, m_Bits.size(), m_Bits.begin());
+}
+
+void Icon::MergePaletteInto (CPalette&)
+{
 }
 
 void Icon::read (istream& is)

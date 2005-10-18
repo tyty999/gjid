@@ -28,11 +28,13 @@ public:
     inline color_t*		GetRow (coord_t row)				{ return (m_Bits.begin() + row * Width()); }
     inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ GetRow(y)[x] = c; }
     inline color_t		GetPixel (coord_t x, coord_t y) const		{ return (GetRow (y)[x]); }
+    void			MergePaletteInto (CPalette& pal);
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;
 protected:
     vector<color_t>		m_Bits;
+    CPalette			m_Palette;
     dim_t			m_Width;
     dim_t			m_Height;
 };	

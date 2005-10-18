@@ -1,8 +1,8 @@
 include Common.mk
 
 EXE	= gjid
-OBJS	= gjid.o level.o font.o icon.o
-SRCS	= gjid.cc level.cc font.cc icon.cc mkdata.cc
+OBJS	= $(filter-out mkdata.o, $(SRCS:.cc=.o))
+SRCS	= $(wildcard *.cc)
 LIBS	+= -lfbgl -lustl -lc
 
 all:	${EXE} data/gjid.dat
@@ -11,7 +11,7 @@ ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
 	@${LD} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-mkdata:	mkdata.o level.o font.o icon.o
+mkdata:	mkdata.o $(filter-out gjid.o,$(OBJS))
 	@echo "Linking $@ ... "
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
@@ -44,7 +44,7 @@ uninstall:
 
 clean:
 	@echo "Removing generated files ..."
-	@${RM} -f ${OBJS} ${EXE} data/gjid.dat
+	@${RM} -f ${OBJS} ${EXE} mkdata mkdata.o data/gjid.dat
 
 depend: ${SRCS}
 	@${RM} -f .depend
