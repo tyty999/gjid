@@ -22,7 +22,7 @@ using namespace ustl;
 // LZW string table
 //----------------------------------------------------------------------
 
-/// \class CTable gif.h "gif.h"
+/// \class CTable gif.h fbgl/gif.h
 ///
 /// \brief Implements the LZW string table.
 ///
@@ -40,7 +40,7 @@ public:
 public:
 			CTable (void);
     void		Reset (size_t nRootBits);
-    void		AddString (code_t base, chr_t c);
+    code_t		AddString (code_t base, chr_t c);
     void		WriteString (code_t code, ostream& os) const;
     inline chr_t	FirstCharOf (code_t code) const	{ return (m_Char [m_First [code]]); }
     inline bool		IsUnused (code_t code) const	{ return (code >= m_nCodes); }
@@ -67,7 +67,7 @@ private:
 // Decompressor.
 //----------------------------------------------------------------------
 
-/// \class CDecompressor gif.h "gif.h"
+/// \class CDecompressor gif.h fbgl/gif.h
 ///
 /// \brief Decompresses GIF pixel data.
 ///
@@ -85,6 +85,25 @@ private:
     uint8_t		m_CurByte;	///< Last byte read from the input stream.
     uint8_t		m_BitsLeft;	///< Unread bits left in m_CurByte.
     uint8_t		m_BlockSize;	///< Remaining bytes in the current block.
+};
+
+//----------------------------------------------------------------------
+// Compressor.
+//----------------------------------------------------------------------
+
+/// \class CCompressor gif.h fbgl/gif.h
+///
+/// \brief Compresses pixel data with the GIF LZW algorithm.
+///
+class CCompressor {
+public:
+			CCompressor (void);
+    void		Run (istream& is, ostream& os);
+    size_t		EstimateSize (istream& is);
+    inline void		SetCodeSize (size_t n)	{ m_CodeSize = n; }
+private:
+    CTable		t;
+    uint8_t		m_CodeSize;
 };
 
 //----------------------------------------------------------------------
@@ -120,7 +139,7 @@ public:
 
 //----------------------------------------------------------------------
 
-/// \class CImageHeader gif.h "gif.h"
+/// \class CImageHeader gif.h fbgl/gif.h
 ///
 /// \brief Header preceeding the compressed image data.
 ///
@@ -129,7 +148,7 @@ public:
 			CImageHeader (void);
     void		read (istream& is);
     void		write (ostream& os) const;
-    inline size_t	stream_size (void) const	{ return (8); }
+    inline size_t	stream_size (void) const	{ return (9); }
     inline bool		HasLocalCmap (void) const	{ return (m_Flags & 0x80); }
     inline void		SetLocalCmap (bool v = true)	{ if (v) m_Flags |= 0x80; else m_Flags &= 0x7F; }
     inline bool		Interlaced (void) const		{ return (m_Flags & 0x40); }
@@ -148,9 +167,9 @@ public:
 
 //----------------------------------------------------------------------
 
-#define GIF_EXT_BLOCK_SIG	'!'
-#define GIF_IMAGE_BLOCK_SIG	','
-#define GIF_END_OF_DATA_SIG	';'
+#define GIF_EXT_BLOCK_SIG	uint8_t('!')
+#define GIF_IMAGE_BLOCK_SIG	uint8_t(',')
+#define GIF_END_OF_DATA_SIG	uint8_t(';')
 
 //----------------------------------------------------------------------
 

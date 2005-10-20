@@ -40,11 +40,13 @@ public:
     inline dim_t		Height (void) const	{ return (m_Size[1]); }
     inline value_type&		at (coord_t x, coord_t y)	{ return (m_Pixels [y * Width() + x]); }
     inline value_type		at (coord_t x, coord_t y) const	{ return (m_Pixels [y * Width() + x]); }
+    size_t			BitsPerPixel (void) const;
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;
 private:
     void			ReadGifColormap (istream& is, size_t bpp);
+    void			WriteGifColormap (ostream& os) const;
 private:
     pixvec_t			m_Pixels;	///< Pixel data.
     CPalette			m_Palette;	///< Palette for the image.

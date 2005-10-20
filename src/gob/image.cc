@@ -27,6 +27,15 @@ void CImage::Resize (dim_t w, dim_t h)
     m_Size[1] = h;
 }
 
+/// Returns the colordepth necessary to display this image.
+size_t CImage::BitsPerPixel (void) const
+{
+    size_t bpp = 1;
+    while (m_Palette.size() > (1U << bpp))
+	++ bpp;
+    return (bpp);
+}
+
 /// Reads the colormap from a GIF file.
 void CImage::ReadGifColormap (istream& is, size_t bpp)
 {
@@ -35,6 +44,17 @@ void CImage::ReadGifColormap (istream& is, size_t bpp)
 	ray_t r, g, b;
 	is >> r >> g >> b;
 	*i = RGB(r,g,b);
+    }
+}
+
+void CImage::WriteGifColormap (ostream& os) const
+{
+    const size_t nCols (1 << BitsPerPixel());
+    for (uoff_t i = 0; i < nCols; ++ i) {
+	ray_t r = 0, g = 0, b = 0;
+	if (i < m_Palette.size())
+	    unRGB (m_Palette[i], r, g, b);
+	os << r << g << b;
     }
 }
 
@@ -81,14 +101,42 @@ void CImage::read (istream& is)
 }
 
 /// Writes the object to stream \p os.
-void CImage::write (ostream&) const
+void CImage::write (ostream& os) const
 {
+    using namespace gif;
+    CFileHeader fh;
+    fh.m_Width = Width();
+    fh.m_Height = Height();
+    fh.SetGlobalCmap (true);
+    fh.SetBitsPerPixel (BitsPerPixel());
+    os << fh;
+    WriteGifColormap (os);
+
+    CImageHeader ih;
+    ih.m_Width = Width();
+    ih.m_Height = Width();
+    os << GIF_IMAGE_BLOCK_SIG << ih;
+    CCompressor c;
+    istream is (begin(), Width() * Height());
+    c.SetCodeSize (fh.BitsPerPixel() + 1);
+    c.Run (is, os);
+
+    os << GIF_END_OF_DATA_SIG;
 }
 
 /// Returns the size of the written object.
 size_t CImage::stream_size (void) const
 {
-    return (Width() * Height());
+    size_t s = stream_size_of (gif::CFileHeader());
+    s += 3 * (1 << BitsPerPixel());	// colormap
+    s += stream_size_of (GIF_IMAGE_BLOCK_SIG);
+    s += stream_size_of (gif::CImageHeader());
+    gif::CCompressor c;
+    istream is (begin(), Width() * Height());
+    c.SetCodeSize (BitsPerPixel());
+    s += c.EstimateSize (is);
+    s += stream_size_of (GIF_END_OF_DATA_SIG);
+    return (s);
 }
 
 } // namespace fbgl
