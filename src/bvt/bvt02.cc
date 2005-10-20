@@ -9,6 +9,17 @@ void TestGif (void)
     CImage img;
     is >> img;
 
+    memblock outbuf (stream_size_of (img));
+    try {
+	ostream os (outbuf);
+	os << img;
+	istream ins (outbuf);
+	ins >> img;
+    } catch (...) {
+	outbuf.write_file ("bvt02.gif");
+	throw;
+    }
+
     CImage::const_iterator ii (img.begin());
     cout << ios::hex;
     cout.format ("Read image %dx%d\n", img.Width(), img.Height());
