@@ -4,7 +4,7 @@
 #ifndef GC_H_355C59EC4607EE327E5914582DC9A02E
 #define GC_H_355C59EC4607EE327E5914582DC9A02E
 
-#include "primi.h"
+#include "image.h"
 
 namespace fbgl {
 
