@@ -181,6 +181,7 @@ public:
 #define GIF_EXT_BLOCK_SIG	uint8_t('!')
 #define GIF_IMAGE_BLOCK_SIG	uint8_t(',')
 #define GIF_END_OF_DATA_SIG	uint8_t(';')
+#define GIF_MAX_BLOCK_SIZE	0xFF
 
 //----------------------------------------------------------------------
 

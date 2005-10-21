@@ -19,7 +19,6 @@ void TestGif (void)
 	outbuf.write_file ("bvt02.gif");
 	throw;
     }
-    outbuf.write_file ("bvt02.gif");
 
     CImage::const_iterator ii (img.begin());
     cout << ios::hex;
