@@ -118,7 +118,7 @@ void CImage::write (ostream& os) const
     os << GIF_IMAGE_BLOCK_SIG << ih;
     CCompressor c;
     istream is (begin(), Width() * Height());
-    c.SetCodeSize (fh.BitsPerPixel() + 1);
+    c.SetCodeSize (fh.BitsPerPixel());
     c.Run (is, os);
 
     os << GIF_END_OF_DATA_SIG;
