@@ -354,5 +354,75 @@ void CImageHeader::write (ostream& os) const
 
 //----------------------------------------------------------------------
 
+/// Default constructor.
+CGraphicsControl::CGraphicsControl (void)
+: m_DelayTime (0),
+  m_Flags (0),
+  m_TransparentColor (0)
+{
+}
+
+/// Read the object from stream \p is.
+void CGraphicsControl::read (istream& is)
+{
+    uint8_t blockSize;
+    is >> blockSize;
+    if (blockSize != 4)
+	throw runtime_error ("corrupt graphics control block in gif");
+    is >> m_Flags;
+    is.read (&m_DelayTime, 2);
+    is >> m_TransparentColor;
+    is >> blockSize;
+}
+
+/// Write the object to stream \p os.
+void CGraphicsControl::write (ostream& os) const
+{
+    uint8_t blockSize = 4;
+    os << blockSize;
+    os << m_Flags;
+    os.write (&m_DelayTime, 2);
+    os << m_TransparentColor;
+    os << GIF_ZERO_BLOCK;
+}
+
+//----------------------------------------------------------------------
+
+/// Reads the object from stream \p is.
+void CComment::read (istream& is)
+{
+    m_s.clear();
+    uint8_t bs;
+    is >> bs;
+    while (is.remaining() >= bs + 1U) {
+	m_s.resize (m_s.size() + bs);
+	m_s.append (is.ipos(), bs);
+	is.skip (bs);
+	is >> bs;
+    }
+}
+
+/// Writes the object to stream \p os.
+void CComment::write (ostream& os) const
+{
+    string s;
+    foreach (string::const_iterator, i, m_s) {
+	size_t bs = min (distance (i, m_s.end()), GIF_MAX_BLOCK_SIZE);
+	s.link (i, bs);
+	os << s;
+	i = s.end() - 1;
+    }
+    os << GIF_ZERO_BLOCK;
+}
+
+/// Returns the size of the written object.
+size_t CComment::stream_size (void) const
+{
+    return (stream_size_of (m_s) +
+	    Align (m_s.size(), size_t(GIF_MAX_BLOCK_SIZE)) / GIF_MAX_BLOCK_SIZE);
+}
+
+//----------------------------------------------------------------------
+
 } // namespace gif
 

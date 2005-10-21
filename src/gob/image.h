@@ -21,6 +21,12 @@ namespace fbgl {
 ///
 class CImage {
 public:
+    enum EFlag {
+	f_Transparent,
+	f_SortedPalette,
+	f_MergedPalette,
+	f_Last
+    };
     typedef color_t			value_type;
     typedef vector<value_type>		pixvec_t;
     typedef pixvec_t::iterator		iterator;
@@ -40,6 +46,8 @@ public:
     inline dim_t		Height (void) const	{ return (m_Size[1]); }
     inline value_type&		at (coord_t x, coord_t y)	{ return (m_Pixels [y * Width() + x]); }
     inline value_type		at (coord_t x, coord_t y) const	{ return (m_Pixels [y * Width() + x]); }
+    inline bool			Flag (EFlag f) const		{ return (m_Flags[f]); }
+    inline void			SetFlag (EFlag f, bool v)	{ m_Flags.set (f, v); }
     size_t			BitsPerPixel (void) const;
     void			read (istream& is);
     void			write (ostream& os) const;
@@ -51,6 +59,7 @@ private:
     pixvec_t			m_Pixels;	///< Pixel data.
     CPalette			m_Palette;	///< Palette for the image.
     Size2d			m_Size;		///< Image dimensions.
+    bitset<f_Last>		m_Flags;
 };
 
 } // namespace fbgl

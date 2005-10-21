@@ -15,7 +15,8 @@ namespace fbgl {
 CImage::CImage (void)
 : m_Pixels (),
   m_Palette (),
-  m_Size (0, 0)
+  m_Size (0, 0),
+  m_Flags (0)
 {
 }
 
@@ -66,19 +67,27 @@ void CImage::read (istream& is)
     if (is.remaining() < stream_size_of(fh))
 	return;	// empty file; not really bad.
     is >> fh;
-    if (fh.HasGlobalCmap())
+    if (fh.HasGlobalCmap()) {
+	SetFlag (f_SortedPalette, fh.SortedCmap());
 	ReadGifColormap (is, fh.BitsPerPixel());
+    }
 
     uint8_t c = 0;
     while (is.remaining()) {
 	is >> c;
-	if (c == GIF_EXT_BLOCK_SIG) {
+	if (c == GIF_EXT_BLOCK_SIG && is.remaining() >= 2) {
 	    uint8_t extCode, blockSize = 0;
-	    if (is.remaining() >= 2)
-		is >> extCode >> blockSize;
-	    while (blockSize) {
-		is.skip (blockSize);
+	    is >> extCode;
+	    if (extCode == GIF_EXT_GC_SIG) {
+		CGraphicsControl gch;
+		is >> gch;
+		SetFlag (f_Transparent, gch.HasTransparent());
+	    } else {
 		is >> blockSize;
+		while (blockSize) {
+		    is.skip (blockSize);
+		    is >> blockSize;
+		}
 	    }
 	} else if (c == GIF_IMAGE_BLOCK_SIG) {
 	    CImageHeader ih;
@@ -88,8 +97,10 @@ void CImage::read (istream& is)
 	    if (ih.m_Width > 16000 || ih.m_Height > 16000)
 		throw runtime_error ("invalid image size");
 	    Resize (ih.m_Width, ih.m_Height);
-	    if (ih.HasLocalCmap())
+	    if (ih.HasLocalCmap()) {
+		SetFlag (f_SortedPalette, ih.SortedCmap());
 		ReadGifColormap (is, ih.BitsPerPixel());
+	    }
 	    ostream os (begin(), Width() * Height());
 	    CDecompressor d;
 	    d.Run (is, os);
@@ -109,8 +120,15 @@ void CImage::write (ostream& os) const
     fh.m_Height = Height();
     fh.SetGlobalCmap (true);
     fh.SetBitsPerPixel (BitsPerPixel());
+    fh.SetSortedCmap (Flag (f_SortedPalette));
     os << fh;
     WriteGifColormap (os);
+
+    if (Flag (f_Transparent)) {
+	CGraphicsControl gch;
+	gch.SetTransparent (0);
+	os << GIF_EXT_BLOCK_SIG << GIF_EXT_GC_SIG << gch;
+    }
 
     CImageHeader ih;
     ih.m_Width = Width();
@@ -129,6 +147,10 @@ size_t CImage::stream_size (void) const
 {
     size_t s = stream_size_of (gif::CFileHeader());
     s += 3 * (1 << BitsPerPixel());	// colormap
+    if (Flag (f_Transparent)) {
+	s += stream_size_of (GIF_EXT_BLOCK_SIG) + stream_size_of (GIF_EXT_GC_SIG);
+	s += stream_size_of (gif::CGraphicsControl());
+    }
     s += stream_size_of (GIF_IMAGE_BLOCK_SIG);
     s += stream_size_of (gif::CImageHeader());
     gif::CCompressor c;

@@ -121,6 +121,17 @@ private:
 // Block headers.
 //----------------------------------------------------------------------
 
+#define GIF_EXT_BLOCK_SIG	uint8_t('!')
+#define GIF_IMAGE_BLOCK_SIG	uint8_t(',')
+#define GIF_END_OF_DATA_SIG	uint8_t(';')
+#define GIF_MAX_BLOCK_SIZE	uint8_t(0xFF)
+#define GIF_ZERO_BLOCK		uint8_t(0)
+
+#define GIF_EXT_GC_SIG		uint8_t(0xF9)
+#define GIF_EXT_COMMENT_SIG	uint8_t(0xFE)
+
+//----------------------------------------------------------------------
+
 /// \class CFileHeader gif.h "gif.h"
 ///
 /// \brief First header of the GIF file.
@@ -178,10 +189,49 @@ public:
 
 //----------------------------------------------------------------------
 
-#define GIF_EXT_BLOCK_SIG	uint8_t('!')
-#define GIF_IMAGE_BLOCK_SIG	uint8_t(',')
-#define GIF_END_OF_DATA_SIG	uint8_t(';')
-#define GIF_MAX_BLOCK_SIZE	0xFF
+/// \class CGraphicsControl gif fbgl/gif.h
+///
+/// \brief Defines the format of the graphics control extension block.
+///
+class CGraphicsControl {
+public:
+    /// Describes how the decoder should dispose of the image.
+    enum EDisposal {
+	dis_None,		///< Any way it wants
+	dis_Leave,		///< Leave it where it is
+	dis_RestoreBack,	///< Overwrite with background
+	dis_RestorePrev		///< OVerwrite with what was there before
+    };
+public:
+			CGraphicsControl (void);
+    void		read (istream& is);
+    void		write (ostream& os) const;
+    inline size_t	stream_size (void) const	{ return (6); }
+    inline bool		HasTransparent (void) const	{ return (m_Flags & 1); }
+    inline void		SetTransparent (uint8_t c)	{ m_Flags |= 1; m_TransparentColor = c; }
+    inline bool		RequiresInput (void) const	{ return (m_Flags & 2); }
+    inline void		SetRequiresInput (bool v)	{ if (v) m_Flags |= 2; else m_Flags &= ~2; }
+    inline EDisposal	Disposal (void) const		{ return (EDisposal (m_Flags >> 2)); }
+    inline void		SetDisposal (EDisposal d)	{ m_Flags &= 0x1A; m_Flags |= d << 2; }
+public:
+    uint16_t		m_DelayTime;		///< Delay time before action (0.01s)
+    uint8_t		m_Flags;		///< Various flags.
+    uint8_t		m_TransparentColor;	///< Transparent color index.
+};
+
+/// \class CComment gif fbgl/gif.h
+///
+/// \brief Comment block.
+///
+class CComment {
+public:
+			CComment (const string& s) : m_s (s) {}
+    void		read (istream& is);
+    void		write (ostream& os) const;
+    size_t		stream_size (void) const;
+private:
+    string		m_s;	///< Comment text.
+};
 
 //----------------------------------------------------------------------
 
@@ -189,4 +239,6 @@ public:
 
 STD_STREAMABLE (gif::CFileHeader)
 STD_STREAMABLE (gif::CImageHeader)
+STD_STREAMABLE (gif::CGraphicsControl)
+STD_STREAMABLE (gif::CComment)
 
