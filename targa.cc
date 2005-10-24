@@ -55,13 +55,23 @@ void CTargaHeader::write (ostream& os) const
 /// Returns the size of the written object.
 size_t CTargaHeader::stream_size (void) const
 {
-    return (24);
+    return (stream_size_of (m_ImgIDLen) +
+	    stream_size_of (m_bHasCMap) +
+	    stream_size_of (m_Type) + 4 +
+	    stream_size_of (m_CMapBits) +
+	    stream_size_of (m_XOrigin) +
+	    stream_size_of (m_YOrigin) +
+	    stream_size_of (m_Width) +
+	    stream_size_of (m_Height) +
+	    stream_size_of (m_Depth) +
+	    stream_size_of (m_Flags) +
+	    VectorSize (s_IDField));
 }
 
 /// Fills in values based on \p pal.
 void CTargaHeader::SetPalette (const CPalette& pal)
 {
-    m_bHasCMap = true;
+    m_bHasCMap = !pal.empty();
     m_CMapLength = pal.size();
 }
 
