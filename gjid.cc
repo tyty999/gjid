@@ -74,6 +74,8 @@ void GJID::OnIdle (void)
 void GJID::OnDraw (CGC& gc)
 {
     CApplication::OnDraw (gc);
+    if (m_Pics.empty())
+	return;
     typedef void (GJID::*pfndraw_t)(CGC& gc);
     static const pfndraw_t dfn [state_Last] = {
 	&GJID::IntroScreen,	// state_Title
@@ -344,9 +346,13 @@ void GJID::LoadData (const char* filename)
     is >> m_Palette;
     is >> m_Font;
     is >> m_Pics;
+    if (m_Pics.size() != NumberOfPics)
+	throw runtime_error ("not enough tile pictures in the data file");
     is >> m_Story;
     is.align();
     is >> m_Levels;
+    foreach (picvec_t::iterator, i, m_Pics)
+	i->MergePaletteInto (m_Palette);
 }
 
 void GJID::SaveData (const char* filename) const

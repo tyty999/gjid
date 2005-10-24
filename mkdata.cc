@@ -6,8 +6,6 @@ public:
    static CDataBuilder&	Instance (void);
     void		Run (void);
 private:
-    typedef tuple<NumberOfPics,Icon>	picvec_t;
-private:
 			CDataBuilder (void) {}
     void		LoadFromFiles (void);
     void		SaveToDat (const char* filename);
@@ -55,33 +53,34 @@ void CDataBuilder::LoadFromFiles (void)
 {
     Load (m_Palette, "data/rgb.pal");
     Load (m_Font, "data/default.fnt");
-    static const char* pix [NumberOfPics] = {
-	"data/dispose.pix",
-	"data/exit.pix",
-	"data/floor.pix",
-	"data/oneway.pix",
-	"data/oneway.pix",
-	"data/oneway.pix",
-	"data/oneway.pix",
-	"data/wall1.pix",
-	"data/wall2.pix",
-	"data/wall3.pix",
-	"data/back1.pix",
-	"data/back2.pix",
-	"data/back3.pix",
-	"data/robot.pix",
-	"data/robot.pix",
-	"data/robot.pix",
-	"data/robot.pix",
-	"data/barrel1.pix",
-	"data/barrel2.pix",
-	"data/logo_g.pix",
-	"data/logo_j.pix",
-	"data/logo_i.pix",
-	"data/logo_d.pix"
+    static const char* gifs [NumberOfPics] = {
+	"data/dispose.gif",
+	"data/exit.gif",
+	"data/floor.gif",
+	"data/oneway.gif",
+	"data/oneway.gif",
+	"data/oneway.gif",
+	"data/oneway.gif",
+	"data/wall1.gif",
+	"data/wall2.gif",
+	"data/wall3.gif",
+	"data/back1.gif",
+	"data/back2.gif",
+	"data/back3.gif",
+	"data/robot.gif",
+	"data/robot.gif",
+	"data/robot.gif",
+	"data/robot.gif",
+	"data/barrel1.gif",
+	"data/barrel2.gif",
+	"data/logo_g.gif",
+	"data/logo_j.gif",
+	"data/logo_i.gif",
+	"data/logo_d.gif"
     };
-    for (uoff_t i = 0; i < VectorSize(pix); ++ i)
-	Load (m_Pics[i], pix[i]);
+    m_Pics.resize (VectorSize(gifs));
+    for (uoff_t i = 0; i < VectorSize(gifs); ++ i)
+	Load (m_Pics[i], gifs[i]);
 
     RotatePixClockwise (OWDNorthPix, OWDEastPix);
     RotatePixClockwise (OWDEastPix, OWDSouthPix);
