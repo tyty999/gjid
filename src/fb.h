@@ -51,7 +51,6 @@ private:
     CMode			m_OrigMode;
     CMode			m_CurMode;
     CGC				m_GC;
-    memblock			m_Buffer;
 };
 
 } // namespace fbgl

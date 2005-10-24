@@ -15,8 +15,7 @@ CFramebuffer::CFramebuffer (void)
 : m_Modes(),
   m_OrigMode (),
   m_CurMode (),
-  m_GC (),
-  m_Buffer ()
+  m_GC ()
 {
 }
 
@@ -34,21 +33,17 @@ void CFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 {
     if (m == stdmode_320x240x8) {
 	SetMode (FindClosestMode (640, 480, freq), 8);
-	m_Buffer.resize (320 * 240);
-	m_GC.link (m_Buffer, Size2d(320, 240));
-    } else if (m == stdmode_640x480x8) {
+	m_GC.Resize (Size2d (320, 240));
+    } else if (m == stdmode_640x480x8)
 	SetMode (FindClosestMode (640, 480, freq), 8);
-    } else {
-	m_GC.unlink();
-	m_Buffer.resize (0);
-    }
+    else
+	m_GC.Resize (Size2d());
 }
 
 /// Sets mode \p m with \p depth.
-void CFramebuffer::SetMode (CMode m, size_t depth)
+void CFramebuffer::SetMode (CMode m, size_t)
 {
-    m_Buffer.resize (m.Width() * m.Height() * depth / 8);
-    m_GC.link (m_Buffer, Size2d(m.Width(), m.Height()));
+    m_GC.Resize (Size2d (m.Width(), m.Height()));
 }
 
 /// Performs actions on focus acquisition.
