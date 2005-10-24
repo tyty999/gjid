@@ -4,7 +4,6 @@
 //
 
 #include "icon.h"
-#include "targa.h"
 
 /// Default constructor.
 Icon::Icon (dim_t w, dim_t h, const color_t* p)
