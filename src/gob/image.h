@@ -45,6 +45,8 @@ public:
     inline iterator		begin (void)		{ return (m_Pixels.begin()); }
     inline const_iterator	end (void) const	{ return (m_Pixels.end()); }
     inline iterator		end (void)		{ return (m_Pixels.end()); }
+    inline size_type		size (void) const	{ return (m_Pixels.size()); }
+    inline size_type		capacity (void) const	{ return (m_Pixels.capacity()); }
     inline const CPalette&	Palette (void) const	{ return (m_Palette); }
     inline CPalette&		Palette (void)		{ return (m_Palette); }
     inline Size2d		Size (void) const	{ return (m_Size); }
