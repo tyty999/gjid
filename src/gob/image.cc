@@ -11,6 +11,10 @@
 
 namespace fbgl {
 
+//----------------------------------------------------------------------
+// Memory management.
+//----------------------------------------------------------------------
+
 /// Default constructor.
 CImage::CImage (void)
 : m_Pixels (),
@@ -42,14 +46,83 @@ void CImage::unlink (void)
     m_Size = Size2d();
 }
 
+//----------------------------------------------------------------------
+// Palette operations.
+//----------------------------------------------------------------------
+
 /// Returns the colordepth necessary to display this image.
 size_t CImage::BitsPerPixel (void) const
 {
+    assert (!Flag (f_MergedPalette) && "Color depth can not be determined while in merged state. Call NormalizePalette first.");
     size_t bpp = 1;
     while (m_Palette.size() > (1U << bpp))
 	++ bpp;
+    #ifndef NDEBUG
+	foreach (pixvec_t::const_iterator, i, m_Pixels)
+	    assert (*i < (1U << bpp) && "You have been writing to the image data without writing new color definitions to the palette. Because of this, some colors can't be found in the palette. Writing this image will produce an unreadable file which may crash badly written readers.");
+    #endif
     return (bpp);
 }
+
+/// Maps the image colors onto \p pal. Call after reading, before drawing.
+void CImage::MergePaletteInto (CPalette& pal)
+{
+    foreach (CPalette::iterator, i, m_Palette) {
+	CPalette::iterator f = find (pal, *i);
+	if (f == pal.end()) {
+	    assert (pal.size() < numeric_limits<color_t>::max() && "Your images have too many colors when combined. Reduce either the number of images or the colors in them.");
+	    if (pal.size() < numeric_limits<color_t>::max())
+		pal.push_back();
+	    f = pal.end() - 1;
+	}
+	setRayA (*i, distance (pal.begin(), f));
+    }
+    SetFlag (f_MergedPalette);
+    SetFlag (f_SortedPalette, false);
+    foreach (pixvec_t::iterator, i, m_Pixels)
+	*i = getRayA (m_Palette[*i]);
+}
+
+/// Reduces the colormap to minimum. Call before writing.
+void CImage::NormalizePalette (void)
+{
+    if (Flag (f_MergedPalette)) {
+	foreach (pixvec_t::iterator, i, m_Pixels)
+	    for (uoff_t j = 0; j < m_Palette.size(); ++ j)
+		if (*i == getRayA (m_Palette[j]))
+		    *i = j;
+	foreach (CPalette::iterator, i, m_Palette)
+	    setRayA (*i, 0U);
+	SetFlag (f_MergedPalette, false);
+    }
+
+    CPalette usedpal (m_Palette.size());
+    iota (usedpal.begin(), usedpal.end(), 0);
+    foreach (pixvec_t::const_iterator, i, m_Pixels)
+	usedpal[*i] += 0x0100;	// Count color usage
+    sort (usedpal);
+
+    CPalette::iterator firstUsed = usedpal.begin();
+    while (firstUsed != usedpal.end() && !(*firstUsed >> 8))
+	++ firstUsed;
+    usedpal.erase (usedpal.begin(), firstUsed);
+
+    assert ((!m_Palette.empty() || m_Pixels.empty()) && "This image has no colormap, so it is impossible to determine the pixel values!");
+    foreach (pixvec_t::iterator, i, m_Pixels) {
+	uoff_t j = 0;
+	while (j < usedpal.size() && *i != (usedpal[j] & 0xFF)) ++j;
+	assert (j < usedpal.size() && "This image contains pixel values not in the colormap.");
+	*i = min (j, usedpal.size() - 1);
+    }
+    for (uoff_t i = 0; i < usedpal.size(); ++ i)
+	usedpal[i] = m_Palette [usedpal[i] & 0xFF];
+    m_Palette = usedpal;
+    SetFlag (f_SortedPalette);
+}
+
+//----------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------
 
 /// Reads the colormap from a GIF file.
 void CImage::ReadGifColormap (istream& is, size_t bpp)
@@ -76,6 +149,8 @@ void CImage::WriteGifColormap (ostream& os) const
 /// Reads the object from stream \p is.
 void CImage::read (istream& is)
 {
+    m_Flags = 0;
+
     using namespace gif;
     CFileHeader fh;
     if (is.remaining() < stream_size_of(fh))
@@ -128,6 +203,7 @@ void CImage::read (istream& is)
 /// Writes the object to stream \p os.
 void CImage::write (ostream& os) const
 {
+    assert (!Flag(f_MergedPalette) && "The image can not be written in merged state. Call NormalizePalette to rebuild the palette of the image.");
     using namespace gif;
     CFileHeader fh;
     fh.m_Width = Width();

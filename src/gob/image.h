@@ -55,8 +55,10 @@ public:
     inline iterator		iat (Point p)		{ return (begin() + p[1] * Width() + p[0]); }
     inline const_iterator	iat (Point p) const	{ return (begin() + p[1] * Width() + p[0]); }
     inline bool			Flag (EFlag f) const		{ return (m_Flags[f]); }
-    inline void			SetFlag (EFlag f, bool v)	{ m_Flags.set (f, v); }
+    inline void			SetFlag (EFlag f, bool v =true)	{ m_Flags.set (f, v); }
     size_t			BitsPerPixel (void) const;
+    void			MergePaletteInto (CPalette& pal);
+    void			NormalizePalette (void);
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;

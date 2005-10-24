@@ -24,6 +24,14 @@ inline void unRGB (colordef_t c, ray_t& r, ray_t& g, ray_t& b)
     { b = c; c >>= 8; g = c; c >>= 8; r = c; }
 inline void unRGBA (colordef_t c, ray_t& r, ray_t& g, ray_t& b, ray_t& a)
     { b = c; c >>= 8; g = c; c >>= 8; r = c; c >>= 8; a = c; }
+inline void setRayR (colordef_t& c, ray_t r)	{ c &= 0xFF00FFFF; c |= r << 16;}
+inline void setRayG (colordef_t& c, ray_t g)	{ c &= 0xFFFF00FF; c |= g << 8;	}
+inline void setRayB (colordef_t& c, ray_t b)	{ c &= 0xFFFFFF00; c |= b;	}
+inline void setRayA (colordef_t& c, ray_t a)	{ c &= 0x00FFFFFF; c |= a << 24;}
+inline ray_t getRayR (colordef_t c)		{ return (c & 0x00FFFFFF); }
+inline ray_t getRayG (colordef_t c)		{ return (c & 0xFF00FFFF); }
+inline ray_t getRayB (colordef_t c)		{ return (c & 0xFFFF00FF); }
+inline ray_t getRayA (colordef_t c)		{ return (c & 0xFFFFFF00); }
 
 typedef vector<colordef_t>	CPalette;
 
