@@ -32,10 +32,9 @@ OPTIMIZATION	= @INLINE_OPTS@@PROCESSOR_OPTS@
 CXXFLAGS	= @CXXFLAGS@ ${CXXWARNOPTS} -I ${INCDIR} -nodefaultlibs
 LDFLAGS		= @LDFLAGS@  -L ${LIBDIR} -nodefaultlibs
 ifdef DEBUG
-    CFLAGS	+= -O0 -g
     CXXFLAGS	+= -O0 -g
 else
-    CFLAGS	+= -Os -DNDEBUG=1 -fomit-frame-pointer ${OPTIMIZATION}
+    CXXFLAGS	+= -Os -DNDEBUG=1 -fomit-frame-pointer ${OPTIMIZATION}
     LDFLAGS	+= -s
 endif
 SHBLDFL		= @SHBLDFL@
