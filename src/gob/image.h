@@ -58,6 +58,8 @@ public:
     inline const_iterator	iat (Point p) const	{ return (begin() + p[1] * Width() + p[0]); }
     inline bool			Flag (EFlag f) const		{ return (m_Flags[f]); }
     inline void			SetFlag (EFlag f, bool v =true)	{ m_Flags.set (f, v); }
+    color_t			AllocColor (colordef_t c);
+    inline color_t		AllocColor (ray_t r, ray_t g, ray_t b)	{ return (AllocColor (RGB(r,g,b))); }
     size_t			BitsPerPixel (void) const;
     void			MergePaletteInto (CPalette& pal);
     void			NormalizePalette (void);

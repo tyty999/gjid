@@ -33,7 +33,14 @@ inline ray_t getRayG (colordef_t c)		{ return (c >> 8); }
 inline ray_t getRayB (colordef_t c)		{ return (c); }
 inline ray_t getRayA (colordef_t c)		{ return (c >> 24); }
 
-typedef vector<colordef_t>	CPalette;
+/// \class CPalette pal.h fbgl.h
+/// \brief Contains palette entries.
+class CPalette : public vector<colordef_t> {
+public:
+    inline explicit	CPalette (size_t n = 0) : vector<colordef_t> (n) {}
+    color_t		AllocColor (colordef_t c);
+    inline color_t	AllocColor (ray_t r, ray_t g, ray_t b, ray_t a = 0)	{ return (AllocColor (RGB(r,g,b,a))); }
+};
 
 } // namespace fbgl
 

@@ -50,6 +50,13 @@ void CImage::unlink (void)
 // Palette operations.
 //----------------------------------------------------------------------
 
+/// Puts \p c into the palette and returns its index.
+color_t CImage::AllocColor (colordef_t c)
+{
+    assert (!Flag (f_MergedPalette) && "You can't add new colors to a merged image. Call NormalizePalette to make it writable.");
+    return (m_Palette.AllocColor (c));
+}
+
 /// Returns the colordepth necessary to display this image.
 size_t CImage::BitsPerPixel (void) const
 {
@@ -67,21 +74,10 @@ size_t CImage::BitsPerPixel (void) const
 /// Maps the image colors onto \p pal. Call after reading, before drawing.
 void CImage::MergePaletteInto (CPalette& pal)
 {
+    assert (!m_Palette.empty() && "This image doesn't have a palette to merge");
     SetFlag (f_SortedPalette, false);
-    if (m_Palette.empty()) {
-	m_Palette = pal;
-	return;
-    }
-    foreach (CPalette::iterator, i, m_Palette) {
-	CPalette::iterator f = find (pal, *i);
-	if (f == pal.end()) {
-	    assert (pal.size() < numeric_limits<color_t>::max() && "Your images have too many colors when combined. Reduce either the number of images or the colors in them.");
-	    if (pal.size() < numeric_limits<color_t>::max())
-		pal.push_back();
-	    f = pal.end() - 1;
-	}
-	setRayA (*i, distance (pal.begin(), f));
-    }
+    foreach (CPalette::iterator, i, m_Palette)
+	setRayA (*i, pal.AllocColor(*i));
     SetFlag (f_MergedPalette);
     foreach (pixvec_t::iterator, i, m_Pixels)
 	*i = getRayA (m_Palette [min (*i, m_Palette.size()-1)]);
