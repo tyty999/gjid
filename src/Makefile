@@ -1,4 +1,4 @@
-include Common.mk
+include ../Common.mk
 
 LIBNAME	= fbgl
 MAJOR	= 1
@@ -6,7 +6,7 @@ MINOR	= 0
 BUILD	= 0
 
 SRCS	= $(wildcard *.cc con/*.cc x11/*.cc)
-INCS	= $(filter-out bsconf.%,$(wildcard *.h con/*.h x11/*.h))
+INCS	= $(wildcard *.h con/*.h x11/*.h)
 OBJS	= $(SRCS:.cc=.o)
 LIBS	= -L /usr/X11R6/lib -lutio -lustl -lsupc++ -lX11 -lXxf86vm
 

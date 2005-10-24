@@ -1,4 +1,4 @@
-include ../Common.mk
+include ../../Common.mk
 
 BVTCCS	= $(wildcard bvt*.cc)
 SRCS	= ${BVTCCS} stdtest.cc
