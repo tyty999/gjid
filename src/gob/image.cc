@@ -32,7 +32,7 @@ void CImage::link (memlink l, Size2d sz)
 {
     m_Pixels.link ((pixel_t*) l.begin(), (pixel_t*) l.end());
     m_Size = sz;
-    assert (m_Pixels.size() == Width() * Height());
+    assert (m_Pixels.size() == size_t(Width() * Height()));
 }
 
 /// Detaches from the current pixel data.
