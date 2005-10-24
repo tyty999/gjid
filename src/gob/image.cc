@@ -84,7 +84,7 @@ void CImage::MergePaletteInto (CPalette& pal)
     }
     SetFlag (f_MergedPalette);
     foreach (pixvec_t::iterator, i, m_Pixels)
-	*i = getRayA (m_Palette[*i]);
+	*i = getRayA (m_Palette [min (*i, m_Palette.size()-1)]);
 }
 
 /// Reduces the colormap to minimum. Call before writing.
@@ -243,7 +243,8 @@ void CImage::write (ostream& os) const
 size_t CImage::stream_size (void) const
 {
     size_t s = stream_size_of (gif::CFileHeader());
-    s += 3 * (1 << BitsPerPixel());	// colormap
+    const size_t bpp (BitsPerPixel());
+    s += 3 * (1 << bpp);	// colormap
     if (Flag (f_Transparent)) {
 	s += stream_size_of (GIF_EXT_BLOCK_SIG) + stream_size_of (GIF_EXT_GC_SIG);
 	s += stream_size_of (gif::CGraphicsControl());
@@ -252,7 +253,7 @@ size_t CImage::stream_size (void) const
     s += stream_size_of (gif::CImageHeader());
     gif::CCompressor c;
     istream is (begin(), Width() * Height());
-    c.SetCodeSize (BitsPerPixel());
+    c.SetCodeSize (bpp);
     s += c.EstimateSize (is);
     s += stream_size_of (GIF_END_OF_DATA_SIG);
     return (s);
