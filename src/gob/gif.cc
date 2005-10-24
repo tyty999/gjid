@@ -239,11 +239,8 @@ void CCompressor::Run (istream& is, ostream& os)
     CTable::code_t base, nc;
     while (is.remaining()) {
 	is >> *pk++;
-	if ((nc = t.Find (prefix.begin(), pk)) != CTable::c_Unused && pk < prefix.end() - 1) {
-	    if (!is.remaining())
-		WriteCode (os, nc);
+	if ((nc = t.Find (prefix.begin(), pk)) != CTable::c_Unused && pk < prefix.end() - 1)
 	    continue;
-	}
 	base = t.Find (prefix.begin(), --pk);
 	WriteCode (os, base);
 	nc = t.AddString (base, *pk, true);
@@ -254,6 +251,9 @@ void CCompressor::Run (istream& is, ostream& os)
 	prefix[0] = *pk;
 	pk = prefix.begin() + 1;
     }
+    if ((nc = t.Find (prefix.begin(), pk)) == CTable::c_Unused)
+	nc = t.Find (pk-1,pk);
+    WriteCode (os, nc);
     WriteCode (os, t.EndCode());
     FlushCurByte (os);
     StartNextBlock (os);
@@ -269,11 +269,8 @@ size_t CCompressor::EstimateSize (istream& is)
     CTable::code_t base, nc;
     while (is.remaining()) {
 	is >> *pk++;
-	if ((nc = t.Find (prefix.begin(), pk)) != CTable::c_Unused && pk < prefix.end() - 1) {
-	    if (!is.remaining())
-		nBits += t.CodeBits();
+	if ((nc = t.Find (prefix.begin(), pk)) != CTable::c_Unused && pk < prefix.end() - 1)
 	    continue;
-	}
 	base = t.Find (prefix.begin(), --pk);
 	nBits += t.CodeBits();
 	nc = t.AddString (base, *pk, true);
@@ -284,6 +281,7 @@ size_t CCompressor::EstimateSize (istream& is)
 	prefix[0] = *pk;
 	pk = prefix.begin() + 1;
     }
+    nBits += t.CodeBits();
     nBits += t.CodeBits();
     size_t nBytes = Align(nBits,8U) / 8;
     return (s += nBytes + nBytes / GIF_MAX_BLOCK_SIZE + 1);
