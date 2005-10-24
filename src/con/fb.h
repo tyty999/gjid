@@ -14,7 +14,7 @@
 
 namespace fbgl {
 
-class CConsoleFramebuffer : public CFramebuffer {
+class DLL_LOCAL CConsoleFramebuffer : public CFramebuffer {
 public:
     static CConsoleFramebuffer&	Instance (void);
     virtual void		Open (void);

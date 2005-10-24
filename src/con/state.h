@@ -20,7 +20,7 @@ using namespace ustl;
 
 //----------------------------------------------------------------------
 
-class CConsoleState {
+class DLL_LOCAL CConsoleState {
 public:
     static CConsoleState&	Instance (void);
     void			SetTerm (const char* termname = NULL);

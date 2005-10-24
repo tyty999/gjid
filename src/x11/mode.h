@@ -19,7 +19,7 @@ namespace fbgl {
 ///
 /// \brief Xlib framebuffer mode extension.
 ///
-class CXlibMode : public CMode {
+class DLL_LOCAL CXlibMode : public CMode {
 public:
     /// Bits for flags in XF86VidModeModeInfo
     enum XModeFlagBits {

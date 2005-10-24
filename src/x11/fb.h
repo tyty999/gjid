@@ -18,7 +18,7 @@ namespace fbgl {
 ///
 /// \brief Xlib backend.
 ///
-class CXlibFramebuffer : public CFramebuffer {
+class DLL_LOCAL CXlibFramebuffer : public CFramebuffer {
 public:
     static CXlibFramebuffer&	Instance (void);
     virtual void		Open (void);

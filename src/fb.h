@@ -24,7 +24,7 @@ enum EStdFbMode {
 
 /// \class CFramebuffer fb.h fbgl/fb.h
 /// \brief Abstract framebuffer interface.
-class CFramebuffer {
+class DLL_LOCAL CFramebuffer {
 public:
     virtual void		Open (void);
     virtual void		Close (void) = 0;

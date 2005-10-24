@@ -15,7 +15,7 @@
 namespace fbgl {
 
 /// \class CColormap cmap.h "render/fb/cmap.h"
-class CColormap : public fb_cmap {
+class DLL_LOCAL CColormap : public fb_cmap {
 public:
     typedef const struct fb_var_screeninfo&	rcvarinfo_t;
     typedef const struct fb_fix_screeninfo&	rcfixinfo_t;
