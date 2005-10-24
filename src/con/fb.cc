@@ -59,8 +59,11 @@ void CConsoleFramebuffer::Open (void)
 /// Leaves graphics mode and closes the device.
 void CConsoleFramebuffer::Close (void)
 {
-    if (m_Screen.data())
+    if (m_Screen.data()) {
+	size_t visibleSize = m_Var.xres * m_Var.yres * m_Var.bits_per_pixel / 8;
+	fill_n (m_Screen.begin(), visibleSize, memlink::value_type(0));
 	m_Device.Unmap (m_Screen);
+    }
     if (m_Device.IsOpen()) {
 	SetScreeninfo (m_OrigVar);
 	m_Device.Close();
