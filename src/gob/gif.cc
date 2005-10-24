@@ -182,6 +182,45 @@ CCompressor::CCompressor (void)
 {
 }
 
+/// Writes the current byte to \p os.
+inline void CCompressor::FlushCurByte (ostream& os)
+{
+    if (!m_BitsUsed)
+	return;
+    os << m_CurByte;
+    ++ m_BlockSize;
+    m_CurByte = 0;
+    m_BitsUsed = 0;
+}
+
+/// Updates the size of the current block in its header and starts a new block.
+/// The new block has zero size by default.
+void CCompressor::StartNextBlock (ostream& os)
+{
+    const uoff_t cp (os.pos());
+    os.seek (cp - m_BlockSize - 1);
+    os << m_BlockSize;
+    os.seek (cp);
+    os << (m_BlockSize = 0);
+}
+
+/// Writes code \p c to \p os as CTable::CodeBits bits.
+void CCompressor::WriteCode (ostream& os, CTable::code_t c)
+{
+    size_t btw = t.CodeBits();
+    while (btw) {
+	size_t bw = min (btw, 8U - m_BitsUsed);
+	m_CurByte |= (c & BitMask(CTable::code_t,bw)) << m_BitsUsed;
+	m_BitsUsed += bw;
+	c >>= bw;
+	btw -= bw;
+	if (m_BitsUsed == 8)
+	    FlushCurByte (os);
+	if (m_BlockSize >= GIF_MAX_BLOCK_SIZE)
+	    StartNextBlock (os);
+    }
+}
+
 /// Compresses data from \p is into \p os.
 void CCompressor::Run (istream& is, ostream& os)
 {
@@ -242,43 +281,6 @@ size_t CCompressor::EstimateSize (istream& is)
     return (s += nBytes + nBytes / GIF_MAX_BLOCK_SIZE + 1);
 }
 
-/// Writes the current byte to \p os.
-inline void CCompressor::FlushCurByte (ostream& os)
-{
-    os << m_CurByte;
-    ++ m_BlockSize;
-    m_CurByte = 0;
-    m_BitsUsed = 0;
-}
-
-/// Updates the size of the current block in its header and starts a new block.
-/// The new block has zero size by default.
-void CCompressor::StartNextBlock (ostream& os)
-{
-    const uoff_t cp (os.pos());
-    os.seek (cp - m_BlockSize - 1);
-    os << m_BlockSize;
-    os.seek (cp);
-    os << (m_BlockSize = 0);
-}
-
-/// Writes code \p c to \p os as CTable::CodeBits bits.
-void CCompressor::WriteCode (ostream& os, CTable::code_t c)
-{
-    size_t btw = t.CodeBits();
-    while (btw) {
-	size_t bw = min (btw, 8U - m_BitsUsed);
-	m_CurByte |= (c & BitMask(CTable::code_t,bw)) << m_BitsUsed;
-	m_BitsUsed += bw;
-	c >>= bw;
-	btw -= bw;
-	if (m_BitsUsed == 8)
-	    FlushCurByte (os);
-	if (m_BlockSize >= GIF_MAX_BLOCK_SIZE)
-	    StartNextBlock (os);
-    }
-}
-
 //----------------------------------------------------------------------
 // Blocks headers.
 //----------------------------------------------------------------------
@@ -306,7 +308,9 @@ void CFileHeader::read (istream& is)
     is.read (sig, 6);
     if (strncmp (sig, s_GifSig, 6))
 	throw runtime_error ("no GIF89 data found in the input stream");
-    is >> m_Width >> m_Height;
+    uint8_t c;
+    is >> c; m_Width = c; is >> c; m_Width |= c << 8;
+    is >> c; m_Height = c; is >> c; m_Height |= c << 8;
     is >> m_Resolution >> m_Background >> m_AspectRatio;
 }
 
@@ -314,7 +318,8 @@ void CFileHeader::read (istream& is)
 void CFileHeader::write (ostream& os) const
 {
     os.write (s_GifSig, 6);
-    os << m_Width << m_Height;
+    os << uint8_t(m_Width) << uint8_t(m_Width >> 8);
+    os << uint8_t(m_Height) << uint8_t(m_Height >> 8);
     os << m_Resolution << m_Background << m_AspectRatio;
 }
 
