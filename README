@@ -1,43 +1,42 @@
 
-GJID v1.0 for Linux
+GJID v2.0 for Linux
 ------------------------
 
-Linux GJID is a port of a DOS shareware game with that name. Unlike the DOS
-game this is freeware. I have not used any of the DOS version's code, so I
-don't think I am violating anything. After all, there are so many breakout
-clones :) Feel free to distribute it or use the code at your
-discretion (although I would like it if you told me) The levels are
-taken copied entirely from there, although the data file format is not
-supported - you will have to code in the levels by hand.
+Linux GJID is a port of a DOS shareware game with that name. The graphics
+are mine, but the levels are the same as in the original (although the
+data file format is not supported - you will have to code new levels with
+the editor). Thus you get almost all the functionality of the shareware
+version executable. The registered version did not come with any new
+levels. I don't have John Remyn's current email, but if you want to track
+him down and send him money, you're encouraged to do so. Level design,
+after all, is the hardest part of implementing this game :)
 
-I have not been able to contact the author of the DOS game, due to expiration 
-of his E-Mail address (?), which can be found in the document below.
-I can be reached at msharov@rucs2.sunlab.cs.runet.edu, which is a valid
-address until January 1996. After that you can try to locate me through
-the Four11 directory (http://www.Four11.com).
+In case you are wondering, yes, I've corresponded with John back when I
+first released the SVGALib version, and he didn't object to its existence.
+John, if you're reading this, please send me your current email address
+so I can include it here.
 
-I would like you to think of this as a direct port, so the following
-document, taken from the original DOS GJID distribution, is included. The
-controls are not the same as described below - they are explained in the
-game's titles.
-
-My GJID also has a builtin level editor, which can be started by running
-gjid with an argument. You will need a mouse to use it. The controls are:
-	'n' - Next (or new) level
-	'p' - Previous level
-	'q' - Quit
+The README from the original game is at the end of this file. The keyboard
+controls are not the same as described in it; you'll find the real ones
+on the in-game introduction screens.
 
 ---------------------------
 
-To compile GJID you will need SVGALIB installed. I have used v1.2, but it is
-possible that it may compile with earlier versions too. You should be able
-to link with -lvga -lvgagl .
+To compile GJID you will need to compile and install:
 
-Edit the Makefiles in gamelib and src and compile script in tools to set
-your compiler and options. The 'build' script assumes that you have bash in
-/bin/bash and that you have awk; if it is not so, edit build and src/mkdata . 
-After build is finished, which on my 486DX33 takes 3.68 minutes, you will be 
-asked to install as root because GJID has to be suid root.
+libfbgl	- http://sourceforge.net/projects/fbgl	- graphics
+libutio	- http://sourceforge.net/projects/utio	- console I/O
+libustl	- http://sourceforge.net/projects/ustl	- C++ containers
+
+Then:
+
+./configure
+make
+make install
+
+and run:
+
+gjid
 
 Enjoy the game!
 
