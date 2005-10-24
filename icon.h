@@ -14,32 +14,19 @@ using namespace fbgl;
 ///
 /// \brief A simple image object.
 ///
-class Icon {
+class Icon : public CImage {
 public:
 				Icon (dim_t w = 1, dim_t h = 1, const color_t* p = NULL);
     void			SetImage (dim_t Width, dim_t Height, const color_t* p = NULL);
     inline Rect			Area (coord_t x, coord_t y) const		{ return (Rect (x, y, x + Width(), y + Height())); }
-    inline void			Put (CGC& gc, coord_t x, coord_t y) const	{ gc.Image (Area(x,y), m_Pixels.begin()); }
-    inline void			PutMasked (CGC& gc, coord_t x, coord_t y) const	{ gc.ImageMasked (Area(x,y), m_Pixels.begin()); }
-    inline void			Get (CGC& gc, coord_t x, coord_t y)		{ gc.GetImage (Area(x,y), m_Pixels.begin()); }
-    inline dim_t		Width (void) const				{ return (m_Width); }
-    inline dim_t		Height (void) const				{ return (m_Height); }
-    inline const color_t*	GetRow (coord_t row) const			{ return (m_Pixels.begin() + row * Width()); }
-    inline color_t*		GetRow (coord_t row)				{ return (m_Pixels.begin() + row * Width()); }
-    inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ GetRow(y)[x] = c; }
-    inline color_t		GetPixel (coord_t x, coord_t y) const		{ return (GetRow (y)[x]); }
-    inline CPalette&		Palette (void)					{ return (m_Palette); }
-    inline const CPalette&	Palette (void) const				{ return (m_Palette); }
+    inline void			Put (CGC& gc, coord_t x, coord_t y) const	{ gc.Image (Area(x,y), begin()); }
+    inline void			PutMasked (CGC& gc, coord_t x, coord_t y) const	{ gc.ImageMasked (Area(x,y), begin()); }
+    inline void			Get (CGC& gc, coord_t x, coord_t y)		{ gc.GetImage (Area(x,y), begin()); }
+    inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ at(Point(x,y)) = c; }
+    inline color_t		GetPixel (coord_t x, coord_t y) const		{ return (at(Point(x,y))); }
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;
-protected:
-    typedef vector<color_t>	pixvec_t;
-protected:
-    pixvec_t			m_Pixels;
-    CPalette			m_Palette;
-    dim_t			m_Width;
-    dim_t			m_Height;
 };	
 
 //----------------------------------------------------------------------

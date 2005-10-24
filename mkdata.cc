@@ -96,7 +96,7 @@ void CDataBuilder::LoadFromFiles (void)
 
 void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
 {
-    m_Pics[dest].SetImage (m_Pics[src].Height(), m_Pics[src].Width(), m_Pics[src].GetRow(0));
+    m_Pics[dest].SetImage (m_Pics[src].Height(), m_Pics[src].Width(), m_Pics[src].begin());
     for (dim_t y = 0; y < m_Pics[src].Height(); ++ y)
 	for (dim_t x = 0; x < m_Pics[src].Width(); ++ x)
 	    m_Pics[dest].SetPixel (m_Pics[src].Height() - (y + 1), x, m_Pics[src].GetPixel (x, y));
