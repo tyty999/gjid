@@ -59,21 +59,21 @@ typedef vector<Icon>	picvec_t;
 
 class ObjectType {
 public:
-    inline	ObjectType (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
+    inline	ObjectType (coord_t nx = 0, coord_t ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
     void	read (istream& is);
     void	write (ostream& os) const;
     size_t	stream_size (void) const;
 public:
-    int 	x;
-    int 	y;
-    PicIndex	pic;
+    uint8_t 	x;
+    uint8_t 	y;
+    uint8_t	pic;
 };
 
 class Level {
 public:
 			Level (void);
     void		Draw (CGC& gc, const picvec_t& tiles) const;
-    inline PicIndex	At (coord_t x, coord_t y) const			{ return (m_Map [y * MAP_WIDTH + x]); }
+    inline PicIndex	At (coord_t x, coord_t y) const			{ return (PicIndex (m_Map [y * MAP_WIDTH + x])); }
     inline void		SetCell (coord_t x, coord_t y, PicIndex pic)	{ m_Map [y * MAP_WIDTH + x] = pic; }
     inline bool		Finished (void) const				{ return (m_Crates.empty() && At(m_Robot.x, m_Robot.y) == ExitPix); }
     inline void		DisposeCrate (uoff_t index)			{ m_Crates.erase (m_Crates.begin() + index); }
@@ -86,7 +86,7 @@ public:
     int			FindCrate (coord_t x, coord_t y) const;
     bool		CanMoveTo (coord_t x, coord_t y, RobotDir where) const;
 private:
-    typedef vector<PicIndex>	tilemap_t;
+    typedef vector<uint8_t>	tilemap_t;
     typedef vector<ObjectType>	objvec_t;
 private:
     tilemap_t		m_Map;

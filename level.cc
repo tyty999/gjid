@@ -125,27 +125,26 @@ void Level::AddCrate (coord_t x, coord_t y, PicIndex pic)
 
 void Level::read (istream& is)
 {
-    foreach (tilemap_t::iterator, i, m_Map)
-	is >> *i;
+    is >> m_Map;
     is >> m_Crates;
     is >> m_Robot;
+    is.align();
 }
 
 void Level::write (ostream& os) const
 {
-    foreach (tilemap_t::const_iterator, i, m_Map)
-	os << *i;
+    os << m_Map;
     os << m_Crates;
     os << m_Robot;
+    os.align();
 }
 
 size_t Level::stream_size (void) const
 {
     size_t s (0);
-    foreach (tilemap_t::const_iterator, i, m_Map)
-	s += stream_size_of (*i);
+    s += stream_size_of (m_Map);
     s += stream_size_of (m_Crates);
-    s += stream_size_of (m_Robot);
+    s += Align (stream_size_of (m_Robot));
     return (s);
 }
 
