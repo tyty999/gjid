@@ -110,6 +110,7 @@ void CImage::NormalizePalette (void)
     while (firstUsed != usedpal.end() && !(*firstUsed >> 8))
 	++ firstUsed;
     usedpal.erase (usedpal.begin(), firstUsed);
+    reverse (usedpal);
 
     assert ((!m_Palette.empty() || m_Pixels.empty()) && "This image has no colormap, so it is impossible to determine the pixel values!");
     foreach (pixvec_t::iterator, i, m_Pixels) {
