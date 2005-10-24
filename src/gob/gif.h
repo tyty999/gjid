@@ -124,7 +124,7 @@ private:
 #define GIF_EXT_BLOCK_SIG	uint8_t('!')
 #define GIF_IMAGE_BLOCK_SIG	uint8_t(',')
 #define GIF_END_OF_DATA_SIG	uint8_t(';')
-#define GIF_MAX_BLOCK_SIZE	uint8_t(0xFF)
+#define GIF_MAX_BLOCK_SIZE	uint8_t(0xFE)
 #define GIF_ZERO_BLOCK		uint8_t(0)
 
 #define GIF_EXT_GC_SIG		uint8_t(0xF9)
