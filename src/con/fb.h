@@ -37,6 +37,7 @@ private:
     struct fb_var_screeninfo	m_Var;
     CFile			m_Device;
     memlink			m_Screen;
+    memblock			m_OrigScreen;
     CColormap			m_Colormap;
 };
 

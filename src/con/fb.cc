@@ -22,6 +22,8 @@ CConsoleFramebuffer::CConsoleFramebuffer (void)
   m_OrigVar (),
   m_Var (),
   m_Device (),
+  m_Screen (),
+  m_OrigScreen (),
   m_Colormap ()
 {
     CConsoleState::Instance().RegisterFramebuffer (this);
@@ -53,6 +55,11 @@ void CConsoleFramebuffer::Open (void)
     m_Var = m_OrigVar;
     m_Screen = m_Device.Map (m_Fix.smem_len);
     CConsoleState::Instance().EnterGraphicsMode();
+
+    size_t visibleSize = m_Var.xres * m_Var.yres * m_Var.bits_per_pixel / 8;
+    m_OrigScreen.resize (visibleSize);
+    copy_n (m_Screen.begin(), visibleSize, m_OrigScreen.begin());
+
     CFramebuffer::Open();
 }
 
@@ -60,8 +67,7 @@ void CConsoleFramebuffer::Open (void)
 void CConsoleFramebuffer::Close (void)
 {
     if (m_Screen.data()) {
-	size_t visibleSize = m_Var.xres * m_Var.yres * m_Var.bits_per_pixel / 8;
-	fill_n (m_Screen.begin(), visibleSize, memlink::value_type(0));
+	copy (m_OrigScreen, m_Screen.begin());
 	m_Device.Unmap (m_Screen);
     }
     if (m_Device.IsOpen()) {
