@@ -67,6 +67,11 @@ size_t CImage::BitsPerPixel (void) const
 /// Maps the image colors onto \p pal. Call after reading, before drawing.
 void CImage::MergePaletteInto (CPalette& pal)
 {
+    SetFlag (f_SortedPalette, false);
+    if (m_Palette.empty()) {
+	m_Palette = pal;
+	return;
+    }
     foreach (CPalette::iterator, i, m_Palette) {
 	CPalette::iterator f = find (pal, *i);
 	if (f == pal.end()) {
@@ -78,7 +83,6 @@ void CImage::MergePaletteInto (CPalette& pal)
 	setRayA (*i, distance (pal.begin(), f));
     }
     SetFlag (f_MergedPalette);
-    SetFlag (f_SortedPalette, false);
     foreach (pixvec_t::iterator, i, m_Pixels)
 	*i = getRayA (m_Palette[*i]);
 }
