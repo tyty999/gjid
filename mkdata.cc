@@ -11,7 +11,6 @@ private:
     void		SaveToDat (const char* filename);
     void		RotatePixClockwise (PicIndex src, PicIndex dest);
 private:
-    CPalette		m_Palette;
     Font		m_Font;
     vector<Level>	m_Levels;
     string		m_Story;
@@ -51,7 +50,6 @@ void Save (const T& v, const char* filename)
 
 void CDataBuilder::LoadFromFiles (void)
 {
-    Load (m_Palette, "data/rgb.pal");
     Load (m_Font, "data/default.fnt");
     static const char* gifs [NumberOfPics] = {
 	"data/dispose.gif",
@@ -103,14 +101,13 @@ void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
 
 void CDataBuilder::SaveToDat (const char* filename)
 {
-    const size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font) +
+    const size_t dataSize = stream_size_of(m_Font) +
 		stream_size_of (m_Pics) + Align (stream_size_of (m_Story)) +
 		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
     ostream os (buf);
 
-    os << m_Palette;
     os << m_Font;
     os << m_Pics;
     os << m_Story;

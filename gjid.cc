@@ -27,6 +27,7 @@ GJID::GJID (void)
   m_Levels (0),
   m_Story ()
 {
+    m_Palette.AllocColor (0,0,0);
 }
 
 /*static*/ GJID& GJID::Instance (void)
@@ -76,6 +77,7 @@ void GJID::OnDraw (CGC& gc)
     CApplication::OnDraw (gc);
     if (m_Pics.empty())
 	return;
+    gc.Palette() = m_Palette;
     typedef void (GJID::*pfndraw_t)(CGC& gc);
     static const pfndraw_t dfn [state_Last] = {
 	&GJID::IntroScreen,	// state_Title
@@ -86,7 +88,6 @@ void GJID::OnDraw (CGC& gc)
 	&GJID::DrawEditor	// state_Editor
     };
     (this->*dfn[m_State])(gc);
-    gc.Palette() = m_Palette;
 }
 
 void GJID::OnKey (key_t key, keystate_t ks)
@@ -166,7 +167,7 @@ void GJID::PrintStory (CGC& gc)
 {
     coord_t x, y, row = 0;
 
-    gc.Clear (68);
+    gc.Clear (gc.AllocColor (0,0,64));
     for (y = 0; y < gc.Height(); y += SQUARE_SIDE) {
 	m_Pics [Wall1Pix].Put (gc, 0, y);
 	m_Pics [Wall1Pix].Put (gc, gc.Width() - SQUARE_SIDE, y);
@@ -175,8 +176,8 @@ void GJID::PrintStory (CGC& gc)
 	m_Pics [Wall1Pix].Put (gc, x, 0);
 	m_Pics [Wall1Pix].Put (gc, x, gc.Height() - SQUARE_SIDE);
     }
-    m_Font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", 16);
-    m_Font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", 25);
+    m_Font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
+    m_Font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
 
     if (m_StoryPage == 0) {
 	m_Pics[LogoGPix].PutMasked (gc, 40, SQUARE_SIDE * 2); 
@@ -196,26 +197,26 @@ void GJID::PrintStory (CGC& gc)
 	    ist = iend;
 	    if (line == "$")
 		break;
-	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, 140);
+	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
     } else if (m_StoryPage == 2) {
 	x = SQUARE_SIDE * 2;
 	y = SQUARE_SIDE * 2 + 7;
-	m_Font.PrintString (gc, x + 50, y, "Things you will find in the maze:", 15);
+	m_Font.PrintString (gc, x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
 	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
 	    m_Pics [pic[i]].PutMasked (gc, x, y);
-	    m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, desc[i], 140);
+	    m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
 	    y += 17;
 	}
 	m_Pics [OWDNorthPix].Put (gc, x, y);
 	m_Pics [OWDSouthPix].Put (gc, x += SQUARE_SIDE, y);
 	m_Pics [OWDEastPix].Put (gc, x += SQUARE_SIDE, y);
 	m_Pics [OWDWestPix].Put (gc, x += SQUARE_SIDE, y);
-	m_Font.PrintString (gc, x += SQUARE_SIDE * 2, y + 5, "- One-way doors", 140);
+	m_Font.PrintString (gc, x += SQUARE_SIDE * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
     }
 }
 
@@ -271,8 +272,9 @@ void GJID::DrawEditor (CGC& gc)
 	m_Pics[i].Put (gc, i * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
     const Point strtl (m_SelectedTile * SQUARE_SIDE);
     const Point sprtl (m_SelectedPic * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
-    gc.Box (Rect (strtl, strtl + SQUARE_SIDE - 1), 15);
-    gc.Box (Rect (sprtl, sprtl + SQUARE_SIDE - 1), 15);
+    const color_t white (gc.AllocColor (255,255,255));
+    gc.Box (Rect (strtl, strtl + SQUARE_SIDE - 1), white);
+    gc.Box (Rect (sprtl, sprtl + SQUARE_SIDE - 1), white);
 }
 
 void GJID::EditorKeys (key_t key, keystate_t)
@@ -343,7 +345,6 @@ void GJID::LoadData (const char* filename)
     memblock buf;
     buf.read_file (filename);
     istream is (buf);
-    is >> m_Palette;
     is >> m_Font;
     is >> m_Pics;
     if (m_Pics.size() != NumberOfPics)
@@ -357,14 +358,13 @@ void GJID::LoadData (const char* filename)
 
 void GJID::SaveData (const char* filename) const
 {
-    const size_t dataSize = stream_size_of(m_Palette) + stream_size_of(m_Font) +
+    const size_t dataSize = stream_size_of(m_Font) +
 		stream_size_of (m_Pics) + Align (stream_size_of (m_Story)) +
 		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
     ostream os (buf);
 
-    os << m_Palette;
     os << m_Font;
     os << m_Pics;
     os << m_Story;
