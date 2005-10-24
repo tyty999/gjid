@@ -3,7 +3,7 @@ include ../Common.mk
 BVTCCS	= $(wildcard bvt*.cc)
 SRCS	= ${BVTCCS} stdtest.cc
 
-BVTS	= $(filter-out bvt01,$(BVTCCS:.cc=))
+BVTS	= $(BVTCCS:.cc=)
 OBJS	= $(SRCS:.cc=.o)
 LIBS	= ${LANG_LIBS} -l${LIBNAME} -lustl -lc
 TOCLEAN	+= ${BVTS}
