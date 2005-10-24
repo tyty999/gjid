@@ -221,7 +221,9 @@ void CImage::write (ostream& os) const
 
     if (Flag (f_Transparent)) {
 	CGraphicsControl gch;
-	gch.SetTransparent (0);
+	for (uoff_t i = 0; i < m_Palette.size(); ++ i)
+	    if (!m_Palette[i])
+		gch.SetTransparent (i);
 	os << GIF_EXT_BLOCK_SIG << GIF_EXT_GC_SIG << gch;
     }
 
