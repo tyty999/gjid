@@ -21,11 +21,25 @@ CImage::CImage (void)
 }
 
 /// Resize the image to the given dimensions.
-void CImage::Resize (dim_t w, dim_t h)
+void CImage::Resize (Size2d sz)
 {
-    m_Pixels.resize (w * h);
-    m_Size[0] = w;
-    m_Size[1] = h;
+    m_Pixels.resize (sz[0] * sz[1]);
+    m_Size = sz;
+}
+
+/// Attaches to pixels at \p l of size \p sz.
+void CImage::link (memlink l, Size2d sz)
+{
+    m_Pixels.link ((pixel_t*) l.begin(), (pixel_t*) l.end());
+    m_Size = sz;
+    assert (m_Pixels.size() == Width() * Height());
+}
+
+/// Detaches from the current pixel data.
+void CImage::unlink (void)
+{
+    m_Pixels.unlink();
+    m_Size = Size2d();
 }
 
 /// Returns the colordepth necessary to display this image.
@@ -96,7 +110,7 @@ void CImage::read (istream& is)
 	    is >> ih;
 	    if (ih.m_Width > 16000 || ih.m_Height > 16000)
 		throw runtime_error ("invalid image size");
-	    Resize (ih.m_Width, ih.m_Height);
+	    Resize (Size2d (ih.m_Width, ih.m_Height));
 	    if (ih.HasLocalCmap()) {
 		SetFlag (f_SortedPalette, ih.SortedCmap());
 		ReadGifColormap (is, ih.BitsPerPixel());

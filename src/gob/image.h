@@ -27,25 +27,33 @@ public:
 	f_MergedPalette,
 	f_Last
     };
-    typedef color_t			value_type;
+    typedef color_t			pixel_t;
+    typedef pixel_t			value_type;
     typedef vector<value_type>		pixvec_t;
+    typedef pixvec_t::pointer		pointer;
+    typedef pixvec_t::const_pointer	const_pointer;
     typedef pixvec_t::iterator		iterator;
     typedef pixvec_t::const_iterator	const_iterator;
     typedef pixvec_t::size_type		size_type;
     typedef pixvec_t::difference_type	difference_type;
 public:
 				CImage (void);
-    void			Resize (dim_t w, dim_t h);
+    void			Resize (Size2d sz);
+    void			link (memlink l, Size2d sz);
+    void			unlink (void);
     inline const_iterator	begin (void) const	{ return (m_Pixels.begin()); }
     inline iterator		begin (void)		{ return (m_Pixels.begin()); }
     inline const_iterator	end (void) const	{ return (m_Pixels.end()); }
     inline iterator		end (void)		{ return (m_Pixels.end()); }
     inline const CPalette&	Palette (void) const	{ return (m_Palette); }
     inline CPalette&		Palette (void)		{ return (m_Palette); }
+    inline Size2d		Size (void) const	{ return (m_Size); }
     inline dim_t		Width (void) const	{ return (m_Size[0]); }
     inline dim_t		Height (void) const	{ return (m_Size[1]); }
-    inline value_type&		at (coord_t x, coord_t y)	{ return (m_Pixels [y * Width() + x]); }
-    inline value_type		at (coord_t x, coord_t y) const	{ return (m_Pixels [y * Width() + x]); }
+    inline value_type&		at (Point p)		{ return (m_Pixels [p[1] * Width() + p[0]]); }
+    inline value_type		at (Point p) const	{ return (m_Pixels [p[1] * Width() + p[0]]); }
+    inline iterator		iat (Point p)		{ return (begin() + p[1] * Width() + p[0]); }
+    inline const_iterator	iat (Point p) const	{ return (begin() + p[1] * Width() + p[0]); }
     inline bool			Flag (EFlag f) const		{ return (m_Flags[f]); }
     inline void			SetFlag (EFlag f, bool v)	{ m_Flags.set (f, v); }
     size_t			BitsPerPixel (void) const;
