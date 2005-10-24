@@ -104,7 +104,7 @@ public:
 			CCompressor (void);
     void		Run (istream& is, ostream& os);
     size_t		EstimateSize (istream& is);
-    inline void		SetCodeSize (size_t n)	{ m_CodeSize = n + 1; t.Reset (m_CodeSize); }
+    void		SetCodeSize (size_t n);
 private:
     void		WriteCode (ostream& os, CTable::code_t c);
     inline void		FlushCurByte (ostream& os);

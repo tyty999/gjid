@@ -182,6 +182,14 @@ CCompressor::CCompressor (void)
 {
 }
 
+/// Sets the code size (in bits) for encoding the data.
+/// Code size should be set wide enough to hold any byte value from the input.
+void CCompressor::SetCodeSize (size_t n)
+{
+    m_CodeSize = max (n + 1U, 3U);
+    t.Reset (m_CodeSize);
+}
+
 /// Writes the current byte to \p os.
 inline void CCompressor::FlushCurByte (ostream& os)
 {
