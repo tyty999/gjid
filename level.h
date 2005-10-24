@@ -75,8 +75,8 @@ public:
     void		Draw (CGC& gc, const picvec_t& tiles) const;
     inline PicIndex	At (coord_t x, coord_t y) const			{ return (PicIndex (m_Map [y * MAP_WIDTH + x])); }
     inline void		SetCell (coord_t x, coord_t y, PicIndex pic)	{ m_Map [y * MAP_WIDTH + x] = pic; }
-    inline bool		Finished (void) const				{ return (m_Crates.empty() && At(m_Robot.x, m_Robot.y) == ExitPix); }
-    inline void		DisposeCrate (uoff_t index)			{ m_Crates.erase (m_Crates.begin() + index); }
+    bool		Finished (void) const;
+    inline void		DisposeCrate (uoff_t index)			{ m_Objects.erase (m_Objects.begin() + index); }
     void		AddCrate (coord_t x, coord_t y, PicIndex pic);
     void		MoveRobot (RobotDir where);
     void		MoveRobot (coord_t x, coord_t y, PicIndex pic);
@@ -89,9 +89,11 @@ private:
     typedef vector<uint8_t>	tilemap_t;
     typedef vector<ObjectType>	objvec_t;
 private:
+    inline const ObjectType&	Robot (void) const	{ return (m_Objects[0]); }
+    inline ObjectType&		Robot (void)		{ return (m_Objects[0]); }
+private:
     tilemap_t		m_Map;
-    objvec_t		m_Crates;
-    ObjectType		m_Robot;
+    objvec_t		m_Objects;
 };
 
 STD_STREAMABLE (ObjectType)
