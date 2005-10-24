@@ -31,10 +31,6 @@ public:
     void			ImageMasked (Rect r, const uint8_t* p);
     void			GetImage (Rect r, uint8_t* p) const;
     void			Bitmap (Rect r, const uint8_t* p, color_t c);
-private:
-    memlink			m_Pix;	///< Pixel data.
-    Size2d			m_Size;	///< Dimensions of the pixel data.
-    CPalette			m_Pal;	///< Color palette.
 };
 
 } // namespace fbgl

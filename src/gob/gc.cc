@@ -12,8 +12,7 @@ namespace fbgl {
 
 /// Default constructor.
 CGC::CGC (void)
-: m_Pix (),
-  m_Size ()
+: CImage ()
 {
 }
 
@@ -25,7 +24,7 @@ void CGC::Clear (color_t c)
 void CGC::Bar (Rect r, color_t c)
 {
     iterator i (iat (r[0]));
-    for (uoff_t y = 0; y < r.Height(); ++y, i+=m_Size[0])
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=Width())
 	fill_n (i, r.Width(), c);
 }
 
@@ -44,21 +43,21 @@ void CGC::HLine (Point pt, size_t l, color_t c)
 
 void CGC::VLine (Point pt, size_t l, color_t c)
 {
-    for (iterator i (iat (pt)); l--; i += m_Size[0])
+    for (iterator i (iat (pt)); l--; i += Width())
 	*i = c;
 }
 
 void CGC::Image (Rect r, const uint8_t* p)
 {
     iterator i (iat (r[0]));
-    for (uoff_t y = 0; y < r.Height(); ++y, i+=m_Size[0], p+=r.Width())
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=Width(), p+=r.Width())
 	copy_n (p, r.Width(), i);
 }
 
 void CGC::ImageMasked (Rect r, const uint8_t* p)
 {
     iterator i (iat (r[0]));
-    for (uoff_t y = 0; y < r.Height(); ++y, i+=(m_Size[0]-r.Width()))
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=(Width()-r.Width()))
 	for (uoff_t x = 0; x < r.Width(); ++x, ++i, ++p)
 	    if (*p)
 		*i = *p;
@@ -67,7 +66,7 @@ void CGC::ImageMasked (Rect r, const uint8_t* p)
 void CGC::GetImage (Rect r, uint8_t* p) const
 {
     const_iterator i (iat (r[0]));
-    for (uoff_t y = 0; y < r.Height(); ++y, i+=m_Size[0], p+=r.Width())
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=Width(), p+=r.Width())
 	copy_n (i, r.Width(), p);
 }
 
@@ -75,7 +74,7 @@ void CGC::Bitmap (Rect r, const uint8_t* p, color_t c)
 {
     iterator i (iat (r[0]));
     uoff_t bit = 0;
-    for (uoff_t y = 0; y < r.Height(); ++y, i+=(m_Size[0]-r.Width())) {
+    for (uoff_t y = 0; y < r.Height(); ++y, i+=(Width()-r.Width())) {
 	for (uoff_t x = 0; x < r.Width(); ++x, ++i) {
 	    if (*p & (1 << bit))
 		*i = c;
