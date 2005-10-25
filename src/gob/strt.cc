@@ -7,6 +7,7 @@
 //
 
 #include "strt.h"
+#include "gif.h"
 
 namespace fbgl {
 
@@ -60,6 +61,16 @@ void CStringTable::push_back (const string& s)
 
 static const char g_StrtSig[4] = {'S','T','R','T'};
 
+/// Determines the maximum character width.
+size_t CStringTable::ComputeCodeSize (void) const
+{
+    size_t cs = 1;
+    foreach (string::const_iterator, i, m_Data)
+	while (*i >= (1 << cs))
+	    ++ cs;
+    return (cs);
+}
+
 /// Reads the object from stream \p is.
 void CStringTable::read (istream& is)
 {
@@ -69,10 +80,15 @@ void CStringTable::read (istream& is)
     if (strncmp (sig, g_StrtSig, VectorSize(g_StrtSig)))
 	throw runtime_error ("no string table found in the input stream");
     is >> nStrings >> nChars >> flags;
-    is >> m_Data;
-    is.align();
-    if (m_Data.size() != nChars)
+
+    m_Data.resize (nChars);
+    ostream os (m_Data.begin(), m_Data.size());
+    gif::CDecompressor d;
+    d.Run (is, os);
+    if (os.remaining())
 	throw runtime_error ("string table data is corrupt");
+    is.align();
+
     m_Index.clear();
     m_Index.reserve (nStrings);
     m_Index.push_back (0);
@@ -87,18 +103,25 @@ void CStringTable::write (ostream& os) const
     size_t flags = 0;
     os.write (g_StrtSig, VectorSize(g_StrtSig));
     os << m_Index.size() << m_Data.size() << flags;
-    os << m_Data;
+    istream is (m_Data.begin(), m_Data.size());
+    gif::CCompressor c;
+    c.SetCodeSize (ComputeCodeSize());
+    c.Run (is, os);
     os.align();
 }
 
 /// Returns the size of the written object.
 size_t CStringTable::stream_size (void) const
 {
-    return (VectorSize(g_StrtSig) +
+    const size_t headerSize (VectorSize(g_StrtSig) +
 	    stream_size_of (m_Index.size()) +
 	    stream_size_of (m_Data.size()) +
-	    stream_size_of (size_t(0)) +
-	    Align (stream_size_of (m_Data)));
+	    stream_size_of (size_t(0)));
+    istream is (m_Data.begin(), m_Data.size());
+    gif::CCompressor c;
+    c.SetCodeSize (ComputeCodeSize());
+    const size_t dataSize = c.EstimateSize (is);
+    return (headerSize + Align (dataSize));
 }
 
 } // namespace fbgl

@@ -41,6 +41,8 @@ public:
 private:
     typedef vector<uoff_t>	idxvec_t;
 private:
+    size_t			ComputeCodeSize (void) const;
+private:
     idxvec_t			m_Index;	///< Index into \p m_Data.
     string			m_Data;		///< String data.
 };
