@@ -9,7 +9,7 @@
 #ifndef CMAP_H_7738C1BC229459A94DB9E3E048568B33
 #define CMAP_H_7738C1BC229459A94DB9E3E048568B33
 
-#include "../pal.h"
+#include "../gob/pal.h"
 #include <linux/fb.h>
 
 namespace fbgl {

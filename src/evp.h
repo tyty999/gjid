@@ -9,7 +9,7 @@
 #ifndef EVP_H_3F79AF7B241A85637686DA127727B280
 #define EVP_H_3F79AF7B241A85637686DA127727B280
 
-#include "primi.h"
+#include "gob/primi.h"
 
 namespace fbgl {
 

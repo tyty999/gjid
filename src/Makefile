@@ -5,8 +5,8 @@ MAJOR	= 1
 MINOR	= 0
 BUILD	= 0
 
-SRCS	= $(wildcard *.cc con/*.cc x11/*.cc)
-INCS	= $(wildcard *.h con/*.h x11/*.h)
+SRCS	= $(wildcard *.cc gob/*.cc con/*.cc x11/*.cc)
+INCS	= $(wildcard *.h gob/*.h con/*.h x11/*.h)
 OBJS	= $(SRCS:.cc=.o)
 LIBS	= -L /usr/X11R6/lib -lutio -lustl -lsupc++ -lX11 -lXxf86vm
 
@@ -65,6 +65,7 @@ install-incs: ${INCS}
 	@${INSTALLDIR} ${INCDIR}/${LIBNAME}
 	@${INSTALLDIR} ${INCDIR}/${LIBNAME}/con
 	@${INSTALLDIR} ${INCDIR}/${LIBNAME}/x11
+	@${INSTALLDIR} ${INCDIR}/${LIBNAME}/gob
 	@for i in ${INCS}; do					\
 	    ${INSTALLDATA} $$i ${INCDIR}/${LIBNAME}/$$i;	\
 	done;

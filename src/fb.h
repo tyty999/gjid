@@ -11,7 +11,7 @@
 
 #include "mode.h"
 #include "evp.h"
-#include "gc.h"
+#include "gob/gc.h"
 
 namespace fbgl {
 

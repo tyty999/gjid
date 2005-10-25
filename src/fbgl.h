@@ -10,6 +10,6 @@
 #define FBGL_H_4361114E3D47BBFF686D073C47033F1B
 
 #include "fbgl/app.h"
-#include "fbgl/strt.h"
+#include "fbgl/gob/strt.h"
 
 #endif
