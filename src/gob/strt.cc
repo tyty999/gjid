@@ -20,7 +20,7 @@ CStringTable::CStringTable (void)
 }
 
 /// Returns the string number \p i.
-string CStringTable::at (uoff_t i) const
+const string CStringTable::at (uoff_t i) const
 {
     string v;
     string::const_iterator first, last;

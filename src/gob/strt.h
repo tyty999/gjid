@@ -27,8 +27,8 @@ public:
     typedef const value_type&	const_reference;
 public:
 				CStringTable (void);
-    string			at (uoff_t i) const;
-    inline string		operator[] (uoff_t i) const	{ return (at(i)); }
+    const string		at (uoff_t i) const;
+    inline const string		operator[] (uoff_t i) const	{ return (at(i)); }
     inline size_t		size (void) const		{ return (m_Index.size() - 1); }
     inline size_t		capacity (void) const		{ return (m_Index.capacity() - 1); }
     inline bool			empty (void) const		{ return (!size()); }
