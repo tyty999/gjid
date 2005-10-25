@@ -15,9 +15,13 @@ mkdata:	mkdata.o $(filter-out gjid.o,$(OBJS))
 	@echo "Linking $@ ... "
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-data/gjid.dat:	mkdata $(filter-out data/gjid.dat,$(wildcard data/*))
+data/gjid.dat:	mkdata $(filter-out data/gjid.dat,$(wildcard data/*)) data/strings.strt
 	@echo "Creating the data file ... "
 	@./mkdata
+
+data/strings.strt:	data/strings.txt
+	@echo "Creating the strings file ... "
+	@txt2strt $^
 
 install: ${EXE}
 	@echo "Installing ${EXE} to ${BINDIR} ..."

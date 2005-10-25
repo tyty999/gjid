@@ -25,7 +25,7 @@ GJID::GJID (void)
   m_Pics (),
   m_Palette (),
   m_Levels (0),
-  m_Story ()
+  m_Strings ()
 {
     m_Palette.AllocColor (0,0,0);
 }
@@ -60,12 +60,12 @@ void GJID::OnIdle (void)
     CApplication::OnIdle();
     if (m_State == state_Title) {
 	static const time_t titleDelay (time (NULL));
-	if (m_Story.empty() || m_Levels.empty()) {
+	if (m_Strings.empty() || m_Levels.empty()) {
 	    LoadData (DATAFILE);
 	    Update();
 	    if (!m_Levels.empty())
 		m_CurLevel = m_Levels[0];
-	    if (m_Levels.empty() || m_Story.empty() || !m_EditedPackage.empty())
+	    if (m_Levels.empty() || m_Strings.empty() || !m_EditedPackage.empty())
 		GoToState (state_Editor);
 	} else if (time(NULL) > titleDelay + 3)
 	    GoToState (state_Story);
@@ -130,7 +130,7 @@ void GJID::IntroScreen (CGC& gc)
 
 void GJID::TitleKeys (key_t key, keystate_t)
 {
-    if (m_Story.empty())
+    if (m_Strings.empty())
 	return;
     GoToState (key == key_Esc ? state_Game : state_Story);
 }
@@ -188,16 +188,13 @@ void GJID::PrintStory (CGC& gc)
     }
     if (m_StoryPage < 2) {
 	string line;
-	string::const_iterator ist = m_Story.begin();
-	for (uoff_t i = 0; i < m_StoryPage; ++ i)
-	    ist = m_Story.find ('$', ist) + 2;
-	for (; ist != m_Story.end(); ++ ist) {
-	    string::const_iterator iend = m_Story.find ('\n', ist);
+	const string storyPage (m_Strings [m_StoryPage]);
+	string::const_iterator ist = storyPage.begin();
+	for (; ist < storyPage.end(); ++ ist) {
+	    string::const_iterator iend = storyPage.find ('\n', ist);
 	    line.assign (ist, iend);
 	    ist = iend;
-	    if (line == "$")
-		break;
-	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + row * 7, line, gc.AllocColor (128,128,0));
+	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
     } else if (m_StoryPage == 2) {
@@ -349,8 +346,7 @@ void GJID::LoadData (const char* filename)
     is >> m_Pics;
     if (m_Pics.size() != NumberOfPics)
 	throw runtime_error ("not enough tile pictures in the data file");
-    is >> m_Story;
-    is.align();
+    is >> m_Strings;
     is >> m_Levels;
     foreach (picvec_t::iterator, i, m_Pics)
 	i->MergePaletteInto (m_Palette);
@@ -359,7 +355,8 @@ void GJID::LoadData (const char* filename)
 void GJID::SaveData (const char* filename) const
 {
     const size_t dataSize = stream_size_of(m_Font) +
-		stream_size_of (m_Pics) + Align (stream_size_of (m_Story)) +
+		stream_size_of (m_Pics) +
+		stream_size_of (m_Strings) +
 		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
@@ -367,8 +364,7 @@ void GJID::SaveData (const char* filename) const
 
     os << m_Font;
     os << m_Pics;
-    os << m_Story;
-    os.align();
+    os << m_Strings;
     os << m_Levels;
 
     buf.write_file (filename);

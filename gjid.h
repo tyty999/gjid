@@ -63,7 +63,7 @@ private:
     picvec_t		m_Pics;
     CPalette		m_Palette;
     vector<Level>	m_Levels;
-    string		m_Story;
+    CStringTable	m_Strings;
 };
 
 //----------------------------------------------------------------------

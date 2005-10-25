@@ -1,4 +1,3 @@
-
 In the year 32333 AD two robot cities on the planet Nikarad were arming
 themselves against each other. The both set up large complexes in which
 powerful photon disrupters were stored. After many years of increasing
@@ -10,7 +9,7 @@ The problem was that no robot wanted to go down into the dungeons and
 accomplish this dangerous task. Finally, one robot named GJID came
 forward and offered to help. He was a simple robot and had not much to
 lose. Besides, there was a reward offered for the job :)
-$
+%
 You play GJID in this game as he carefully moves the weapon crates into
 recycling bins. Complex mazes and one-way doors make this quite difficult
 at times. Unfortunately, GJID is not very powerful and can only move one
@@ -25,4 +24,3 @@ through 14 levels.
                  F6 will restart the level
                  F8 will skip the level
                  F10 will quit the game
- 
