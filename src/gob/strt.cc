@@ -53,7 +53,8 @@ void CStringTable::Remove (uoff_t i)
 /// Adds string \p s to the table.
 void CStringTable::Add (const string& s)
 {
-    m_Data.append (s, s.size() + 1);
+    m_Data.append (s, s.size());
+    m_Data.append (string::c_Terminator, 1U);
     m_Index.push_back (m_Data.size());
 }
 
