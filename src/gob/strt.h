@@ -31,6 +31,7 @@ public:
     inline string		operator[] (uoff_t i) const	{ return (at(i)); }
     inline size_t		size (void) const		{ return (m_Index.size() - 1); }
     inline size_t		capacity (void) const		{ return (m_Index.capacity() - 1); }
+    inline bool			empty (void) const		{ return (!size()); }
     void			erase (uoff_t i);
     void			push_back (const string& s);
     void			clear (void);
