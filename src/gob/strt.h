@@ -16,16 +16,24 @@ using namespace ustl;
 
 /// \class CStringTable strt.h fbgl.h
 ///
-/// \brief An array of strings optimized for reading.
+/// \brief An array of strings.
+/// Efficiently stores many strings in a single memory block. Reading and
+/// appending are O(1) (both slower than a direct access though), removing
+/// is O(n). Size overhead is minimal.
 ///
 class CStringTable {
 public:
+    typedef string		value_type;
+    typedef const value_type&	const_reference;
+public:
 				CStringTable (void);
     string			at (uoff_t i) const;
-    inline size_t		size (void) const	{ return (m_Index.size()); }
-    void			Remove (uoff_t i);
-    void			Add (const string& s);
-    void			Clear (void);
+    inline string		operator[] (uoff_t i) const	{ return (at(i)); }
+    inline size_t		size (void) const		{ return (m_Index.size() - 1); }
+    inline size_t		capacity (void) const		{ return (m_Index.capacity() - 1); }
+    void			erase (uoff_t i);
+    void			push_back (const string& s);
+    void			clear (void);
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;

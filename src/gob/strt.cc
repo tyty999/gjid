@@ -15,7 +15,7 @@ CStringTable::CStringTable (void)
 : m_Index (),
   m_Data ()
 {
-    Clear();
+    clear();
 }
 
 /// Returns the string number \p i.
@@ -24,13 +24,13 @@ string CStringTable::at (uoff_t i) const
     string v;
     string::const_iterator first, last;
     first = m_Data.begin() + m_Index[i];
-    last = m_Data.begin() + m_Index[i + 1];
+    last = m_Data.begin() + m_Index[i + 1] - 1;
     v.link (first, last);
     return (v);
 }
 
 /// Clears the string table.
-void CStringTable::Clear (void)
+void CStringTable::clear (void)
 {
     m_Index.clear();
     m_Index.push_back (m_Data.size());
@@ -38,7 +38,7 @@ void CStringTable::Clear (void)
 }
 
 /// Removes string \p i from the table.
-void CStringTable::Remove (uoff_t i)
+void CStringTable::erase (uoff_t i)
 {
     string::iterator first, last;
     first = m_Data.begin() + m_Index[i];
@@ -51,25 +51,42 @@ void CStringTable::Remove (uoff_t i)
 }
 
 /// Adds string \p s to the table.
-void CStringTable::Add (const string& s)
+void CStringTable::push_back (const string& s)
 {
-    m_Data.append (s, s.size());
-    m_Data.append (string::c_Terminator, 1U);
+    m_Data.append (s.begin(), s.size());
+    m_Data.push_back (string::c_Terminator);
     m_Index.push_back (m_Data.size());
 }
+
+static const char g_StrtSig[4] = {'S','T','R','T'};
 
 /// Reads the object from stream \p is.
 void CStringTable::read (istream& is)
 {
-    is >> m_Index;
+    char sig [VectorSize(g_StrtSig)];
+    size_t nStrings, nChars, flags;
+    is.read (sig, VectorSize(sig));
+    if (strncmp (sig, g_StrtSig, VectorSize(g_StrtSig)))
+	throw runtime_error ("no string table found in the input stream");
+    is >> nStrings >> nChars >> flags;
     is >> m_Data;
     is.align();
+    if (m_Data.size() != nChars)
+	throw runtime_error ("string table data is corrupt");
+    m_Index.clear();
+    m_Index.reserve (nStrings);
+    m_Index.push_back (0);
+    for (uoff_t i = 0; i < m_Data.size(); ++ i)
+	if (!m_Data[i])
+	    m_Index.push_back (i + 1);
 }
 
 /// Writes the object to stream \p os.
 void CStringTable::write (ostream& os) const
 {
-    os << m_Index;
+    size_t flags = 0;
+    os.write (g_StrtSig, VectorSize(g_StrtSig));
+    os << m_Index.size() << m_Data.size() << flags;
     os << m_Data;
     os.align();
 }
@@ -77,7 +94,11 @@ void CStringTable::write (ostream& os) const
 /// Returns the size of the written object.
 size_t CStringTable::stream_size (void) const
 {
-    return (Align (stream_size_of (m_Index) + stream_size_of (m_Data)));
+    return (VectorSize(g_StrtSig) +
+	    stream_size_of (m_Index.size()) +
+	    stream_size_of (m_Data.size()) +
+	    stream_size_of (size_t(0)) +
+	    Align (stream_size_of (m_Data)));
 }
 
 } // namespace fbgl
