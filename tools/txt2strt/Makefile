@@ -17,8 +17,8 @@ ${EXE}:	${OBJS}
 
 install: ${EXE}
 	@echo "Installing ${EXE} to ${BINDIR} ..."
-	${INSTALLDIR} ${BINDIR}
-	${INSTALLBIN} ${EXE} ${BINDIR}
+	@${INSTALLDIR} ${BINDIR}
+	@${INSTALLBIN} ${EXE} ${BINDIR}
 
 uninstall:
 	@echo "Removing ${EXE} from ${BINDIR} ..."
