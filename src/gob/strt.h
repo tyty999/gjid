@@ -1,0 +1,44 @@
+// This file is part of the fbgl library.
+//
+// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+// 
+// strt.h
+//
+
+#ifndef STRT_H_2D10D5005E82A1AC666F7ED976236431
+#define STRT_H_2D10D5005E82A1AC666F7ED976236431
+
+#include <ustl.h>
+
+namespace fbgl {
+using namespace ustl;
+
+/// \class CStringTable strt.h fbgl.h
+///
+/// \brief An array of strings optimized for reading.
+///
+class CStringTable {
+public:
+				CStringTable (void);
+    string			at (uoff_t i) const;
+    inline size_t		size (void) const	{ return (m_Index.size()); }
+    void			Remove (uoff_t i);
+    void			Add (const string& s);
+    void			Clear (void);
+    void			read (istream& is);
+    void			write (ostream& os) const;
+    size_t			stream_size (void) const;
+private:
+    typedef vector<uoff_t>	idxvec_t;
+private:
+    idxvec_t			m_Index;	///< Index into \p m_Data.
+    string			m_Data;		///< String data.
+};
+
+} // namespace fbgl
+
+STD_STREAMABLE (fbgl::CStringTable)
+
+#endif
+
