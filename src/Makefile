@@ -12,7 +12,7 @@ LIBS	= -L /usr/X11R6/lib -lutio -lustl -lsupc++ -lX11 -lXxf86vm
 
 ########################################################################
 
-.PHONY:	all install uninstall install-incs uninstall-inst
+.PHONY:	all install uninstall install-incs uninstall-incs
 
 ifdef BUILD_SHARED
 ifdef BUILD_STATIC
@@ -83,7 +83,7 @@ uninstall-incs:
 	@echo "    Compiling $< to assembly ..."
 	@${CXX} ${CXXFLAGS} -S ${OPTIMIZATION} -g0 -Os -DNDEBUG=1 -fomit-frame-pointer -o $@ -c $<
 
-.PHONY:	gch clean depend dox dist dist-clean maintainer-clean
+.PHONY:	clean depend
 
 depend: ${SRCS}
 	@${RM} -f .depend
@@ -95,9 +95,6 @@ clean:
 	@echo "Removing generated files ..."
 	@${RM} -f ${OBJS} ${TOCLEAN}
 	@+make -C bvt clean
-
-dist-clean:	clean
-	@rm -f Common.mk config.h bsconf.o bsconf .depend bvt/.depend
 
 -include .depend
  

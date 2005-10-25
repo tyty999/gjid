@@ -1,10 +1,11 @@
 include ../Common.mk
 
-SUBDIRS	= 
+SUBDIRS	= txt2strt
 
 .PHONY:		all install
 all:		subdirs-all
 install:	subdirs-install
+uninstall:	subdirs-uninstall
 
 subdirs-%:
 	@for i in ${SUBDIRS}; do	\
