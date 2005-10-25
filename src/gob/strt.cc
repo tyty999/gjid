@@ -100,7 +100,7 @@ void CStringTable::read (istream& is)
 /// Writes the object to stream \p os.
 void CStringTable::write (ostream& os) const
 {
-    size_t flags = 0;
+    size_t flags = 1;
     os.write (g_StrtSig, VectorSize(g_StrtSig));
     os << m_Index.size() << m_Data.size() << flags;
     istream is (m_Data.begin(), m_Data.size());
@@ -116,7 +116,7 @@ size_t CStringTable::stream_size (void) const
     const size_t headerSize (VectorSize(g_StrtSig) +
 	    stream_size_of (m_Index.size()) +
 	    stream_size_of (m_Data.size()) +
-	    stream_size_of (size_t(0)));
+	    stream_size_of (size_t(1)));
     istream is (m_Data.begin(), m_Data.size());
     gif::CCompressor c;
     c.SetCodeSize (ComputeCodeSize());
