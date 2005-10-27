@@ -1,3 +1,8 @@
+// This file is part of the GJID game.
+//
+// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+// 
 // gjid.cc
 //
 //	Implements a puzzle game based on DOS shareware version.

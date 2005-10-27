@@ -1,7 +1,10 @@
-/* font.h
-**
-**	Defines user VGA font.
-*/
+// This file is part of the GJID game.
+//
+// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+// 
+// font.h
+//
 
 #ifndef FONT_H_39BD3A88149536EF6573B7D448F4649E
 #define FONT_H_39BD3A88149536EF6573B7D448F4649E

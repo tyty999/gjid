@@ -1,7 +1,10 @@
-/* font.cc
-**
-**	Implements VGA font class.
-*/
+// This file is part of the GJID game.
+//
+// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+// 
+// font.cc
+//
 
 #include "font.h"
 
