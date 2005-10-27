@@ -240,11 +240,16 @@ void GJID::DrawLevel (CGC& gc)
 void GJID::LevelKeys (key_t key, keystate_t)
 {
     switch (key) {
+	case 'k':
 	case key_Up:	m_CurLevel.MoveRobot (North);	break;
+	case 'j':
 	case key_Down:	m_CurLevel.MoveRobot (South);	break;
+	case 'l':
 	case key_Right:	m_CurLevel.MoveRobot (East);	break;
+	case 'h':
 	case key_Left:	m_CurLevel.MoveRobot (West);	break;
 	case key_F1:	GoToState (state_Story);	break;
+	case key_Esc:	Quit();				break;
 	case key_F10:	GoToState (state_Loser);	break;
 	case key_F8:	m_Level = (m_Level + 1) % m_Levels.size();
 	case key_F6:	m_CurLevel = m_Levels [m_Level];	break;
