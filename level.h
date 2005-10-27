@@ -8,7 +8,8 @@
 
 //----------------------------------------------------------------------
 
-#define SQUARE_SIDE	16
+#define TILE_W		16
+#define TILE_H		16
 #define MAP_WIDTH	20
 #define MAP_HEIGHT	12
 

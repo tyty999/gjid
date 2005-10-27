@@ -37,9 +37,9 @@ void Level::Draw (CGC& gc, const picvec_t& tiles) const
     tilemap_t::const_iterator it (m_Map.begin());
     for (coord_t y = 0; y < MAP_HEIGHT; ++ y)
 	for (coord_t x = 0; x < MAP_WIDTH; ++ x)
-	    tiles [*it++].Put (gc, x * SQUARE_SIDE, y * SQUARE_SIDE);
+	    tiles [*it++].Put (gc, x * TILE_W, y * TILE_H);
     foreach (objvec_t::const_iterator, i, m_Objects)
-	tiles[i->pic].PutMasked (gc, i->x * SQUARE_SIDE, i->y * SQUARE_SIDE);
+	tiles[i->pic].PutMasked (gc, i->x * TILE_W, i->y * TILE_H);
 }
 
 bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const

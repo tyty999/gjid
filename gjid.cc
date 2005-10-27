@@ -106,8 +106,8 @@ void GJID::OnKey (key_t key, keystate_t ks)
 
 void GJID::FillWithTile (CGC& gc, PicIndex tidx) const
 {
-    for (dim_t y = 0; y < gc.Height(); y += SQUARE_SIDE)
-	for (dim_t x = 0; x < gc.Width(); x += SQUARE_SIDE)
+    for (dim_t y = 0; y < gc.Height(); y += TILE_H)
+	for (dim_t x = 0; x < gc.Width(); x += TILE_W)
 	    m_Pics [tidx].Put (gc, x, y);
 }
 
@@ -116,7 +116,7 @@ void GJID::DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex 
     for (uoff_t y = 0; y < n; ++ y)
 	for (uoff_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
 	    if (p[y] & mask)
-		m_Pics [tidx].Put (gc, (x + 2) * SQUARE_SIDE, (y + 3) * SQUARE_SIDE);
+		m_Pics [tidx].Put (gc, (x + 2) * TILE_W, (y + 3) * TILE_H);
 }
 
 void GJID::IntroScreen (CGC& gc)
@@ -168,22 +168,22 @@ void GJID::PrintStory (CGC& gc)
     coord_t x, y, row = 0;
 
     gc.Clear (gc.AllocColor (0,0,64));
-    for (y = 0; y < gc.Height(); y += SQUARE_SIDE) {
+    for (y = 0; y < gc.Height(); y += TILE_H) {
 	m_Pics [Wall1Pix].Put (gc, 0, y);
-	m_Pics [Wall1Pix].Put (gc, gc.Width() - SQUARE_SIDE, y);
+	m_Pics [Wall1Pix].Put (gc, gc.Width() - TILE_W, y);
     }
-    for (x = SQUARE_SIDE; x < gc.Width() - SQUARE_SIDE; x += SQUARE_SIDE) {
+    for (x = TILE_W; x < gc.Width() - TILE_W; x += TILE_W) {
 	m_Pics [Wall1Pix].Put (gc, x, 0);
-	m_Pics [Wall1Pix].Put (gc, x, gc.Height() - SQUARE_SIDE);
+	m_Pics [Wall1Pix].Put (gc, x, gc.Height() - TILE_H);
     }
     m_Font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
     m_Font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
 
     if (m_StoryPage == 0) {
-	m_Pics[LogoGPix].PutMasked (gc, 40, SQUARE_SIDE * 2); 
-	m_Pics[LogoJPix].PutMasked (gc, 100, SQUARE_SIDE * 2); 
-	m_Pics[LogoIPix].PutMasked (gc, 160, SQUARE_SIDE * 2); 
-	m_Pics[LogoDPix].PutMasked (gc, 220, SQUARE_SIDE * 2); 
+	m_Pics[LogoGPix].PutMasked (gc, 40, TILE_H * 2); 
+	m_Pics[LogoJPix].PutMasked (gc, 100, TILE_H * 2); 
+	m_Pics[LogoIPix].PutMasked (gc, 160, TILE_H * 2); 
+	m_Pics[LogoDPix].PutMasked (gc, 220, TILE_H * 2); 
 	row = 8;
     }
     if (m_StoryPage < 2) {
@@ -194,26 +194,26 @@ void GJID::PrintStory (CGC& gc)
 	    string::const_iterator iend = storyPage.find ('\n', ist);
 	    line.assign (ist, iend);
 	    ist = iend;
-	    m_Font.PrintString (gc, SQUARE_SIDE * 2, SQUARE_SIDE * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
+	    m_Font.PrintString (gc, TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
     } else if (m_StoryPage == 2) {
-	x = SQUARE_SIDE * 2;
-	y = SQUARE_SIDE * 2 + 7;
+	x = TILE_W * 2;
+	y = TILE_H * 2 + 7;
 	m_Font.PrintString (gc, x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
 	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
 	    m_Pics [pic[i]].PutMasked (gc, x, y);
-	    m_Font.PrintString (gc, x + SQUARE_SIDE * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
+	    m_Font.PrintString (gc, x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
 	    y += 17;
 	}
 	m_Pics [OWDNorthPix].Put (gc, x, y);
-	m_Pics [OWDSouthPix].Put (gc, x += SQUARE_SIDE, y);
-	m_Pics [OWDEastPix].Put (gc, x += SQUARE_SIDE, y);
-	m_Pics [OWDWestPix].Put (gc, x += SQUARE_SIDE, y);
-	m_Font.PrintString (gc, x += SQUARE_SIDE * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
+	m_Pics [OWDSouthPix].Put (gc, x += TILE_W, y);
+	m_Pics [OWDEastPix].Put (gc, x += TILE_W, y);
+	m_Pics [OWDWestPix].Put (gc, x += TILE_W, y);
+	m_Font.PrintString (gc, x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
     }
 }
 
@@ -266,12 +266,12 @@ void GJID::DrawEditor (CGC& gc)
     gc.Clear();
     m_CurLevel.Draw (gc, m_Pics);
     for (uoff_t i = 0; i < NumberOfMapPics; ++ i)
-	m_Pics[i].Put (gc, i * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
-    const Point strtl (m_SelectedTile * SQUARE_SIDE);
-    const Point sprtl (m_SelectedPic * SQUARE_SIDE, gc.Height() - SQUARE_SIDE);
+	m_Pics[i].Put (gc, i * TILE_W, gc.Height() - TILE_H);
+    const Point strtl (m_SelectedTile * TILE_W);
+    const Point sprtl (m_SelectedPic * TILE_W, gc.Height() - TILE_H);
     const color_t white (gc.AllocColor (255,255,255));
-    gc.Box (Rect (strtl, strtl + SQUARE_SIDE - 1), white);
-    gc.Box (Rect (sprtl, sprtl + SQUARE_SIDE - 1), white);
+    gc.Box (Rect (strtl, strtl + TILE_W - 1), white);
+    gc.Box (Rect (sprtl, sprtl + TILE_W - 1), white);
 }
 
 void GJID::EditorKeys (key_t key, keystate_t)
