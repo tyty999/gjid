@@ -194,11 +194,8 @@ void GJID::PrintStory (CGC& gc)
     if (m_StoryPage < 2) {
 	string line;
 	const string storyPage (m_Strings [m_StoryPage]);
-	string::const_iterator ist = storyPage.begin();
-	for (; ist < storyPage.end(); ++ ist) {
-	    string::const_iterator iend = storyPage.find ('\n', ist);
-	    line.assign (ist, iend);
-	    ist = iend;
+	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
+	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
 	    m_Font.PrintString (gc, TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
