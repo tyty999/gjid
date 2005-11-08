@@ -9,15 +9,14 @@ void ConvertFile (const string& filename)
 
     CStringTable strt;
     foreach (string::const_iterator, i, src) {
-	string::const_iterator iend = src.find (sep, i);
+	string::const_iterator iend = src.iat (src.find (sep, i - src.begin()));
 	v.link (i, iend);
 	strt.push_back (v);
 	i = min (iend + VectorSize(sep) - 2, src.end() - 1);
     }
 
-    uoff_t idot = distance (filename.begin(), filename.rfind ("."));
     string strtFile, hFile;
-    strtFile.assign (filename.begin(), filename.begin() + idot);
+    strtFile.assign (filename, 0, filename.rfind ('.'));
     hFile = strtFile;
     strtFile += ".strt";
     hFile += ".h";

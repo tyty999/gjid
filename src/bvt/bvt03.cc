@@ -8,7 +8,7 @@ void TestStringTable (void)
 
     CStringTable strt;
     foreach (string::const_iterator, i, src) {
-	string::const_iterator iend = src.find (sep, i);
+	string::const_iterator iend = src.iat (src.find (sep, i - src.begin()));
 	v.link (i, iend);
 	strt.push_back (v);
 	i = min (iend + VectorSize(sep) - 2, src.end() - 1);

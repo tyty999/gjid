@@ -70,25 +70,26 @@ void CConsoleMode::CreateVarinfo (struct fb_var_screeninfo& vi) const
 /// Reads mode information in modedb format.
 CMode::mdbiter_t CConsoleMode::ReadFromModedb (const string& s)
 {
-    #define find_end_of(s)	find(s,i) + VectorSize(s)
-    #define get_number(i)	strtoul (i, const_cast<char**>(&i), 10)
-    mdbiter_t i = s.begin();
-    i = s.find_end_of ("mode");
-    if (i >= s.end()) return (s.end());
-    mdbiter_t iend = s.find_end_of ("endmode");
-    if (iend > s.end()) return (s.end());
+    #define find_end_of(t)	s.find(t,i) + VectorSize(t)
+    #define get_number(i)	strtoul (s.iat(i), &iptr, 10); i = distance(s.begin(), iptr)
+    char* iptr;
+    uoff_t i = 0;
+    i = find_end_of ("mode");
+    if (i >= s.size()) return (s.end());
+    uoff_t iend = find_end_of ("endmode");
+    if (iend > s.size()) return (s.end());
     i = s.find ('\"', i) + 1;
-    if (i >= iend) return (iend);
-    m_Name.assign (i, s.find ('\"', i));
-    i = s.find_end_of ("geometry");
-    if (i >= iend) return (iend);
+    if (i >= iend) return (s.iat(iend));
+    m_Name.assign (s, i, s.find ('\"', i) - i);
+    i = find_end_of ("geometry");
+    if (i >= iend) return (s.iat(iend));
     m_Width = get_number (i);
     m_Height = get_number (i);
     m_VWidth = get_number (i);
     m_VHeight = get_number (i);
     m_Depth = get_number (i);
-    i = s.find_end_of ("timings");
-    if (i >= iend) return (iend);
+    i = find_end_of ("timings");
+    if (i >= iend) return (s.iat(iend));
     m_PixClock = get_number (i);
     m_LeftMargin = get_number (i);
     m_RightMargin = get_number (i);
@@ -97,8 +98,8 @@ CMode::mdbiter_t CConsoleMode::ReadFromModedb (const string& s)
     m_HSyncLen = get_number (i);
     m_VSyncLen = get_number (i);
     for (uoff_t f = 0; f < flag_Last; ++f)
-	SetFlag (EFlag(f), s.find (s_FlagText[f]) < iend);
-    return (iend);
+	SetFlag (EFlag(f), s.find (s_FlagText[f], i) < iend);
+    return (s.iat(iend));
     #undef get_number
     #undef find_end_of
 }
