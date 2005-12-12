@@ -26,6 +26,7 @@ CConsoleFramebuffer::CConsoleFramebuffer (void)
   m_OrigScreen (),
   m_Colormap ()
 {
+    m_Device.exceptions (ios::allbadbits);
     CConsoleState::Instance().RegisterFramebuffer (this);
 }
 
@@ -46,14 +47,14 @@ CConsoleFramebuffer::~CConsoleFramebuffer (void)
 /// Opens the framebuffer device and enables graphics mode.
 void CConsoleFramebuffer::Open (void)
 {
-    assert (!m_Device.IsOpen());
+    assert (!m_Device.is_open());
     string deviceName;
     DetectDefaultDevice (deviceName);
-    m_Device.Open (deviceName, CFile::mode_Modify);
-    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
-    m_Device.Ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_OrigVar);
+    m_Device.open (deviceName, ios::in | ios::out | ios::nocreate);
+    m_Device.ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+    m_Device.ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_OrigVar);
     m_Var = m_OrigVar;
-    m_Screen = m_Device.Map (m_Fix.smem_len);
+    m_Screen = m_Device.mmap (m_Fix.smem_len);
     CConsoleState::Instance().EnterGraphicsMode();
 
     size_t visibleSize = m_Var.xres * m_Var.yres * m_Var.bits_per_pixel / 8;
@@ -68,11 +69,11 @@ void CConsoleFramebuffer::Close (void)
 {
     if (m_Screen.data()) {
 	copy (m_OrigScreen, m_Screen.begin());
-	m_Device.Unmap (m_Screen);
+	m_Device.munmap (m_Screen);
     }
-    if (m_Device.IsOpen()) {
+    if (m_Device.is_open()) {
 	SetScreeninfo (m_OrigVar);
-	m_Device.Close();
+	m_Device.close();
     }
     CConsoleState::Instance().LeaveGraphicsMode();
 }
@@ -87,10 +88,11 @@ void CConsoleFramebuffer::DetectDefaultDevice (string& deviceName) const
     const int vti = CConsoleState::Instance().VtIndex();
     if (vti < 0)
 	throw domain_error ("this program only works on a real console, not in an xterm or ssh");
-    CFile fb;
-    fb.Open ("/dev/fb0", CFile::mode_Write);
+    fstream fb;
+    fb.exceptions (ios::allbadbits);
+    fb.open ("/dev/fb0", ios::out | ios::nocreate);
     struct fb_con2fbmap c2fb = { vti, 0 };
-    fb.Ioctl (IOCTLID (FBIOGET_CON2FBMAP), &c2fb);
+    fb.ioctl (IOCTLID (FBIOGET_CON2FBMAP), &c2fb);
     deviceName.format ("/dev/fb%d", c2fb.framebuffer);
 }
 
@@ -107,12 +109,12 @@ bool operator== (const struct fb_var_screeninfo& v1, const struct fb_var_screeni
 /// Writes the varinfo to the fb and reads the parameters back.
 void CConsoleFramebuffer::SetScreeninfo (const struct fb_var_screeninfo& newInfo)
 {
-    if (!m_Device.IsOpen() || newInfo == m_Var)
+    if (!m_Device.is_open() || newInfo == m_Var)
 	return;
     m_Var = newInfo;
-    m_Device.Ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
-    m_Device.Ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
-    m_Device.Ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
+    m_Device.ioctl (IOCTLID (FBIOPUT_VSCREENINFO), &m_Var);
+    m_Device.ioctl (IOCTLID (FBIOGET_FSCREENINFO), &m_Fix);
+    m_Device.ioctl (IOCTLID (FBIOPAN_DISPLAY), &m_Var);
 }
 
 /// Loads available video modes from /etc/fb.modes
@@ -134,14 +136,14 @@ void CConsoleFramebuffer::LoadModes (modevec_t& mv)
 /// Changes to another mode.
 void CConsoleFramebuffer::SetMode (CMode nm, size_t depth)
 {
-    assert (m_Device.IsOpen());
+    assert (m_Device.is_open());
     CConsoleMode newMode (nm);
     newMode.SetDepth (depth);
     struct fb_var_screeninfo newInfo;
     newMode.CreateVarinfo (newInfo);
     SetScreeninfo (newInfo);
     SetColormap();
-    m_Device.MSync (m_Screen);
+    m_Device.msync (m_Screen);
     CFramebuffer::SetMode (newMode, depth);
 }
 
@@ -164,15 +166,15 @@ void CConsoleFramebuffer::SetColormap (void)
 	m_Colormap.InitTruecolorValues (m_Var.bits_per_pixel, m_Var.red.length, m_Var.green.length, m_Var.blue.length, m_Fix.visual == FB_VISUAL_DIRECTCOLOR);
 	m_Colormap.CopyTo (GC().Palette());
     }
-    m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
+    m_Device.ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
 }
 
 /// Resets the old mode when refocused.
 void CConsoleFramebuffer::OnFocus (bool bFocused)
 {
-    if (bFocused && m_Device.IsOpen()) {
+    if (bFocused && m_Device.is_open()) {
 	const struct fb_var_screeninfo curInfo (m_Var);
-	m_Device.Ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_Var);
+	m_Device.ioctl (IOCTLID (FBIOGET_VSCREENINFO), &m_Var);
 	SetScreeninfo (curInfo);
     }
     CFramebuffer::OnFocus (bFocused);
@@ -181,12 +183,12 @@ void CConsoleFramebuffer::OnFocus (bool bFocused)
 /// Writes the contents of \p gc to screen.
 void CConsoleFramebuffer::Flush (void)
 {
-    if (!m_Device.IsOpen() || !CConsoleState::Instance().IsActive())
+    if (!m_Device.is_open() || !CConsoleState::Instance().IsActive())
 	return;
 
     if (m_Fix.visual == FB_VISUAL_PSEUDOCOLOR) {
 	m_Colormap.CopyFrom (GC().Palette());
-	m_Device.Ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
+	m_Device.ioctl (IOCTLID (FBIOPUTCMAP), &m_Colormap);
     }
 
     const uint8_t* src = GC().begin();
@@ -229,7 +231,7 @@ void CConsoleFramebuffer::Flush (void)
 	}
     }
 
-    m_Device.MSync (m_Screen);
+    m_Device.msync (m_Screen);
 }
 
 /// Translates utio key codes to fbgl equivalents.

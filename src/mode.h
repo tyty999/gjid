@@ -9,7 +9,6 @@
 #ifndef MODE_H_305B7A305F04122E318379A84269939F
 #define MODE_H_305B7A305F04122E318379A84269939F
 
-#include "gob/file.h"
 #include "gob/primi.h"
 
 namespace fbgl {
