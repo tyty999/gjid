@@ -54,7 +54,7 @@ void CXlibMode::ReadFromX (const XF86VidModeModeInfo& vi)
     m_VHeight = m_Height;
     m_Depth = 8;
     m_Flags = 0;
-    m_Name.format ("%ux%u-%u", m_Width, m_Height, RefreshRate());
+    m_Name.format ("%ux%u-%zu", m_Width, m_Height, RefreshRate());
     #define MAP_FLAG(xflag,flag)	if (vi.flags & (1 << xflag)) SetFlag (flag)
     MAP_FLAG (xflag_PosHSync,	flag_HSyncHigh);
     MAP_FLAG (xflag_PosVSync,	flag_VSyncHigh);

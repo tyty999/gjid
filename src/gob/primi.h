@@ -47,9 +47,5 @@ public:
 
 } // namespace fbgl
 
-TUPLE_NUMERIC_LIMITS (fbgl::Point)
-TUPLE_NUMERIC_LIMITS (fbgl::Size2d)
-TUPLE_NUMERIC_LIMITS (fbgl::Rect)
-
 #endif
 

@@ -160,7 +160,7 @@ size_t CMode::stream_size (void) const
 void CMode::text_write (ostringstream& os) const
 {
     os << "mode \"" << m_Name << "\"\n";
-    os.format ("    # VRate %u Hz\n", RefreshRate());
+    os.format ("    # VRate %zu Hz\n", RefreshRate());
     os.format ("    geometry %u %u %u %u %u\n", m_Width, m_Height, m_VWidth, m_VHeight, m_Depth);
     os.format ("    timings %u %u %u %u %u %u %u\n", m_PixClock, m_LeftMargin, m_RightMargin, m_UpperMargin, m_LowerMargin, m_HSyncLen, m_VSyncLen);
     for (uoff_t f = 0; f < flag_Last; ++ f)
