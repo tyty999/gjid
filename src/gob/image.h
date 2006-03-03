@@ -78,6 +78,7 @@ private:
 
 } // namespace fbgl
 
+ALIGNOF (fbgl::CImage, 1)
 STD_STREAMABLE (fbgl::CImage)
 
 #endif
