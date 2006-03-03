@@ -24,21 +24,21 @@ void Font::read (istream& is)
     is >> w >> h;
     Resize (w, h);
     is.read (m_Data.begin(), m_LetterSize * 256);
-    is.align();
+    is.align(4);
 }
 
 void Font::write (ostream& os) const
 {
     os << uint8_t(m_Width) << uint8_t(m_Height);
     os.write (m_Data.begin(), m_LetterSize * 256);
-    os.align();
+    os.align(4);
 }
 
 size_t Font::stream_size (void) const
 {
     return (Align (stream_size_of(uint8_t(m_Width)) +
 		   stream_size_of(uint8_t(m_Height)) +
-		   m_LetterSize * 256));
+		   m_LetterSize * 256, 4));
 }
 
 memblock::iterator Font::GetLetterStart (wchar_t c)

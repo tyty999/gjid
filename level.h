@@ -102,6 +102,8 @@ private:
     objvec_t		m_Objects;
 };
 
+ALIGNOF (ObjectType, 1)
+ALIGNOF (Level, 4)
 STD_STREAMABLE (ObjectType)
 STD_STREAMABLE (Level)
 CAST_STREAMABLE (PicIndex, int)
