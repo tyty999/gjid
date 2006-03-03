@@ -19,6 +19,9 @@ static void OnSignal (int sig)
     #else
 	cout.format ("Fatal error: system signal %d received.\n", sig);
     #endif
+    #ifndef NDEBUG
+	cout << CBacktrace();
+    #endif
     exit (sig);
 }
 
@@ -64,6 +67,9 @@ int StdTestHarness (stdtestfunc_t testFunction)
 	rv = EXIT_SUCCESS;
     } catch (ustl::exception& e) {
 	cout << "Error: " << e << endl;
+	#ifndef NDEBUG
+	    cout << e.backtrace();
+	#endif
     } catch (...) {
 	cout << "Unexpected error." << endl;
     }
