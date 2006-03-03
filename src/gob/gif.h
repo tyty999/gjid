@@ -237,6 +237,10 @@ private:
 
 } // namespace gif
 
+ALIGNOF(gif::CFileHeader, 1)
+ALIGNOF(gif::CImageHeader, 1)
+ALIGNOF(gif::CGraphicsControl, 1)
+ALIGNOF(gif::CComment, 1)
 STD_STREAMABLE (gif::CFileHeader)
 STD_STREAMABLE (gif::CImageHeader)
 STD_STREAMABLE (gif::CGraphicsControl)

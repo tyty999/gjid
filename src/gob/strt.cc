@@ -75,7 +75,7 @@ size_t CStringTable::ComputeCodeSize (void) const
 void CStringTable::read (istream& is)
 {
     char sig [VectorSize(g_StrtSig)];
-    size_t nStrings, nChars, flags;
+    uint32_t nStrings, nChars, flags;
     is.read (sig, VectorSize(sig));
     if (strncmp (sig, g_StrtSig, VectorSize(g_StrtSig)))
 	throw runtime_error ("no string table found in the input stream");
@@ -87,7 +87,7 @@ void CStringTable::read (istream& is)
     d.Run (is, os);
     if (os.remaining())
 	throw runtime_error ("string table data is corrupt");
-    is.align();
+    is.align(4);
 
     m_Index.clear();
     m_Index.reserve (nStrings);
@@ -100,27 +100,27 @@ void CStringTable::read (istream& is)
 /// Writes the object to stream \p os.
 void CStringTable::write (ostream& os) const
 {
-    size_t flags = 1;
+    uint32_t flags = 1;
     os.write (g_StrtSig, VectorSize(g_StrtSig));
-    os << m_Index.size() << m_Data.size() << flags;
+    os << uint32_t(m_Index.size()) << uint32_t(m_Data.size()) << flags;
     istream is (m_Data.begin(), m_Data.size());
     gif::CCompressor c;
     c.SetCodeSize (ComputeCodeSize());
     c.Run (is, os);
-    os.align();
+    os.align(4);
 }
 
 /// Returns the size of the written object.
 size_t CStringTable::stream_size (void) const
 {
     const size_t headerSize (VectorSize(g_StrtSig) +
-	    stream_size_of (m_Index.size()) +
-	    stream_size_of (m_Data.size()) +
-	    stream_size_of (size_t(1)));
+	    stream_size_of (uint32_t(m_Index.size())) +
+	    stream_size_of (uint32_t(m_Data.size())) +
+	    stream_size_of (uint32_t(1)));
     istream is (m_Data.begin(), m_Data.size());
     gif::CCompressor c;
     c.SetCodeSize (ComputeCodeSize());
-    const size_t dataSize = c.EstimateSize (is);
+    const uint32_t dataSize = c.EstimateSize (is);
     return (headerSize + Align (dataSize));
 }
 
