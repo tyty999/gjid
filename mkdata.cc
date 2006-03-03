@@ -125,6 +125,9 @@ int main (void)
 	rv = EXIT_SUCCESS;
     } catch (exception& e) {
 	cout << "Error: " << e << endl;
+	#ifndef NDEBUG
+	    cout << e.backtrace();
+	#endif
     } catch (...) {
 	cout << "Unexpected error has occured." << endl;
     }
