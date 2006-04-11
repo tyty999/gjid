@@ -81,6 +81,7 @@ void CXlibFramebuffer::Open (void)
 
     // Save the original video mode.
     XF86VidModeModeInfo omi;
+    memset (&omi, 0, sizeof(omi));
     if (!XF86VidModeGetModeLine (m_pDisplay, DefaultScreen(m_pDisplay), (int*) &omi.dotclock, (XF86VidModeModeLine*) &omi.hdisplay))
 	throw runtime_error ("unable to determine the current video mode");
     CXlibMode omim;
