@@ -40,9 +40,9 @@ Level::Level (void)
 void Level::Draw (CGC& gc, const picvec_t& tiles) const
 {
     tilemap_t::const_iterator it (m_Map.begin());
-    for (coord_t y = 0; y < MAP_HEIGHT; ++ y)
-	for (coord_t x = 0; x < MAP_WIDTH; ++ x)
-	    tiles [*it++].Put (gc, x * TILE_W, y * TILE_H);
+    for (coord_t y = 0; y < MAP_HEIGHT * TILE_H; y += TILE_H)
+	for (coord_t x = 0; x < MAP_WIDTH * TILE_W; x += TILE_W)
+	    tiles [*it++].Put (gc, x, y);
     foreach (objvec_t::const_iterator, i, m_Objects)
 	tiles[i->pic].PutMasked (gc, i->x * TILE_W, i->y * TILE_H);
 }
@@ -71,21 +71,12 @@ int Level::FindCrate (coord_t x, coord_t y) const
 
 void Level::MoveRobot (RobotDir where)
 {
-    int dx = 0, dy = 0;
-    switch (where) {
-	case North:	dy = -1;
-			Robot().pic = RobotNorthPix;
-			break;
-	case South:	dy = 1;
-			Robot().pic = RobotSouthPix;
-			break;
-	case East:	dx = 1;
-			Robot().pic = RobotEastPix;
-			break;
-	case West:	dx = -1;
-			Robot().pic = RobotWestPix;
-			break;
-    }
+    static const int8_t dirStepX[4] = { 0, 0, 1, -1 };
+    static const int8_t dirStepY[4] = { -1, 1, 0, 0 };
+    static const uint8_t dirImage[4] = { RobotNorthPix, RobotSouthPix, RobotEastPix, RobotWestPix };
+
+    int dx = dirStepX [where], dy = dirStepY [where];
+    Robot().pic = dirImage [where];
 
     // Check if map square can be moved on
     if (!CanMoveTo (Robot().x + dx, Robot().y + dy, where))
@@ -134,23 +125,18 @@ bool Level::Finished (void) const
 
 void Level::read (istream& is)
 {
-    is >> m_Map;
-    is >> m_Objects;
+    is >> m_Map >> m_Objects;
     if (m_Objects.empty())
 	m_Objects.push_back (ObjectType (0, 0, RobotNorthPix));
 }
 
 void Level::write (ostream& os) const
 {
-    os << m_Map;
-    os << m_Objects;
+    os << m_Map << m_Objects;
 }
 
 size_t Level::stream_size (void) const
 {
-    size_t s (0);
-    s += stream_size_of (m_Map);
-    s += stream_size_of (m_Objects);
-    return (s);
+    return (stream_size_of (m_Map) + stream_size_of (m_Objects));
 }
 
