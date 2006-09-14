@@ -31,17 +31,13 @@ void CFramebuffer::Open (void)
 
 void CFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 {
-    if (m == stdmode_320x240x8) {
+    if (m)
 	SetMode (FindClosestMode (640, 480, freq), 8);
-	m_GC.Resize (Size2d (320, 240));
-    } else if (m == stdmode_640x480x8)
-	SetMode (FindClosestMode (640, 480, freq), 8);
-    else
-	m_GC.Resize (Size2d());
+    m_GC.Resize (Size2d (m * 320, m * 240));
 }
 
 /// Sets mode \p m with \p depth.
-void CFramebuffer::SetMode (CMode m, size_t)
+void CFramebuffer::SetMode (rcmode_t m, size_t)
 {
     m_GC.Resize (Size2d (m.Width(), m.Height()));
 }
@@ -58,16 +54,17 @@ const CMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) con
 {
     uoff_t found (m_Modes.size());
     size_t diff (SIZE_MAX);
-    foreach (modevec_t::const_iterator, m, m_Modes) {
-	const size_t md = absv<int>(m->Width() - w) +
-			  absv<int>(m->Height() - h) +
-			  absv<int>(m->RefreshRate() - freq);
-	if (md < diff) {
-	    found = distance (m_Modes.begin(), m);
-	    diff = md;
-	}
+    for (uoff_t i = 0; i < m_Modes.size(); ++i) {
+	const CMode& m (m_Modes[i]);
+	const size_t md = absv<int>(m.Width() - w) +
+			  absv<int>(m.Height() - h) +
+			  absv<int>(m.RefreshRate() - freq);
+	if (md < diff)
+	    found = i;
+	diff = min (diff, md);
     }
-    return (found < m_Modes.size() ? m_Modes[found] : CMode::null_Mode);
+    const CMode& foundNode (m_Modes[found]);
+    return (found < m_Modes.size() ? foundNode : CMode::null_Mode);
 }
 
 } // namespace fbgl

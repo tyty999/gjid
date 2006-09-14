@@ -134,7 +134,7 @@ void CConsoleFramebuffer::LoadModes (modevec_t& mv)
 }
 
 /// Changes to another mode.
-void CConsoleFramebuffer::SetMode (CMode nm, size_t depth)
+void CConsoleFramebuffer::SetMode (rcmode_t nm, size_t depth)
 {
     assert (m_Device.is_open());
     CConsoleMode newMode (nm);
@@ -229,6 +229,7 @@ void CConsoleFramebuffer::Flush (void)
 	    if (y % 2)
 		ls += 320;
 	}
+	simd::reset_mmx();
     }
 
     m_Device.msync (m_Screen);

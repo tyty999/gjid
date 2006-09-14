@@ -64,6 +64,11 @@ CMode::CMode (const CMode& m)
 {
 }
 
+/// Destructor instantiated to avoid inlining.
+CMode::~CMode (void)
+{
+}
+
 /// Assignment operator.
 const CMode& CMode::operator= (const CMode& m)
 {

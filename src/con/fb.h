@@ -19,7 +19,7 @@ public:
     static CConsoleFramebuffer&	Instance (void);
     virtual void		Open (void);
     virtual void		Close (void);
-    virtual void		SetMode (CMode m, size_t depth = 8);
+    virtual void		SetMode (rcmode_t m, size_t depth = 8);
     virtual void		SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
     virtual void		CheckEvents (CEventProcessor* evp);
     virtual void		OnFocus (bool bFocused);

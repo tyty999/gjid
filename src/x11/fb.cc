@@ -221,7 +221,7 @@ void CXlibFramebuffer::SwitchToMode (CXlibMode nm)
 }
 
 /// Switches to mode \p m. X does not support depth switching so that is ignored.
-void CXlibFramebuffer::SetMode (CMode m, size_t depth)
+void CXlibFramebuffer::SetMode (rcmode_t m, size_t depth)
 {
     SwitchToMode (m);
     CloseWindow();	// The old one, if exists.

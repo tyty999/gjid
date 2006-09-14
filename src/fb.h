@@ -26,14 +26,16 @@ enum EStdFbMode {
 /// \brief Abstract framebuffer interface.
 class DLL_LOCAL CFramebuffer {
 public:
+    typedef const CMode&	rcmode_t;
+public:
     virtual void		Open (void);
     virtual void		Close (void) = 0;
     virtual void		CheckEvents (CEventProcessor* evp) = 0;
     virtual void		Flush (void) = 0;
     virtual void		OnFocus (bool bFocus);
-    virtual void		SetMode (CMode m, size_t depth = 8);
+    virtual void		SetMode (rcmode_t m, size_t depth = 8);
     virtual void		SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
-    const CMode&		FindClosestMode (size_t w, size_t h, size_t freq) const;
+    rcmode_t			FindClosestMode (size_t w, size_t h, size_t freq) const;
     inline const CGC&		GC (void) const	{ return (m_GC); }
     inline CGC&			GC (void)	{ return (m_GC); }
 protected:
@@ -42,10 +44,10 @@ protected:
 				CFramebuffer (void);
     virtual		       ~CFramebuffer (void);
     virtual void		LoadModes (modevec_t& mv) = 0;
-    inline void			SetOrigMode (const CMode& m)	{ m_OrigMode = m; }
-    inline const CMode&		OrigMode (void) const		{ return (m_OrigMode); }
-    inline void			SetCurMode (const CMode& m)	{ m_CurMode = m; }
-    inline const CMode&		CurMode (void) const		{ return (m_CurMode); }
+    inline void			SetOrigMode (rcmode_t m)	{ m_OrigMode = m; }
+    inline rcmode_t		OrigMode (void) const		{ return (m_OrigMode); }
+    inline void			SetCurMode (rcmode_t m)		{ m_CurMode = m; }
+    inline rcmode_t		CurMode (void) const		{ return (m_CurMode); }
 private:
     modevec_t			m_Modes;
     CMode			m_OrigMode;

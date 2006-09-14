@@ -24,6 +24,11 @@ CImage::CImage (void)
 {
 }
 
+/// Default destructor.
+CImage::~CImage (void)
+{
+}
+
 /// Resize the image to the given dimensions.
 void CImage::Resize (Size2d sz)
 {

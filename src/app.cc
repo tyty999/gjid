@@ -112,14 +112,7 @@ void CApplication::OnKey (key_t key, keystate_t ks)
 	Quit();
 }
 
-void CApplication::OnIdle (void) {}
 void CApplication::OnQuit (void) { SetFlag (f_QuitRequested); }
-void CApplication::OnDraw (CGC&) {}
-
-void CApplication::SetMode (EStdFbMode m, size_t freq)
-{
-    m_pFb->SetStandardMode (m, freq);
-}
 
 } // namespace fbgl
 

@@ -38,6 +38,7 @@ public:
     typedef pixvec_t::difference_type	difference_type;
 public:
 				CImage (void);
+			       ~CImage (void);
     void			Resize (Size2d sz);
     void			link (memlink l, Size2d sz);
     void			unlink (void);

@@ -23,7 +23,7 @@ public:
     static CXlibFramebuffer&	Instance (void);
     virtual void		Open (void);
     virtual void		Close (void);
-    virtual void		SetMode (CMode m, size_t depth);
+    virtual void		SetMode (rcmode_t m, size_t depth);
     virtual void		CheckEvents (CEventProcessor* evp);
     virtual void		Flush (void);
     void			OnIOError (void);

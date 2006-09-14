@@ -36,6 +36,7 @@ public:
 public:
 			CMode (void);
 			CMode (const CMode& m);
+		       ~CMode (void);
     const CMode&	operator= (const CMode& m);
     bool		operator== (const CMode& m) const;
     void		read (istream& is);
@@ -51,7 +52,7 @@ public:
     size_t		RefreshRate (void) const;
 protected:
     inline void		SetFlag (EFlag f, bool v = true);
-protected:
+private:
     string		m_Name;		///< Mode name; as in "800x600-16@75"
     uint32_t		m_PixClock;	///< Clock frequency in MHz
     uint16_t		m_LeftMargin;	///< Time in us from hsync to picture
