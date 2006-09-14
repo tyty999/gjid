@@ -22,7 +22,6 @@ namespace fbgl {
 
 //----------------------------------------------------------------------
 
-static void OnSignal (int sig, siginfo* si, void* oldHandler);
 static void OnUnexpected (void) __attribute__((noreturn));
 static void Terminate (void) __attribute__((noreturn));
 #ifndef HAVE_STRSIGNAL
@@ -32,7 +31,7 @@ const char* strsignal (int sig);
 //----------------------------------------------------------------------
 
 /// Called when a signal is received.
-static void OnSignal (int sig, siginfo*, void*)
+static void OnSignal (int sig)
 {
     try {
 	CApplication* pApp = CApplication::Instance();
@@ -59,7 +58,7 @@ static void Terminate (void)
 /// Called when an exception violates a throw specification.
 static void OnUnexpected (void)
 {
-    cerr << "Unexpected exception caught. This is an internal error. Aborting." << endl;
+    cerr.format ("Unexpected exception fatal internal error occured.\n");
     Terminate();
 }
 
@@ -72,19 +71,15 @@ extern "C" void InstallCleanupHandlers (void)
 	SIGTERM, SIGTRAP, SIGTSTP, SIGTTIN, SIGTTOU, SIGUSR1, SIGUSR2,
 	SIGVTALRM, SIGXCPU, SIGXFSZ
     };
-    struct sigaction sa;
-    sigemptyset (&sa.sa_mask);
-    sa.sa_sigaction = OnSignal;
-    sa.sa_flags = SA_RESTART | SA_SIGINFO;
     for (uoff_t i = 0; i < VectorSize(c_Signals); ++ i)
-	sigaction (c_Signals[i], &sa, NULL);
+	signal (c_Signals[i], OnSignal);
     std::set_terminate (Terminate);
     std::set_unexpected (OnUnexpected);
 }
 
 #ifndef HAVE_STRSIGNAL
 /// Returns the textual description of a system signal \p sig.
-static const char* strsignal (int sig)
+const char* strsignal (int sig)
 {
     static const char* c_Signals[] = {
 	"Invalid signal",
