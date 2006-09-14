@@ -49,10 +49,10 @@ protected:
 private:
     CFramebuffer*	GetFramebuffer (void) const;
 private:
-    CFramebuffer*	m_pFb;
-    CGC			m_GC;
-    bitset<f_Max>	m_Flags;
-   static CApplication*	s_pApp;
+    CFramebuffer*	m_pFb;		///< Pointer to the framebuffer backend.
+    CGC			m_GC;		///< GC for drawing onto the offscreen buffer.
+    bitset<f_Max>	m_Flags;	///< See f_ constants for flag values.
+   static CApplication*	s_pApp;		///< App pointer for Instance()
 };
 
 template <typename AppClass>
@@ -66,9 +66,9 @@ inline int TFbglMain (int argc, const char* const* argv)
 	rApp.MainLoop();
 	rv = EXIT_SUCCESS;
     } catch (exception& e) {
-	cerr.flush(); cout << "Error: " << e << endl;
+	cout.flush(); cerr << "Error: " << e << endl;
     } catch (...) {
-	cerr.flush(); cout << "Unexpected fatal error has occured" << endl;
+	cout.flush(); cerr.format ("Unexpected fatal error has occured\n");
     }
     return (rv);
 }

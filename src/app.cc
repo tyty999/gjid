@@ -96,9 +96,12 @@ void CApplication::OnDestroy (void)
     m_pFb->Close();
 }
 
+#ifndef HAVE_STRSIGNAL
+const char* strsignal (int sig);	// In app.cc
+#endif
 bool CApplication::OnSignal (int sig)
 {
-    cout << "Fatal error " << sig << endl;
+    cerr.format ("Fatal error: %s\n", strsignal(sig));
     return (false);
 }
 

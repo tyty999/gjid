@@ -26,7 +26,7 @@ static void OnSignal (int sig, siginfo* si, void* oldHandler);
 static void OnUnexpected (void) __attribute__((noreturn));
 static void Terminate (void) __attribute__((noreturn));
 #ifndef HAVE_STRSIGNAL
-static const char* strsignal (int sig);
+const char* strsignal (int sig);
 #endif
 
 //----------------------------------------------------------------------
@@ -37,13 +37,13 @@ static void OnSignal (int sig, siginfo*, void*)
     try {
 	CApplication* pApp = CApplication::Instance();
 	if (!pApp)
-	    cerr << "[S] Fatal error: " << strsignal(sig) << endl;
+	    cerr.format ("[S] Fatal error: %s\n", strsignal(sig));
 	else if (pApp->OnSignal (sig))
 	    return;
     } catch (exception& e) {
 	cerr << "[S] Error: " << e << endl;
     } catch (...) {
-	cerr << "[S] Unexpected error has occured." << endl;
+	cerr.format ("[S] Unexpected error has occured.\n");
     }
     exit (sig);
 }
