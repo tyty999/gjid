@@ -1,9 +1,9 @@
-include ../../Common.mk
+include ../../Config.mk
 
 EXE	= txt2strt
 SRCS	= $(wildcard *.cc)
 OBJS	= $(SRCS:.cc=.o)
-LIBS	= -lfbgl -lustl -lc
+LIBS	= -lfbgl -lustl
 
 ######################################################################
 

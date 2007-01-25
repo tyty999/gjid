@@ -1,4 +1,4 @@
-include ../Common.mk
+include ../Config.mk
 
 SUBDIRS	= txt2strt
 
@@ -6,6 +6,7 @@ SUBDIRS	= txt2strt
 all:		subdirs-all
 install:	subdirs-install
 uninstall:	subdirs-uninstall
+clean:		subdirs-clean
 
 subdirs-%:
 	@for i in ${SUBDIRS}; do	\

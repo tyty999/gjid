@@ -2,7 +2,7 @@ include Config.mk
 
 SUBDIRS	= src tools
 
-.PHONY:		all install uninstall clean distclean
+.PHONY:		all install uninstall clean distclean dist
 all:		subdirs-all
 install:	subdirs-install
 uninstall:	subdirs-uninstall
@@ -18,4 +18,16 @@ subdirs-%:
 
 distclean:	clean
 	@rm -f Config.mk config.h bsconf.o bsconf `find . -name .depend`
+
+TMPDIR	= /tmp
+DISTDIR	= ${HOME}/stored
+DISTNAM	= ${LIBNAME}-${MAJOR}.${MINOR}
+DISTTAR	= ${DISTNAM}.${BUILD}.tar.bz2
+
+dist:
+	mkdir ${TMPDIR}/${DISTNAM}
+	cp -r . ${TMPDIR}/${DISTNAM}
+	+${MAKE} -C ${TMPDIR}/${DISTNAM} distclean
+	(cd ${TMPDIR}/${DISTNAM}; rm -rf `find . -name .svn`)
+	(cd ${TMPDIR}; tar jcf ${DISTDIR}/${DISTTAR} ${DISTNAM}; rm -rf ${DISTNAM})
 
