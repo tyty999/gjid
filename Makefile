@@ -1,11 +1,12 @@
-include Common.mk
+include Config.mk
 
 SUBDIRS	= src tools
 
-.PHONY:		all install uninstall
+.PHONY:		all install uninstall clean distclean
 all:		subdirs-all
 install:	subdirs-install
 uninstall:	subdirs-uninstall
+clean:		subdirs-clean
 
 subdirs-%:
 	@for i in ${SUBDIRS}; do	\
@@ -15,7 +16,6 @@ subdirs-%:
 	    || exit;			\
 	done
 
-dist-clean:	clean
-	@rm -f Common.mk config.h bsconf.o bsconf
-	@rm -f `find . -name .depend`
+distclean:	clean
+	@rm -f Config.mk config.h bsconf.o bsconf `find . -name .depend`
 

@@ -52,7 +52,7 @@ public:
     size_t		RefreshRate (void) const;
 protected:
     inline void		SetFlag (EFlag f, bool v = true);
-private:
+protected:
     string		m_Name;		///< Mode name; as in "800x600-16@75"
     uint32_t		m_PixClock;	///< Clock frequency in MHz
     uint16_t		m_LeftMargin;	///< Time in us from hsync to picture

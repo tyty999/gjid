@@ -9,7 +9,6 @@
 //
 
 #define _GNU_SOURCE 1 // for strsignal (optional)
-#include "startup.h"
 #include "app.h"
 #include <signal.h>
 #include <string.h>

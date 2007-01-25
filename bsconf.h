@@ -13,6 +13,8 @@
  * "gcc" in config.h.
 */
 
+#define BSCONF_VERSION		0x03
+
 #define PACKAGE_NAME		"fbgl"
 #define LIB_MAJOR		"1"
 #define LIB_MINOR		"0"
@@ -24,11 +26,12 @@
 #define PACKAGE_BUGREPORT	"Mike Sharov <msharov@users.sourceforge.net>"
 
 static cpchar_t g_Files [] = {
-    "Common.mk"
+    "Config.mk"
 };
 
 /* Values substitute @VARNAME@ */
 static cpchar_t g_EnvVars [] = {
+    "CC",
     "CXX",
     "LD",
     "CPP",
@@ -39,7 +42,9 @@ static cpchar_t g_EnvVars [] = {
 
 /*  VARIABLE	PROGRAM		HOW TO CALL	IF NOT FOUND */
 static cpchar_t g_ProgVars [] = {
-    "CXX",	"g++",		"g++",		"@CC@",
+    "CC",	"gcc",		"gcc",		"@CC@",
+    "CC",	"cc",		"cc",		"gcc",
+    "CXX",	"g++",		"g++",		"@CXX@",
     "CXX",	"c++",		"c++",		"g++",
     "LD",	"ld",		"ld",		"ld",
     "AR",	"ar",		"ar",		"echo",
@@ -65,16 +70,14 @@ static cpchar_t g_Functions [] = {
 static cpchar_t g_Components [] = {
     "shared",		"#BUILD_SHARED\t= 1",			"BUILD_SHARED\t= 1 ",
     "static",		"#BUILD_STATIC\t= 1",			"BUILD_STATIC\t= 1 ",
-    "debug",		"#DEBUG\t\t= 1",			"DEBUG\t\t= 1 ",
-    "profile",		"#PROFILE\t= 1",			"PROFILE\t\t= 1 "
+    "debug",		"#DEBUG\t\t= 1",			"DEBUG\t\t= 1 "
 };
 
 /* Parallel to g_Components */
 static SComponentInfo g_ComponentInfos [VectorSize(g_Components) / 3] = {
     { 1, "Builds the shared library (if supported by the OS)" },
     { 0, "Builds the static library" },
-    { 0, "Compiles the library with debugging information" },
-    { 0, "Compiles the library with profiling (gprof) information" }
+    { 0, "Compiles the library with debugging information" }
 };
 
 /* Substitutes names like @PACKAGE_NAME@ with the second field */
@@ -89,7 +92,4 @@ static cpchar_t g_CustomVars [] = {
     "LIB_MINOR",		LIB_MINOR,
     "LIB_BUILD",		LIB_BUILD
 };
-
-/* Maximum size of the subsititution list. bsconf warns on overflow. */
-#define MAX_SUBSTITUTIONS	256
 

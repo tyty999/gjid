@@ -10,7 +10,6 @@
 #define APP_H_0AEE96827DC77ABC0A46F062495765A9
 
 #include "fb.h"
-#include "startup.h"
 
 namespace fbgl {
 
@@ -55,6 +54,10 @@ private:
    static CApplication*	s_pApp;		///< App pointer for Instance()
 };
 
+//----------------------------------------------------------------------
+
+extern "C" void InstallCleanupHandlers (void);
+
 template <typename AppClass>
 inline int TFbglMain (int argc, const char* const* argv)
 {
@@ -73,9 +76,13 @@ inline int TFbglMain (int argc, const char* const* argv)
     return (rv);
 }
 
+//----------------------------------------------------------------------
+
 #define FbglMain(appClass)				\
     int main (int argc, const char* const* argv)	\
 	{ return (TFbglMain<appClass> (argc, argv)); }
+
+//----------------------------------------------------------------------
 
 } // namespace fbgl
 

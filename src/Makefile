@@ -1,10 +1,5 @@
 include ../Config.mk
 
-LIBNAME	= fbgl
-MAJOR	= 1
-MINOR	= 0
-BUILD	= 0
-
 SRCS	= $(wildcard *.cc gob/*.cc con/*.cc x11/*.cc)
 INCS	= $(wildcard *.h gob/*.h con/*.h x11/*.h)
 OBJS	= $(SRCS:.cc=.o)
