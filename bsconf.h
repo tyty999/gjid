@@ -13,22 +13,25 @@
  * "gcc" in config.h.
 */
 
-#define PACKAGE_NAME		"gjid"
-#define LIB_MAJOR		"2"
-#define LIB_MINOR		"0"
-#define LIB_BUILD		"0"
+#define BSCONF_VERSION		0x03
 
-#define PACKAGE_VERSION		LIB_MAJOR "." LIB_MINOR
+#define PACKAGE_NAME		"gjid"
+#define EXE_MAJOR		"2"
+#define EXE_MINOR		"0"
+#define EXE_BUILD		"0"
+
+#define PACKAGE_VERSION		EXE_MAJOR "." EXE_MINOR
 #define PACKAGE_TARNAME		PACKAGE_NAME
 #define PACKAGE_STRING		PACKAGE_NAME " " PACKAGE_VERSION
 #define PACKAGE_BUGREPORT	"Mike Sharov <msharov@users.sourceforge.net>"
 
 static cpchar_t g_Files [] = {
-    "Common.mk"
+    "Config.mk"
 };
 
 /* Values substitute @VARNAME@ */
 static cpchar_t g_EnvVars [] = {
+    "CC",
     "CXX",
     "LD",
     "CPP",
@@ -39,9 +42,10 @@ static cpchar_t g_EnvVars [] = {
 
 /*  VARIABLE	PROGRAM		HOW TO CALL	IF NOT FOUND */
 static cpchar_t g_ProgVars [] = {
-    "CXX",	"g++",		"g++",		"@CC@",
+    "CC",	"gcc",		"gcc",		"@CC@",
+    "CC",	"cc",		"cc",		"gcc",
+    "CXX",	"g++",		"g++",		"@CXX@",
     "CXX",	"c++",		"c++",		"g++",
-    "LD",	"ld",		"ld",		"ld",
     "INSTALL",	"install",	"install -c",	"cp",
     "RM",	"rm",		"rm -f",	"rm",
     "LN",	"ln",		"ln -sf",	"cp"
@@ -76,12 +80,9 @@ static cpchar_t g_CustomVars [] = {
     "PACKAGE_TARNAME",		PACKAGE_TARNAME,
     "PACKAGE_STRING",		PACKAGE_STRING,
     "PACKAGE_BUGREPORT",	PACKAGE_BUGREPORT,
-    "LIBNAME",			PACKAGE_NAME,
-    "LIB_MAJOR",		LIB_MAJOR,
-    "LIB_MINOR",		LIB_MINOR,
-    "LIB_BUILD",		LIB_BUILD
+    "EXENAME",			PACKAGE_NAME,
+    "EXE_MAJOR",		EXE_MAJOR,
+    "EXE_MINOR",		EXE_MINOR,
+    "EXE_BUILD",		EXE_BUILD
 };
-
-/* Maximum size of the subsititution list. bsconf warns on overflow. */
-#define MAX_SUBSTITUTIONS	256
 

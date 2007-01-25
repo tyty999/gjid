@@ -1,6 +1,5 @@
-include Common.mk
+include Config.mk
 
-EXE	= gjid
 OBJS	= $(filter-out mkdata.o, $(SRCS:.cc=.o))
 SRCS	= $(wildcard *.cc)
 LIBS	+= -lfbgl -lustl -lc
@@ -44,7 +43,7 @@ uninstall:
 	@echo "    Compiling $< ..."
 	@${CXX} ${CXXFLAGS} -o $@ -c $<
 
-.PHONY:	clean depend dox confclean
+.PHONY:	clean depend dox distclean
 
 clean:
 	@echo "Removing generated files ..."
@@ -56,7 +55,20 @@ depend: ${SRCS}
 	    ${CXX} ${CXXFLAGS} -M -MT $${i%%.cc}.o $$i >> .depend;	\
 	done
 
-confclean:
+distclean:	clean
 	rm -f bsconf Common.mk config.h
 
+TMPDIR	= /tmp
+DISTDIR	= ${HOME}/stored
+DISTNAM	= ${EXE}-${MAJOR}.${MINOR}
+DISTTAR	= ${DISTNAM}.${BUILD}.tar.bz2
+
+dist:
+	mkdir ${TMPDIR}/${DISTNAM}
+	cp -r . ${TMPDIR}/${DISTNAM}
+	+${MAKE} -C ${TMPDIR}/${DISTNAM} distclean
+	(cd ${TMPDIR}/${DISTNAM}; rm -rf `find . -name .svn`)
+	(cd ${TMPDIR}; tar jcf ${DISTDIR}/${DISTTAR} ${DISTNAM}; rm -rf ${DISTNAM})
+
 -include .depend
+
