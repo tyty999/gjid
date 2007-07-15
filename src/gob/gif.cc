@@ -20,6 +20,22 @@ const CTable::code_t CTable::c_MaxCodeBits;
 const CTable::code_t CTable::c_MaxCodes;
 const CTable::code_t CTable::c_Unused;
 
+static void Error (const char* msg) __attribute__((noreturn));
+static void Error (const char* msg)
+    { throw runtime_error (msg); }
+
+static inline void ReadShort (istream& is, uint16_t& v)
+{
+    is >> reinterpret_cast<uint8_t*>(&v)[0];
+    is >> reinterpret_cast<uint8_t*>(&v)[1];
+}
+
+static inline void WriteShort (ostream& os, const uint16_t& v)
+{
+    os << reinterpret_cast<const uint8_t*>(&v)[0];
+    os << reinterpret_cast<const uint8_t*>(&v)[1];
+}
+
 //----------------------------------------------------------------------
 
 /// Default constructor.
@@ -47,7 +63,7 @@ void CTable::Reset (size_t nRootBits)
     m_EndCode = m_ResetCode + 1;
     m_nCodes = m_EndCode + 1;
     if (m_nCodes > c_MaxCodes)
-	throw runtime_error ("lzw table size is too large");
+	Error ("lzw table size is too large");
     fill (m_Char, chr_t(0));
     fill (m_Prev, c_Unused);
     fill (m_First, c_Unused);
@@ -59,7 +75,7 @@ void CTable::Reset (size_t nRootBits)
 CTable::code_t CTable::AddString (code_t base, chr_t c, bool bWriting)
 {
     if (m_nCodes >= c_MaxCodes || base == m_nCodes)
-	throw runtime_error ("the compressed data is corrupt");
+	Error ("the compressed data is corrupt");
     m_Char [m_nCodes] = c;
     m_Prev [m_nCodes] = base;
     m_First [m_nCodes] = m_First [base];
@@ -95,7 +111,7 @@ void CTable::WriteString (code_t code, ostream& os) const
     }
     const size_t n (distance (buf.begin(), i));
     if (os.remaining() < n)
-	throw stream_bounds_exception ("lzw write", "gif", os.pos(), n, os.remaining());
+	os.verify_remaining ("lzw write", "gif", n);
     ostream::iterator io = os.ipos();
     for (uoff_t j = 0; j < n; ++j)
 	*io++ = *--i;
@@ -152,7 +168,7 @@ CTable::code_t CDecompressor::ReadCode (istream& is)
 	    if (!m_BlockSize) {
 		is >> m_BlockSize;
 		if (is.remaining() < size_t(m_BlockSize + !!m_BlockSize))
-		    throw stream_bounds_exception ("lzw read", "gif", is.pos(), m_BlockSize + !!m_BlockSize, is.remaining());
+		    is.verify_remaining ("lzw read", "gif", m_BlockSize + !!m_BlockSize);
 	    }
 	    if (!m_BlockSize)
 		return (t.EndCode());
@@ -310,13 +326,12 @@ void CFileHeader::read (istream& is)
 {
     char sig [7];
     if (is.remaining() < 13)
-	throw runtime_error ("no GIF89 data found in the input stream");
+	Error ("no GIF89 data found in the input stream");
     is.read (sig, 6);
     if (strncmp (sig, s_GifSig, 6))
-	throw runtime_error ("no GIF89 data found in the input stream");
-    uint8_t c;
-    is >> c; m_Width = c; is >> c; m_Width |= c << 8;
-    is >> c; m_Height = c; is >> c; m_Height |= c << 8;
+	Error ("no GIF89 data found in the input stream");
+    ReadShort (is, m_Width);
+    ReadShort (is, m_Height);
     is >> m_Resolution >> m_Background >> m_AspectRatio;
 }
 
@@ -324,8 +339,8 @@ void CFileHeader::read (istream& is)
 void CFileHeader::write (ostream& os) const
 {
     os.write (s_GifSig, 6);
-    os << uint8_t(m_Width) << uint8_t(m_Width >> 8);
-    os << uint8_t(m_Height) << uint8_t(m_Height >> 8);
+    WriteShort (os, m_Width);
+    WriteShort (os, m_Height);
     os << m_Resolution << m_Background << m_AspectRatio;
 }
 
@@ -344,25 +359,20 @@ CImageHeader::CImageHeader (void)
 /// Reads the object from stream \p is.
 void CImageHeader::read (istream& is)
 {
-    uint8_t c;
-    is >> c; m_LeftBorder = c;
-    is >> c; m_LeftBorder |= (c << 8);
-    is >> c; m_TopBorder = c;
-    is >> c; m_TopBorder |= (c << 8);
-    is >> c; m_Width = c;
-    is >> c; m_Width |= (c << 8);
-    is >> c; m_Height = c;
-    is >> c; m_Height |= (c << 8);
+    ReadShort (is, m_LeftBorder);
+    ReadShort (is, m_TopBorder);
+    ReadShort (is, m_Width);
+    ReadShort (is, m_Height);
     is >> m_Flags;
 }
 
 /// Writes the object to stream \p os.
 void CImageHeader::write (ostream& os) const
 {
-    os << uint8_t(m_LeftBorder) << uint8_t(m_LeftBorder >> 8);
-    os << uint8_t(m_TopBorder) << uint8_t(m_TopBorder >> 8);
-    os << uint8_t(m_Width) << uint8_t(m_Width >> 8);
-    os << uint8_t(m_Height) << uint8_t(m_Height >> 8);
+    WriteShort (os, m_LeftBorder);
+    WriteShort (os, m_TopBorder);
+    WriteShort (os, m_Width);
+    WriteShort (os, m_Height);
     os << m_Flags;
 }
 
@@ -379,14 +389,14 @@ CGraphicsControl::CGraphicsControl (void)
 /// Read the object from stream \p is.
 void CGraphicsControl::read (istream& is)
 {
-    uint8_t blockSize;
-    is >> blockSize;
-    if (blockSize != 4)
-	throw runtime_error ("corrupt graphics control block in gif");
+    uint8_t v;
+    is >> v;
+    if (v != 4)
+	Error ("corrupt graphics control block in gif");
     is >> m_Flags;
-    is.read (&m_DelayTime, 2);
+    ReadShort (is, m_DelayTime);
     is >> m_TransparentColor;
-    is >> blockSize;
+    is >> v;
 }
 
 /// Write the object to stream \p os.
@@ -395,7 +405,7 @@ void CGraphicsControl::write (ostream& os) const
     uint8_t blockSize = 4;
     os << blockSize;
     os << m_Flags;
-    os.write (&m_DelayTime, 2);
+    WriteShort (os, m_DelayTime);
     os << m_TransparentColor;
     os << GIF_ZERO_BLOCK;
 }
@@ -406,25 +416,24 @@ void CGraphicsControl::write (ostream& os) const
 void CComment::read (istream& is)
 {
     m_s.clear();
-    uint8_t bs;
-    is >> bs;
-    while (is.remaining() >= bs + 1U) {
-	m_s.resize (m_s.size() + bs);
+    for (;;) {
+	uint8_t bs;
+	is >> bs;
+	if (is.remaining() < bs + 1U)
+	    break;
 	m_s.append (is.ipos(), bs);
 	is.skip (bs);
-	is >> bs;
     }
 }
 
 /// Writes the object to stream \p os.
 void CComment::write (ostream& os) const
 {
-    string s;
     foreach (string::const_iterator, i, m_s) {
-	size_t bs = min (distance (i, m_s.end()), GIF_MAX_BLOCK_SIZE);
-	s.link (i, bs);
-	os << s;
-	i = s.end() - 1;
+	uint8_t bs = min (distance (i, m_s.end()), GIF_MAX_BLOCK_SIZE);
+	os << bs;
+	os.write (i, bs);
+	i += bs;
     }
     os << GIF_ZERO_BLOCK;
 }
@@ -432,8 +441,8 @@ void CComment::write (ostream& os) const
 /// Returns the size of the written object.
 size_t CComment::stream_size (void) const
 {
-    return (stream_size_of (m_s) +
-	    Align (m_s.size(), size_t(GIF_MAX_BLOCK_SIZE)) / GIF_MAX_BLOCK_SIZE);
+    const size_t nBlocks = (m_s.size() + GIF_MAX_BLOCK_SIZE - 1) / GIF_MAX_BLOCK_SIZE;
+    return (m_s.size() + nBlocks + stream_size_of(GIF_ZERO_BLOCK));
 }
 
 //----------------------------------------------------------------------

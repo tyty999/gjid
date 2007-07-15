@@ -67,7 +67,7 @@ protected:
     uint16_t		m_VHeight;	///< Virtual Y resolution in pixels.
     uint16_t		m_Depth;	///< Color depth in bits.
     uint16_t		m_Flags;	///< See EFlags for values.
-    static const char*	s_FlagText [flag_Last];
+    static const char	s_FlagText [flag_Last][12];
 };
 
 //----------------------------------------------------------------------

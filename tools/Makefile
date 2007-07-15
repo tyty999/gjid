@@ -7,6 +7,7 @@ all:		subdirs-all
 install:	subdirs-install
 uninstall:	subdirs-uninstall
 clean:		subdirs-clean
+depend:		subdirs-depend
 
 subdirs-%:
 	@for i in ${SUBDIRS}; do	\

@@ -12,11 +12,11 @@ namespace fbgl {
 
 //----------------------------------------------------------------------
 
-const char* CMode::s_FlagText [flag_Last] = {
+const char CMode::s_FlagText [flag_Last][12] = {
     "hsync high",	// flag_HSyncHigh
     "vsync high",	// flag_VSyncHigh
     "csync high",	// flag_CSync
-    "extsync true",	// flag_ExtSync
+    "extsyn true",	// flag_ExtSync
     "laced true",	// flag_Interlaced
     "double true",	// flag_Doublescan
     "gsync true",	// flag_SyncOnGreen
