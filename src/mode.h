@@ -39,9 +39,6 @@ public:
 		       ~CMode (void);
     const CMode&	operator= (const CMode& m);
     bool		operator== (const CMode& m) const;
-    void		read (istream& is);
-    void		write (ostream& os) const;
-    size_t		stream_size (void) const;
     void		text_write (ostringstream& os) const;
     inline rcname_t	Name (void) const	{ return (m_Name); }
     inline size_t	Width (void) const	{ return (m_Width); }

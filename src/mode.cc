@@ -119,55 +119,15 @@ size_t CMode::RefreshRate (void) const
     return (size_t(((1E12f / (m_PixClock ? m_PixClock : 1)) / htotal) / vtotal * 2));
 }
 
-/// Reads the object from stream \p is.
-void CMode::read (istream& is)
-{
-    is >> m_Name >> ios::talign<uint32_t>();
-    is >> m_PixClock;
-    is >> m_LeftMargin >> m_RightMargin >> m_UpperMargin >> m_LowerMargin;
-    is >> m_HSyncLen >> m_VSyncLen;
-    is >> m_Width >> m_Height >> m_VWidth >> m_VHeight >> m_Depth;
-    is >> m_Flags >> ios::align();
-}
-
-/// Writes the object to stream \p os.
-void CMode::write (ostream& os) const
-{
-    os << m_Name << ios::talign<uint32_t>();
-    os << m_PixClock;
-    os << m_LeftMargin << m_RightMargin << m_UpperMargin << m_LowerMargin;
-    os << m_HSyncLen << m_VSyncLen;
-    os << m_Width << m_Height << m_VWidth << m_VHeight << m_Depth;
-    os << m_Flags << ios::align();
-}
-
-/// Returns the size of the written object.
-size_t CMode::stream_size (void) const
-{
-    return (Align (
-		Align (stream_size_of(m_Name), alignof(m_PixClock)) +
-		stream_size_of (m_PixClock) +
-		stream_size_of (m_LeftMargin) +
-		stream_size_of (m_RightMargin) +
-		stream_size_of (m_UpperMargin) +
-		stream_size_of (m_LowerMargin) +
-		stream_size_of (m_HSyncLen) +
-		stream_size_of (m_VSyncLen) +
-		stream_size_of (m_Width) +
-		stream_size_of (m_Height) +
-		stream_size_of (m_VWidth) +
-		stream_size_of (m_VHeight) +
-		stream_size_of (m_Depth) +
-		stream_size_of (m_Flags)));
-}
-
 /// Writes information about the this mode.
 void CMode::text_write (ostringstream& os) const
 {
-    os << "mode \"" << m_Name << "\"\n";
-    os.format ("    # VRate %zu Hz\n", RefreshRate());
-    os.format ("    geometry %u %u %u %u %u\n", m_Width, m_Height, m_VWidth, m_VHeight, m_Depth);
-    os.format ("    timings %u %u %u %u %u %u %u\n", m_PixClock, m_LeftMargin, m_RightMargin, m_UpperMargin, m_LowerMargin, m_HSyncLen, m_VSyncLen);
+    os.format ( "mode \"%s\"\n"
+		"    # VRate %zu Hz\n"
+		"    geometry %u %u %u %u %u\n"
+		"    timings %u %u %u %u %u %u %u\n",
+	    m_Name.c_str(), RefreshRate(), m_Width, m_Height, m_VWidth, m_VHeight, m_Depth,
+	    m_PixClock, m_LeftMargin, m_RightMargin, m_UpperMargin, m_LowerMargin, m_HSyncLen, m_VSyncLen);
     for (uoff_t f = 0; f < flag_Last; ++ f)
 	if (Flag(EFlag(f))) os.format ("    %s\n", s_FlagText[f]);
     os << "endmode\n";
