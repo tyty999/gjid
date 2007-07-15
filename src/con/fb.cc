@@ -193,13 +193,10 @@ void CConsoleFramebuffer::Flush (void)
 
     const uint8_t* src = GC().begin();
     uint8_t* dest = (uint8_t*) m_Screen.begin();
-    const Size2d gcsz (GC().Size());
+    const Size2d& gcsz (GC().Size());
     const size_t srclinelen (gcsz[0] * m_Var.bits_per_pixel / 8);
 
-    if (gcsz[0] == m_Var.xres) {
-	for (uoff_t i = 0; i < gcsz[1]; ++i, src+=srclinelen, dest+=m_Fix.line_length)
-	    copy_n (src, srclinelen, dest);
-    } else if (gcsz[0] == 320 && m_Var.xres == 640) { // Special case for 320x240 mode, emulated by doubling.
+    if (gcsz[0] == 320 && m_Var.xres == 640) { // Special case for 320x240 mode, emulated by doubling.
 	const uint8_t* ls (src);
 	for (uoff_t y = 0; y < 480; ++y, dest+=m_Fix.line_length-640) {
 	    for (const uint8_t* s = ls; s < ls + 320; s += 8, dest += 16) {
@@ -230,6 +227,15 @@ void CConsoleFramebuffer::Flush (void)
 		ls += 320;
 	}
 	simd::reset_mmx();
+    } else {
+	assert (m_Var.xres >= gcsz[0] && m_Var.yres >= gcsz[1]);
+	// Center if doesn't match.
+	const uoff_t xoff = (m_Var.xres - gcsz[0]) * m_Var.bits_per_pixel / 8;
+	const uoff_t yoff = (m_Var.yres - gcsz[1]) / 2 * m_Fix.line_length;
+	dest += yoff + xoff;
+	// And simply copy.
+	for (uoff_t i = 0; i < gcsz[1]; ++i, src+=srclinelen, dest+=m_Fix.line_length)
+	    copy_n (src, srclinelen, dest);
     }
 
     m_Device.msync (m_Screen);

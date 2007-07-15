@@ -30,14 +30,14 @@ CImage::~CImage (void)
 }
 
 /// Resize the image to the given dimensions.
-void CImage::Resize (Size2d sz)
+void CImage::Resize (const Size2d& sz)
 {
     m_Pixels.resize (sz[0] * sz[1]);
     m_Size = sz;
 }
 
 /// Attaches to pixels at \p l of size \p sz.
-void CImage::link (memlink l, Size2d sz)
+void CImage::link (const memlink& l, const Size2d& sz)
 {
     m_Pixels.link ((pixel_t*) l.begin(), (pixel_t*) l.end());
     m_Size = sz;

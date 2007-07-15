@@ -39,8 +39,8 @@ public:
 public:
 				CImage (void);
 			       ~CImage (void);
-    void			Resize (Size2d sz);
-    void			link (memlink l, Size2d sz);
+    void			Resize (const Size2d& sz);
+    void			link (const memlink& l, const Size2d& sz);
     void			unlink (void);
     inline const_iterator	begin (void) const	{ return (m_Pixels.begin()); }
     inline iterator		begin (void)		{ return (m_Pixels.begin()); }
