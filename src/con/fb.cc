@@ -290,31 +290,15 @@ static key_t TranslateKeycode (wchar_t key)
     return (key);
 };
 
-/// Translates utio key metastate to fbgl equivalents.
-static CEventProcessor::keystate_t TranslateKeystate (utio::CKeyboard::metastate_t kbms)
-{
-    static const uint8_t metamap[] = {
-	CEventProcessor::ks_Shift,
-	CEventProcessor::ks_Alt,
-	CEventProcessor::ks_Ctrl
-    };
-    CEventProcessor::keystate_t ks;
-    for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
-	if (kbms[i])
-	    ks.set (metamap[i]);
-    return (ks);
-}
-
 /// Waits for and reads any UI events.
 void CConsoleFramebuffer::CheckEvents (CEventProcessor* evp)
 {
     static const long defaultTimeout (200000);
     const utio::CKeyboard& rkb = CConsoleState::Instance().Keyboard();
     rkb.WaitForKeyData (defaultTimeout);
-    utio::CKeyboard::metastate_t meta;
-    wchar_t key = rkb.GetKey (&meta, false);
+    wchar_t key = rkb.GetKey (false);
     if (key)
-	evp->OnKey (TranslateKeycode(key), TranslateKeystate(meta));
+	evp->OnKey (TranslateKeycode(key));
 }
 
 } // namespace fbgl

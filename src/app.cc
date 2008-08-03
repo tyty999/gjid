@@ -105,10 +105,10 @@ bool CApplication::OnSignal (int sig)
     return (false);
 }
 
-void CApplication::OnKey (key_t key, keystate_t ks)
+void CApplication::OnKey (key_t key)
 {
-    CEventProcessor::OnKey (key, ks);
-    if (key == key_F10 || (key == '\\' && ks[ks_Ctrl]))
+    CEventProcessor::OnKey (key);
+    if (key == key_F10 || key == ('\\'|ks_Ctrl))
 	Quit();
 }
 

@@ -67,13 +67,12 @@ public:
 	ks_Last
     };
     typedef wchar_t		key_t;		///< Used for keycodes.
-    typedef bitset<ks_Last>	keystate_t;	///< See EKeyState for bits.
     typedef uint32_t		bidx_t;		///< Mouse button index.
 public:
-    inline virtual     ~CEventProcessor (void) {}
-    inline virtual void	OnKey (key_t, keystate_t) {}
-    inline virtual void	OnMouseMove (coord_t, coord_t, keystate_t) {}
-    inline virtual void	OnButtonDown (bidx_t, coord_t, coord_t, keystate_t) {}
+    inline virtual	~CEventProcessor (void) {}
+    inline virtual void	OnKey (key_t) {}
+    inline virtual void	OnMouseMove (coord_t, coord_t) {}
+    inline virtual void	OnButtonDown (bidx_t, coord_t, coord_t) {}
 };
 
 } // namespace fbgl

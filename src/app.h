@@ -41,7 +41,7 @@ protected:
     virtual void	OnQuit (void);
     virtual void	OnCreate (void);
     virtual void	OnDestroy (void);
-    virtual void	OnKey (key_t key, keystate_t ks);
+    virtual void	OnKey (key_t key);
     inline bool		Flag (uoff_t i) const		{ return (m_Flags[i]); }
     inline void		SetFlag (uoff_t i, bool v=true)	{ m_Flags.set (i, v); }
     inline void		SetMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60) { m_pFb->SetStandardMode (m, freq); }
