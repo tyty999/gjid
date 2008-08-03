@@ -306,26 +306,26 @@ static CEventProcessor::key_t TranslateKeycode (int key)
 }
 
 /// Translates xlib key metastate to fbgl equivalents.
-static CEventProcessor::keystate_t TranslateKeystate (int kbms)
+static wchar_t TranslateKeystate (int kbms)
 {
-    static const int metamap[] = { Mod1Mask, ControlMask, ShiftMask };
-    CEventProcessor::keystate_t ks;
+    static const int metamap[] = { ShiftMask, Mod1Mask, ControlMask };
+    wchar_t ks;
     for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
 	if (kbms & metamap[i])
-	    ks.set (i);
+	    ks |= 1 << (i + 24);
     return (ks);
 }
 
 /// Decodes and executes a button event.
 inline void CXlibFramebuffer::DecodeButton (CEventProcessor* pep, const XButtonEvent& e)
 {
-    pep->OnButtonDown (e.button, e.x, e.y, TranslateKeystate (e.state));
+    pep->OnButtonDown (e.button, e.x, e.y);
 }
 
 /// Decodes and executes a motion event.
 inline void CXlibFramebuffer::DecodeMotion (CEventProcessor* pep, const XMotionEvent& e)
 {
-    pep->OnMouseMove (e.x, e.y, TranslateKeystate (e.state));
+    pep->OnMouseMove (e.x, e.y);
 }
 
 /// Decodes and executes a key event.
@@ -334,7 +334,7 @@ inline void CXlibFramebuffer::DecodeKey (CEventProcessor* pep, const XKeyEvent& 
     if (e.type == KeyRelease)
 	return;
     const int ksym = XKeycodeToKeysym (m_pDisplay, e.keycode, 0);
-    pep->OnKey (TranslateKeycode (ksym), TranslateKeystate (e.state));
+    pep->OnKey (TranslateKeycode (ksym) | TranslateKeystate (e.state));
 }
 
 void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
@@ -408,21 +408,22 @@ void CXlibFramebuffer::CopyGCToImage (void)
     InitColormap (cmap);
     const color_t* src = GC().begin();
     PixelType* dest = (PixelType*) m_pImage->data;
-    const size_t nPixels = GC().Width() * GC().Height();
-    if (nPixels == 320 * 240) {	// emulated mode
-	const color_t* ls (src);
-	for (uoff_t y = 0; y < 480; ++y) {
-	    const color_t* lsend (ls + 320);
-	    for (const color_t* s = ls; s < lsend; ++s, dest+=2) {
-		const PixelType v (cmap[*s]);
-		dest[0] = v; dest[1] = v;
+
+    // Scale the gc to the screen resolution.
+    const size_t sw = GC().Width(), sh = GC().Height();
+    const size_t dw = m_pImage->width, dh = m_pImage->height;
+    size_t dx = 0, dy = 0;
+    for (size_t y = 0; y < sh; ++y) {
+	for (; dy < dh; dy += sh) {
+	    for (size_t x = 0; x < sw; ++x) {
+		const PixelType v (cmap[src[x]]);
+		for (; dx < dw; dx += sw)
+		    *dest++ = v;
+		dx -= dw;
 	    }
-	    if (y % 2)
-		ls = lsend;
 	}
-    } else {
-	for (uoff_t i = 0; i < nPixels; ++ i)
-	    *dest++ = cmap [*src++];
+	dy -= dh;
+	src += sw;
     }
 }
 
