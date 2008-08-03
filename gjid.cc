@@ -95,9 +95,9 @@ void GJID::OnDraw (CGC& gc)
     (this->*dfn[m_State])(gc);
 }
 
-void GJID::OnKey (key_t key, keystate_t ks)
+void GJID::OnKey (key_t key)
 {
-    typedef void (GJID::*pfnkey_t)(key_t key, keystate_t ks);
+    typedef void (GJID::*pfnkey_t)(key_t key);
     static const pfnkey_t kfn [state_Last] = {
 	&GJID::TitleKeys,	// state_Title
 	&GJID::StoryKeys,	// state_Story
@@ -106,7 +106,7 @@ void GJID::OnKey (key_t key, keystate_t ks)
 	&GJID::LoserKeys,	// state_Loser
 	&GJID::EditorKeys	// state_Editor
     };
-    (this->*kfn[m_State])(key, ks);
+    (this->*kfn[m_State])(key);
 }
 
 void GJID::FillWithTile (CGC& gc, PicIndex tidx) const
@@ -133,10 +133,8 @@ void GJID::IntroScreen (CGC& gc)
     DecodeBitmapWithTile (gc, title, VectorSize(title), Wall2Pix);
 }
 
-void GJID::TitleKeys (key_t key, keystate_t)
+void GJID::TitleKeys (key_t key)
 {
-    if (m_Strings.empty())
-	return;
     GoToState (key == key_Esc ? state_Game : state_Story);
 }
 
@@ -149,7 +147,7 @@ void GJID::WinnerScreen (CGC& gc)
     DecodeBitmapWithTile (gc, title, VectorSize(title), RobotNorthPix);
 }
 
-void GJID::WinnerKeys (key_t, keystate_t)
+void GJID::WinnerKeys (key_t)
 {
     Quit();
 }
@@ -163,7 +161,7 @@ void GJID::LoserScreen (CGC& gc)
     DecodeBitmapWithTile (gc, title, VectorSize(title), DisposePix);
 }
 
-void GJID::LoserKeys (key_t, keystate_t)
+void GJID::LoserKeys (key_t)
 {
     Quit();
 }
@@ -219,14 +217,18 @@ void GJID::PrintStory (CGC& gc)
     }
 }
 
-void GJID::StoryKeys (key_t key, keystate_t ks)
+void GJID::StoryKeys (key_t key)
 {
-    if (key == key_PageUp || key == key_Up || (key == 'b' && ks[ks_Ctrl]))
+    cerr.format ("GJID::StoryKeys '%c' = %x\n", key, key);
+    if (key == key_PageUp || key == key_Up || key == ('b'|ks_Ctrl)) {
+	cerr << "Paging back\n";
 	m_StoryPage -= !!m_StoryPage;
-    else {
+    } else {
+	cerr << "Paging forward\n";
 	++ m_StoryPage;
 	if (m_StoryPage > 2 || key == key_Esc) {
 	    m_StoryPage = 2;
+	    cerr << "Going to game\n";
 	    GoToState (state_Game);
 	}
     }
@@ -239,7 +241,7 @@ void GJID::DrawLevel (CGC& gc)
     m_CurLevel.Draw (gc, m_Pics);
 }
 
-void GJID::LevelKeys (key_t key, keystate_t)
+void GJID::LevelKeys (key_t key)
 {
     switch (key) {
 	case 'k':
@@ -281,7 +283,7 @@ void GJID::DrawEditor (CGC& gc)
     gc.Box (Rect (sprtl, sprtl + TILE_W - 1), white);
 }
 
-void GJID::EditorKeys (key_t key, keystate_t)
+void GJID::EditorKeys (key_t key)
 {
     switch (key) {
 	case key_F10:

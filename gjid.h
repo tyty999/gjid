@@ -27,7 +27,7 @@ protected:
     virtual void	OnCreate (void);
     virtual void	OnIdle (void);
     virtual void	OnDraw (CGC& gc);
-    virtual void	OnKey (key_t key, keystate_t ks);
+    virtual void	OnKey (key_t key);
 private:
     enum EGameState {
 	state_Title,
@@ -48,12 +48,12 @@ private:
     void		WinnerScreen (CGC& gc);
     void		DrawLevel (CGC& gc);
     void		DrawEditor (CGC& gc);
-    void		TitleKeys (key_t key, keystate_t ks);
-    void		StoryKeys (key_t key, keystate_t ks);
-    void		LevelKeys (key_t key, keystate_t ks);
-    void		WinnerKeys (key_t key, keystate_t ks);
-    void		LoserKeys (key_t key, keystate_t ks);
-    void		EditorKeys (key_t key, keystate_t ks);
+    void		TitleKeys (key_t key);
+    void		StoryKeys (key_t key);
+    void		LevelKeys (key_t key);
+    void		WinnerKeys (key_t key);
+    void		LoserKeys (key_t key);
+    void		EditorKeys (key_t key);
     void		LoadData (const char* filename);
     void		SaveData (const char* filename) const;
 private:

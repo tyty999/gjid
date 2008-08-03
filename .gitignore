@@ -1,3 +1,7 @@
+*.o
+.depend
+Config.mk
+bsconf
 data/gjid.dat
 data/strings.strt
 gjid
