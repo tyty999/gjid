@@ -23,8 +23,8 @@ INSTALLBIN	= ${INSTALL} -s -p -m 755
 INSTALLDATA	= ${INSTALL} -p -m 644
 
 CXXWARNOPTS	= -Werror -Wall -W -Winline -Wpointer-arith -Wno-cast-align \
-		-Wcast-qual -Wwrite-strings -Wshadow -Wredundant-decls @SYSWARNS@ \
-		-Wconversion -Wsign-promo -Wsynth -Woverloaded-virtual \
+		-Wcast-qual -Wwrite-strings -Wsign-promo -Wredundant-decls \
+		-Wshadow -Woverloaded-virtual @SYSWARNS@ \
 		-fno-enforce-eh-specs -fno-threadsafe-statics
 OPTIMIZATION	= @INLINE_OPTS@@PROCESSOR_OPTS@ 
 

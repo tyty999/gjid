@@ -24,7 +24,7 @@ enum EStdFbMode {
 
 /// \class CFramebuffer fb.h fbgl/fb.h
 /// \brief Abstract framebuffer interface.
-class DLL_LOCAL CFramebuffer {
+class CFramebuffer {
 public:
     typedef const CMode&	rcmode_t;
 public:
