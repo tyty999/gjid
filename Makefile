@@ -27,7 +27,7 @@ $O%.o:	%.cc
 
 ################ Installation ##########################################
 
-.PHONY:	install uninstall install-incs uninstall-incs
+.PHONY:	install uninstall
 
 ifdef BINDIR
 EXEI	:= $(addprefix ${BINDIR}/,${EXE})
