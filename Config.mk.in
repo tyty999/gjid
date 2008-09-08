@@ -10,9 +10,9 @@ MINOR		:= @PKG_MINOR@
 
 CXX		:= @CXX@
 LD		:= @CC@
-DOXYGEN		:= @DOXYGEN@
 INSTALL		:= @INSTALL@
 
+INSTALLEXE	:= ${INSTALL} -D -p -m 755 -s
 INSTALLDATA	:= ${INSTALL} -D -p -m 644
 
 ################ Destination #########################################
@@ -33,10 +33,11 @@ TGTOPTS		:= @PROCESSOR_OPTS@ \
 
 CXXFLAGS	:= ${WARNOPTS} ${TGTOPTS} @CUSTOMINCDIR@
 LDFLAGS		:= ${CUSTOMLIBDIR} @CUSTOMLIBDIR@
+LIBS		:=
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else
     CXXFLAGS	+= -Os -g0 -DNDEBUG=1 -fomit-frame-pointer
-    LDFLAGS	+=
+    LDFLAGS	+= -Wl,gc-sections
 endif
 O		:= .o/
