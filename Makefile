@@ -10,7 +10,7 @@ OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 
 .PHONY: all clean dist distclean maintainer-clean
 
-all:	Config.mk config.h
+all:	Config.mk config.h ${EXE}
 
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."

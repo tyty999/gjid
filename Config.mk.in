@@ -38,6 +38,6 @@ ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else
     CXXFLAGS	+= -Os -g0 -DNDEBUG=1 -fomit-frame-pointer
-    LDFLAGS	+= -Wl,gc-sections
+    LDFLAGS	+= -Wl,-gc-sections
 endif
 O		:= .o/
