@@ -33,7 +33,7 @@ protected:
     virtual void		LoadModes (modevec_t& mv);
 private:
     void			CloseWindow (void);
-    void			SwitchToMode (CXlibMode nm);
+    void			SwitchToMode (const CXlibMode& nm);
     inline void			DecodeMotion (CEventProcessor* pep, const XMotionEvent& e);
     inline void			DecodeButton (CEventProcessor* pep, const XButtonEvent& e);
     inline void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);

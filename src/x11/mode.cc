@@ -13,7 +13,7 @@ namespace fbgl {
 /// Writes in mode values into \p vi.
 void CXlibMode::WriteToX (XF86VidModeModeInfo& vi) const
 {
-    vi.dotclock = (100000000 / m_PixClock) * 10;	// To round down the result
+    vi.dotclock = m_PixClock;
     vi.hdisplay = m_Width;
     vi.hsyncstart = vi.hdisplay + m_RightMargin;
     vi.hsyncend = vi.hsyncstart + m_HSyncLen;
@@ -41,7 +41,7 @@ void CXlibMode::WriteToX (XF86VidModeModeInfo& vi) const
 
 void CXlibMode::ReadFromX (const XF86VidModeModeInfo& vi)
 {
-    m_PixClock = 1000000000 / vi.dotclock;
+    m_PixClock = vi.dotclock;
     m_Width = vi.hdisplay;
     m_LeftMargin = vi.htotal - vi.hsyncend;
     m_RightMargin = vi.hsyncstart - vi.hdisplay;

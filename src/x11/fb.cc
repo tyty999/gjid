@@ -211,7 +211,7 @@ void CXlibFramebuffer::SetFullscreenMode (bool v)
 }
 
 /// Switches to mode \p nm.
-void CXlibFramebuffer::SwitchToMode (CXlibMode nm)
+void CXlibFramebuffer::SwitchToMode (const CXlibMode& nm)
 {
     XF86VidModeModeInfo nmi;
     nm.WriteToX (nmi);
