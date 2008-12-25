@@ -1,5 +1,0 @@
-*.o
-*.so.*
-bsconf
-.depend
-Config.mk
