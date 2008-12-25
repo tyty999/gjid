@@ -6,7 +6,7 @@ void TestModeLoading (void)
     typedef vector<CMode> modevec_t;
     modevec_t v;
     string mdbt, reader;
-    mdbt.read_file ("bvt00.std");
+    mdbt.read_file ("bvt/bvt00.std");
     CConsoleMode nm;
     foreach (string::const_iterator, i, mdbt) {
 	reader.link (i, mdbt.end());

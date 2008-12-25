@@ -3,7 +3,7 @@
 void TestGif (void)
 {
     memblock inbuf;
-    inbuf.read_file ("bullet1.gif");
+    inbuf.read_file ("bvt/bullet1.gif");
     istream is (inbuf);
     
     CImage img;
@@ -16,7 +16,7 @@ void TestGif (void)
 	istream ins (outbuf);
 	ins >> img;
     } catch (...) {
-	outbuf.write_file ("bvt02.gif");
+	outbuf.write_file ("bvt/bvt02.gif");
 	throw;
     }
 

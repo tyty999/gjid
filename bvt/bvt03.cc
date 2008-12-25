@@ -4,7 +4,7 @@ void TestStringTable (void)
 {
     static const char sep[] = "\n%\n";
     string src, v;
-    src.read_file ("bvt03.std");
+    src.read_file ("bvt/bvt03.std");
 
     CStringTable strt;
     foreach (string::const_iterator, i, src) {

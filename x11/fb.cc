@@ -309,7 +309,7 @@ static CEventProcessor::key_t TranslateKeycode (int key)
 static wchar_t TranslateKeystate (int kbms)
 {
     static const int metamap[] = { ShiftMask, Mod1Mask, ControlMask };
-    wchar_t ks;
+    wchar_t ks = 0;
     for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
 	if (kbms & metamap[i])
 	    ks |= 1 << (i + 24);
