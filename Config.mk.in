@@ -1,35 +1,45 @@
-EXE		= @PACKAGE_NAME@
-MAJOR		= @EXE_MAJOR@
-MINOR		= @EXE_MINOR@
-BUILD		= @EXE_BUILD@
+################ Build options #######################################
 
-CXX		= @CXX@ 
-LD		= @CC@ 
-INSTALL		= @INSTALL@
-RM		= @RM@
-LN		= @LN@
+NAME		:= @PKG_NAME@
+MAJOR		:= @PKG_MAJOR@
+MINOR		:= @PKG_MINOR@
 
-prefix		= @prefix@
-exec_prefix	= @exec_prefix@
-INCDIR		= @includedir@
-LIBDIR		= @libdir@
+#DEBUG		:= 1
 
-INSTALLDIR	= ${INSTALL} -d
-INSTALLLIB	= ${INSTALL} -p -m 644
-INSTALLDATA	= ${INSTALL} -p -m 644
+################ Programs ############################################
 
-CXXWARNOPTS	= -Werror -Wall -W -Winline -Wpointer-arith -Wno-cast-align \
-		-Wcast-qual -Wwrite-strings -Wshadow -Wredundant-decls \
-		-Wconversion -Wsign-promo -Wsynth -Woverloaded-virtual \
-		-fno-enforce-eh-specs -fno-threadsafe-statics @SYSWARNS@
-OPTIMIZE	= @INLINE_OPTS@@PROCESSOR_OPTS@ 
+CXX		:= @CXX@
+LD		:= @CC@
+INSTALL		:= @INSTALL@
 
-#DEBUG		= 1
-CXXFLAGS	= ${CXXWARNOPTS} -I ${INCDIR}
-LDFLAGS		= @LDFLAGS@ -L ${LIBDIR}
+INSTALLEXE	:= ${INSTALL} -D -p -m 755 -s
+INSTALLDATA	:= ${INSTALL} -D -p -m 644
+
+################ Destination #########################################
+
+prefix		:= @prefix@
+exec_prefix	:= @exec_prefix@
+BINDIR		:= @bindir@
+INCDIR		:= @includedir@
+LIBDIR		:= @libdir@
+
+################ Compiler options ####################################
+
+WARNOPTS	:= -Wall -Wextra -Wpointer-arith -Wcast-qual -Wsynth \
+		-Wwrite-strings -Wno-cast-align -Wno-strict-aliasing \
+		-Woverloaded-virtual -Wredundant-decls -Wno-overflow \
+		-Wsign-promo -Wshadow @SYSWARNS@
+TGTOPTS		:= @PROCESSOR_OPTS@
+INLINEOPTS	:= @INLINE_OPTS@
+
+CXXFLAGS	:= ${WARNOPTS} ${TGTOPTS} @CUSTOMINCDIR@
+LDFLAGS		:= @CUSTOMLIBDIR@
+LIBS		:= @libfbgl@ @libustl@
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
+    LDFLAGS	+= -rdynamic
 else
-    CXXFLAGS	+= -O3 -DNDEBUG=1 ${OPTIMIZE}
-    LDFLAGS	+= -s
+    CXXFLAGS	+= -Os -g0 -DNDEBUG=1 ${INLINEOPTS}
+    LDFLAGS	+= -s -Wl,-gc-sections
 endif
+O		:= .o/

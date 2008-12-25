@@ -1,74 +1,94 @@
-include Config.mk
+-include Config.mk
 
-OBJS	= $(filter-out mkdata.o, $(SRCS:.cc=.o))
-SRCS	= $(wildcard *.cc)
-LIBS	+= -lfbgl -lustl -lc
+################ Source files ##########################################
 
-all:	${EXE} data/gjid.dat
+EXE	:= ${NAME}
+SRCS	:= $(filter-out mkdata.cc,$(wildcard *.cc))
+OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
+
+################ Compilation ###########################################
+
+.PHONY: all clean dist distclean maintainer-clean
+
+all:	Config.mk config.h ${EXE} data/gjid.dat
 
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
+	@${LD} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
+
+$Omkdata:	$Omkdata.o $(filter-out $Ogjid.o,${OBJS})
+	@echo "Linking $@ ... "
 	@${LD} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-mkdata:	mkdata.o $(filter-out gjid.o,$(OBJS))
-	@echo "Linking $@ ... "
-	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
-
-data/gjid.dat:	mkdata $(filter-out data/gjid.dat,$(wildcard data/*)) data/strings.strt
+data/gjid.dat:	$Omkdata $(filter-out data/gjid.dat,$(wildcard data/*)) data/strings.strt
 	@echo "Creating the data file ... "
-	@./mkdata
+	@$Omkdata
 
 data/strings.strt:	data/strings.txt
 	@echo "Creating the strings file ... "
 	@txt2strt $^
 
-install: ${EXE}
-	@echo "Installing ${EXE} to ${BINDIR} ..."
-	@${INSTALLDIR} ${BINDIR}
-	@${INSTALLEXE} ${EXE} ${BINDIR}
-
-uninstall:
-	@echo "Removing ${EXE} from ${BINDIR} ..."
-	@${RM} -f ${BINDIR}/${EXE}
-
-%.o:	%.cc
+$O%.o:	%.cc
 	@echo "    Compiling $< ..."
-	@${CXX} ${CXXFLAGS} -o $@ -c $<
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@${CXX} ${CXXFLAGS} -MMD -MT "$(<:.cc=.s) $@" -o $@ -c $<
 
 %.s:	%.cc
 	@echo "    Compiling $< to assembly ..."
-	@${CXX} ${CXXFLAGS} ${OPTIMIZE} -g0 -Os -fomit-frame-pointer -DNDEBUG=1 -S -o $@ -c $<
+	@${CXX} ${CXXFLAGS} -S -o $@ -c $<
 
-%.h.gch:	%.h
-	@echo "    Compiling $< ..."
-	@${CXX} ${CXXFLAGS} -o $@ -c $<
+################ Installation ##########################################
 
-.PHONY:	clean depend dox distclean
+.PHONY:	install uninstall
+
+ifdef BINDIR
+EXEI	:= $(addprefix ${BINDIR}/,${EXE})
+
+install:	${EXEI}
+${EXEI}:	${EXE}
+	@echo "Installing $< as $@ ..."
+	@${INSTALLEXE} $< $@
+
+uninstall:
+	@echo "Removing ${EXEI} ..."
+	@rm -f ${EXEI}
+endif
+
+################ Maintenance ###########################################
 
 clean:
-	@echo "Removing generated files ..."
-	@${RM} -f ${OBJS} ${EXE} mkdata mkdata.o data/gjid.dat
+	@rm -f ${EXE} ${OBJS} $(OBJS:.o=.d)
+	@rmdir $O &> /dev/null || true
 
-depend: ${SRCS}
-	@${RM} -f .depend
-	@for i in ${SRCS}; do	\
-	    ${CXX} ${CXXFLAGS} -M -MT $${i%%.cc}.o $$i >> .depend;	\
-	done
-
-distclean:	clean
-	rm -f bsconf Common.mk config.h
-
-TMPDIR	= /tmp
-DISTDIR	= ${HOME}/stored
-DISTNAM	= ${EXE}-${MAJOR}.${MINOR}
-DISTTAR	= ${DISTNAM}.${BUILD}.tar.bz2
+ifdef MAJOR
+DISTVER	:= ${MAJOR}.${MINOR}
+DISTNAM	:= ${NAME}-${DISTVER}
+DISTLSM	:= ${DISTNAM}.lsm
+DISTTAR	:= ${DISTNAM}.tar.bz2
 
 dist:
-	mkdir ${TMPDIR}/${DISTNAM}
-	cp -r . ${TMPDIR}/${DISTNAM}
-	+${MAKE} -C ${TMPDIR}/${DISTNAM} distclean
-	(cd ${TMPDIR}/${DISTNAM}; rm -rf `find . -name .svn`)
-	(cd ${TMPDIR}; tar jcf ${DISTDIR}/${DISTTAR} ${DISTNAM}; rm -rf ${DISTNAM})
+	@echo "Generating ${DISTTAR} and ${DISTLSM} ..."
+	@mkdir .${DISTNAM}
+	@rm -f ${DISTTAR}
+	@cp -r * .${DISTNAM} && mv .${DISTNAM} ${DISTNAM}
+	@+${MAKE} -sC ${DISTNAM} maintainer-clean
+	@tar jcf ${DISTTAR} ${DISTNAM} && rm -rf ${DISTNAM}
+	@echo "s/@version@/${DISTVER}/" > ${DISTLSM}.sed
+	@echo "s/@date@/`date +%F`/" >> ${DISTLSM}.sed
+	@echo -n "s/@disttar@/`du -h --apparent-size ${DISTTAR}`/" >> ${DISTLSM}.sed;
+	@sed -f ${DISTLSM}.sed docs/${NAME}.lsm > ${DISTLSM} && rm -f ${DISTLSM}.sed
+endif
 
--include .depend
+distclean:	clean
+	@rm -f Config.mk config.h config.status
 
+maintainer-clean: distclean
+
+${OBJS}:		Makefile Config.mk config.h
+Config.mk:		Config.mk.in
+config.h:		config.h.in
+Config.mk config.h:	configure
+	@if [ -x config.status ]; then echo "Reconfiguring ..."; ./config.status; \
+	else echo "Running configure ..."; ./configure; fi
+
+-include ${OBJS:.o=.d}

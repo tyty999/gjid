@@ -1,7 +1,7 @@
 *.o
-.depend
+config.status
 Config.mk
-bsconf
+config.h
 data/gjid.dat
 data/strings.strt
 gjid

@@ -71,7 +71,7 @@ bool Font::ReadPoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
     memblock::iterator li = GetLetterStart (c);
     const uoff_t offset = ypos * m_Width + xpos;
-    return (li [offset / 8] & (1 << offset % 8) != 0);
+    return (li [offset / 8] & (1 << offset % 8));
 }
 
 void Font::Resize (dim_t w, dim_t h)
