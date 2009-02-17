@@ -45,9 +45,7 @@ endif
 ################ Maintenance ###########################################
 
 clean:
-	@rm -f ${EXE} ${OBJS} $(OBJS:.o=.d)
-	@rmdir $O &> /dev/null || true
-	@[ ! -d $O ] || echo "Error: output directory ($O) contains unexpected files. Please delete them manually."
+	@[ ! -d ./$O ] || rm -rf ./$O
 
 ifdef MAJOR
 DISTVER	:= ${MAJOR}.${MINOR}
