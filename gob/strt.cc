@@ -55,7 +55,7 @@ void CStringTable::erase (uoff_t i)
 void CStringTable::push_back (const string& s)
 {
     m_Data.append (s.begin(), s.size());
-    m_Data.push_back (string::c_Terminator);
+    m_Data.push_back ('\0');
     m_Index.push_back (m_Data.size());
 }
 

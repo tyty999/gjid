@@ -22,7 +22,7 @@ bvt/run:	${bvt/BVTS}
 	@echo "Running build verification tests:"
 	@for i in ${bvt/BVTS}; do \
 	    echo "Running $$i"; \
-	    ./$$i &> $$i.out; \
+	    ./$$i > $$i.out; \
 	    diff $$i.std $$i.out && rm -f $$i.out; \
 	done
 
