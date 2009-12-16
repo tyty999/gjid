@@ -57,8 +57,7 @@ endif
 ################ Maintenance ###########################################
 
 clean:
-	@rm -f ${EXE} ${OBJS} $(OBJS:.o=.d)
-	@rmdir $O &> /dev/null || true
+	@[ ! -d ./$O ] || rm -rf ./$O
 
 ifdef MAJOR
 DISTVER	:= ${MAJOR}.${MINOR}
