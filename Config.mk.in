@@ -32,6 +32,7 @@ LIBDIR		:= @libdir@
 
 WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
 		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
+TGTOPTS		:= @PROCESSOR_OPTS@ -fno-rtti -std=gnu++0x
 INLINEOPTS	:= @INLINE_OPTS@
 
 CXXFLAGS	:= ${WARNOPTS} ${TGTOPTS} @CUSTOMINCDIR@ -fPIC
