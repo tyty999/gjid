@@ -14,6 +14,11 @@ INSTALL		:= @INSTALL@
 INSTALLEXE	:= ${INSTALL} -D -p -m 755 -s
 INSTALLDATA	:= ${INSTALL} -D -p -m 644
 
+################ Destination #########################################
+
+prefix		:= @prefix@
+BINDIR		:= @bindir@
+
 ################ Compiler options ####################################
 
 WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\

@@ -14,7 +14,7 @@ all:	Config.mk config.h ${EXE}
 
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
-	@${LD} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
+	@${CXX} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."
