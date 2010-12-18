@@ -12,6 +12,9 @@ OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 
 all:	Config.mk config.h ${EXE}
 
+run:	${EXE}
+	@./${EXE}
+
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
 	@${CXX} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
