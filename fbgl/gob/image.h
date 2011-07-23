@@ -4,8 +4,6 @@
 #pragma once
 #include "primi.h"
 
-namespace fbgl {
-
 /// \class CImage image.h fbgl.h
 ///
 /// \brief A rectangular pixel image object.
@@ -70,7 +68,5 @@ private:
     bitset<f_Last>		m_Flags;
 };
 
-} // namespace fbgl
-
-ALIGNOF (fbgl::CImage, 1)
-STD_STREAMABLE (fbgl::CImage)
+ALIGNOF (CImage, 1)
+STD_STREAMABLE (CImage)

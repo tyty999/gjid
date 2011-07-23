@@ -2,7 +2,6 @@
 // This file is free software, distributed under the MIT License.
 
 #include "../fbgl.h"
-using namespace fbgl;
 
 void ConvertFile (const string& filename)
 {

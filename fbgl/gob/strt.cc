@@ -4,8 +4,6 @@
 #include "strt.h"
 #include "gif.h"
 
-namespace fbgl {
-
 /// Default constructor.
 CStringTable::CStringTable (void)
 : m_Index (),
@@ -118,5 +116,3 @@ size_t CStringTable::stream_size (void) const
     const uint32_t dataSize = c.EstimateSize (is);
     return (headerSize + Align (dataSize));
 }
-
-} // namespace fbgl

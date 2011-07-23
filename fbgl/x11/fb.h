@@ -5,8 +5,6 @@
 #include "../fb.h"
 #include "mode.h"
 
-namespace fbgl {
-
 /// \class CXlibFramebuffer xfb fbgl.h
 ///
 /// \brief Xlib backend.
@@ -46,5 +44,3 @@ private:
     XImage*			m_pImage;
     Window			m_Window;
 };
-
-} // namespace fbgl

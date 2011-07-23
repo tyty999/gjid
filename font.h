@@ -3,7 +3,6 @@
 
 #pragma once
 #include "fbgl.h"
-using namespace fbgl;
 
 class Font {
 public:

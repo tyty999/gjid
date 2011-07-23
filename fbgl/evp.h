@@ -4,8 +4,6 @@
 #pragma once
 #include "gob/primi.h"
 
-namespace fbgl {
-
 /// \class CEventProcessor evp.h fbgl.h
 ///
 /// \brief Event processor interface.
@@ -68,6 +66,4 @@ public:
     inline virtual void	OnButtonDown (bidx_t, coord_t, coord_t) {}
 };
 
-} // namespace fbgl
-
-CAST_STREAMABLE (fbgl::CEventProcessor::EKeyDataValue, fbgl::CEventProcessor::key_t)
+CAST_STREAMABLE (CEventProcessor::EKeyDataValue, CEventProcessor::key_t)

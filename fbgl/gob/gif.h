@@ -7,7 +7,7 @@
 
 #include <ustl.h>
 
-namespace fbgl { class CImage; }
+class CImage;
 
 namespace gif {
 using namespace ustl;

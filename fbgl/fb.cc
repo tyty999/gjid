@@ -3,8 +3,6 @@
 
 #include "fb.h"
 
-namespace fbgl {
-
 /// Default constructor.
 CFramebuffer::CFramebuffer (void)
 : m_Modes(),
@@ -61,5 +59,3 @@ const CMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) con
     const CMode& foundNode (m_Modes[found]);
     return (found < m_Modes.size() ? foundNode : CMode::null_Mode);
 }
-
-} // namespace fbgl

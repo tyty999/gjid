@@ -3,7 +3,6 @@
 
 #pragma once
 #include "fbgl.h"
-using namespace fbgl;
 
 #define ICON_ID_STRING			"ICON"
 #define ICON_ID_STRING_LENGTH		4		       

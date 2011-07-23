@@ -3,8 +3,6 @@
 
 #include "gc.h"
 
-namespace fbgl {
-
 /// Default constructor.
 CGC::CGC (void)
 : CImage ()
@@ -77,5 +75,3 @@ void CGC::Bitmap (Rect r, const uint8_t* p, color_t c)
 	}
     }
 }
-
-} // namespace fbgl

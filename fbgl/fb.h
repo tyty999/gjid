@@ -6,8 +6,6 @@
 #include "evp.h"
 #include "gob/gc.h"
 
-namespace fbgl {
-
 enum EStdFbMode {
     stdmode_Text,
     stdmode_320x240x8,
@@ -47,5 +45,3 @@ private:
     CMode			m_CurMode;
     CGC				m_GC;
 };
-
-} // namespace fbgl

@@ -4,8 +4,6 @@
 #pragma once
 #include "gob/primi.h"
 
-namespace fbgl {
-
 /// \class CMode mode.h "mode.h"
 ///
 /// \brief Stores information about a framebuffer mode from fb.modes
@@ -74,6 +72,4 @@ inline void CMode::SetFlag (EFlag f, bool v)
 
 //----------------------------------------------------------------------
 
-} // namespace fbgl
-
-TEXT_STREAMABLE(fbgl::CMode)
+TEXT_STREAMABLE(CMode)

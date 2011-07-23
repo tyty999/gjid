@@ -4,8 +4,6 @@
 #pragma once
 #include "pal.h"
 
-namespace fbgl {
-
 //----------------------------------------------------------------------
 
 typedef int16_t			coord_t;	///< Scaled coordinate
@@ -33,7 +31,3 @@ public:
     inline Size2d	Size (void) const	{ return (at(1) - at(0)); }
     inline bool		Empty (void) const	{ return (!Height() || !Width()); }
 };
-
-//----------------------------------------------------------------------
-
-} // namespace fbgl

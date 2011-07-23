@@ -1,11 +1,8 @@
 // Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-#pragma once
 #include "image.h"
 #include "gif.h"
-
-namespace fbgl {
 
 //----------------------------------------------------------------------
 // Memory management.
@@ -130,7 +127,7 @@ void CImage::NormalizePalette (void)
 void CImage::ReadGifColormap (istream& is, size_t bpp)
 {
     m_Palette.resize (1 << bpp);
-    foreach (fbgl::CPalette::iterator, i, m_Palette) {
+    foreach (CPalette::iterator, i, m_Palette) {
 	ray_t r, g, b;
 	is >> r >> g >> b;
 	*i = RGB(r,g,b);
@@ -255,5 +252,3 @@ size_t CImage::stream_size (void) const
     s += stream_size_of (GIF_END_OF_DATA_SIG);
     return (s);
 }
-
-} // namespace fbgl

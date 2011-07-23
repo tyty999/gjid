@@ -4,8 +4,6 @@
 #pragma once
 #include "fb.h"
 
-namespace fbgl {
-
 /// \class CApplication app.h fbgl.h
 ///
 /// \brief Base class for user applications.
@@ -76,5 +74,3 @@ inline int TFbglMain (int argc, const char* const* argv)
 	{ return (TFbglMain<appClass> (argc, argv)); }
 
 //----------------------------------------------------------------------
-
-} // namespace fbgl

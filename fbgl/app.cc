@@ -4,8 +4,6 @@
 #include "app.h"
 #include "x11/fb.h"
 
-namespace fbgl {
-
 //----------------------------------------------------------------------
 
 CApplication* CApplication::s_pApp = NULL;
@@ -103,5 +101,3 @@ void CApplication::OnKey (key_t key)
 }
 
 void CApplication::OnQuit (void) { SetFlag (f_QuitRequested); }
-
-} // namespace fbgl

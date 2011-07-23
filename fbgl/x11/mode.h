@@ -6,8 +6,6 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
-namespace fbgl {
-
 /// \class CXlibMode mode.h "con/mode.h"
 ///
 /// \brief Xlib framebuffer mode extension.
@@ -35,5 +33,3 @@ public:
     void		WriteToX (XF86VidModeModeInfo& vi) const;
     void		ReadFromX (const XF86VidModeModeInfo& i);
 };
-
-} // namespace fbgl

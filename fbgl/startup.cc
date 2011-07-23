@@ -10,8 +10,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-namespace fbgl {
-
 //----------------------------------------------------------------------
 
 static void OnUnexpected (void) __attribute__((noreturn));
@@ -96,5 +94,3 @@ const char* strsignal (int sig)
     return (c_Signals [min (uoff_t(sig), VectorSize(c_Signals) - 1)]);
 }
 #endif
-
-} // namespace fbgl

@@ -4,7 +4,6 @@
 #pragma once
 #include <ustl.h>
 
-namespace fbgl {
 using namespace ustl;
 
 /// \class CStringTable strt.h fbgl.h
@@ -40,6 +39,4 @@ private:
     string			m_Data;		///< String data.
 };
 
-} // namespace fbgl
-
-STD_STREAMABLE (fbgl::CStringTable)
+STD_STREAMABLE (CStringTable)

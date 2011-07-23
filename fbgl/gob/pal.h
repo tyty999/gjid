@@ -4,7 +4,6 @@
 #pragma once
 #include <ustl.h>
 
-namespace fbgl {
 using namespace ustl;
 
 typedef uint8_t		ray_t;
@@ -34,5 +33,3 @@ public:
     color_t		AllocColor (colordef_t c);
     inline color_t	AllocColor (ray_t r, ray_t g, ray_t b, ray_t a = 0)	{ return (AllocColor (RGB(r,g,b,a))); }
 };
-
-} // namespace fbgl

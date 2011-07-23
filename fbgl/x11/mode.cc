@@ -3,8 +3,6 @@
 
 #include "mode.h"
 
-namespace fbgl {
-
 /// Writes in mode values into \p vi.
 void CXlibMode::WriteToX (XF86VidModeModeInfo& vi) const
 {
@@ -58,5 +56,3 @@ void CXlibMode::ReadFromX (const XF86VidModeModeInfo& vi)
     MAP_FLAG (xflag_Doublescan,	flag_Doublescan);
     #undef MAP_FLAG
 }
-
-} // namespace fbgl

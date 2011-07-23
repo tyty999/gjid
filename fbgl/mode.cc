@@ -1,7 +1,7 @@
 // Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-namespace fbgl {
+#include "mode.h"
 
 //----------------------------------------------------------------------
 
@@ -125,5 +125,3 @@ void CMode::text_write (ostringstream& os) const
 	if (Flag(EFlag(f))) os.format ("    %s\n", s_FlagText[f]);
     os << "endmode\n";
 }
-
-} // namespace fbgl

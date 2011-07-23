@@ -3,8 +3,6 @@
 
 #include "pal.h"
 
-namespace fbgl {
-
 color_t CPalette::AllocColor (colordef_t c)
 {
     for (uoff_t i = 0; i < size(); ++ i)
@@ -15,5 +13,3 @@ color_t CPalette::AllocColor (colordef_t c)
 	push_back (c);
     return (size() - 1);
 }
-
-} // namespace fbgl

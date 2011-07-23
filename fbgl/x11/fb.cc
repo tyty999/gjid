@@ -9,8 +9,6 @@
 #include "mode.h"
 #include "xept.h"
 
-namespace fbgl {
-
 //----------------------------------------------------------------------
 // Can't throw an exception through a C callstack, hence this junk.
 //
@@ -433,5 +431,3 @@ void CXlibFramebuffer::Flush (void)
 	CopyGCToImage<uint32_t>();
     XPutImage (m_pDisplay, m_Window, m_XGC, m_pImage, 0, 0, 0, 0, m_pImage->width, m_pImage->height);
 }
-
-} // namespace fbgl

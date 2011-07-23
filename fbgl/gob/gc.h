@@ -4,8 +4,6 @@
 #pragma once
 #include "image.h"
 
-namespace fbgl {
-
 /// \class CGC gc.h fbgl.h
 ///
 /// \brief Graphics context for drawing.
@@ -25,5 +23,3 @@ public:
     void			GetImage (Rect r, uint8_t* p) const;
     void			Bitmap (Rect r, const uint8_t* p, color_t c);
 };
-
-} // namespace fbgl
