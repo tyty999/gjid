@@ -26,7 +26,7 @@ ALLTGTS	+= ${SLIBT} ${SLIBS} ${SLIBL}
 all:	${SLIBT} ${SLIBS} ${SLIBL}
 ${SLIBT}:	${OBJS}
 	@echo "Linking $(notdir $@) ..."
-	@${LD} -fPIC ${LDFLAGS} $(call slib_flags,$(subst $O,,${SLIBS})) -o $@ $^ ${LIBS}
+	@${CXX} -fPIC ${LDFLAGS} $(call slib_flags,$(subst $O,,${SLIBS})) -o $@ $^ ${LIBS}
 ${SLIBS} ${SLIBL}:	${SLIBT}
 	@(cd $(dir $@); rm -f $(notdir $@); ln -s $(notdir $<) $(notdir $@))
 
@@ -48,7 +48,7 @@ ALLTGTS	+= ${TTSEXE}
 all:	${TTSEXE}
 ${TTSEXE}:	${TTSOBJ}
 	@echo "Linking $@ ..."
-	@${LD} ${LDFLAGS} -o $@ ${TTSOBJ} ${TTSLIBS}
+	@${CXX} ${LDFLAGS} -o $@ ${TTSOBJ} ${TTSLIBS}
 endif
 
 $O%.o:	%.cc

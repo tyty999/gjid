@@ -34,10 +34,10 @@ seds=[s/^#\(DEBUG\)/\1/]
 HEADERS="ustl.h utio.h"
 
 # Libraries
-LIBS="ustl utio supc++"
+LIBS="ustl utio"
 
 # First pair is used if nothing matches
-PROGS="CC=gcc CXX=g++ LD=ld AR=ar RANLIB=ranlib RANLIB=touch INSTALL=install DOXYGEN=doxygen"
+PROGS="CXX=g++ AR=ar RANLIB=ranlib RANLIB=touch INSTALL=install DOXYGEN=doxygen"
 
 # Automatic vars
 [ -d .git ] && PKG_VERSTR=`git describe`
@@ -457,6 +457,7 @@ for i in $FILES; do
     sed -f config.sed $i.in > $i
 done
 
+touch config.status
 echo "#! /bin/sh
 $0 $*
 `tail -n+3 config.status`" > config.status.new
