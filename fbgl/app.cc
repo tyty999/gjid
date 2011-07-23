@@ -7,8 +7,6 @@
 //
 
 #include "app.h"
-#include "con/fb.h"
-#include "con/state.h"
 #include "x11/fb.h"
 
 namespace fbgl {
@@ -68,9 +66,6 @@ void CApplication::MainLoop (void)
 /// Gets an appropriate framebuffer pointer.
 CFramebuffer* CApplication::GetFramebuffer (void) const
 {
-    const int vti = CConsoleState::Instance().VtIndex();
-    if (vti >= 0)
-	return (&CConsoleFramebuffer::Instance());
     const char* pDisp = getenv ("DISPLAY");
     if (!pDisp)
 	throw runtime_error ("this program requires the framebuffer console or an X server");
