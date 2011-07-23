@@ -4,7 +4,7 @@
 #pragma once
 #include "mode.h"
 #include "evp.h"
-#include "gob/gc.h"
+#include "gc.h"
 
 enum EStdFbMode {
     stdmode_Text,

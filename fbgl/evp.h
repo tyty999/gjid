@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "gob/primi.h"
+#include "primi.h"
 
 /// \class CEventProcessor evp.h fbgl.h
 ///

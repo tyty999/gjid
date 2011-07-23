@@ -3,4 +3,4 @@
 
 #pragma once
 #include "fbgl/app.h"
-#include "fbgl/gob/strt.h"
+#include "fbgl/strt.h"
