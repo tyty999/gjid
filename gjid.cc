@@ -117,7 +117,7 @@ void GJID::IntroScreen (CGC& gc)
 
 void GJID::TitleKeys (key_t key)
 {
-    GoToState (key == key_Esc ? state_Game : state_Story);
+    GoToState (key == XK_Escape ? state_Game : state_Story);
 }
 
 void GJID::WinnerScreen (CGC& gc)
@@ -228,11 +228,11 @@ void GJID::PrintStory (CGC& gc)
 
 void GJID::StoryKeys (key_t key)
 {
-    if (key == key_PageUp || key == key_Up || key == ('b'|ks_Ctrl))
+    if (key == XK_Page_Up || key == XK_Up || key == ('b'|XKM_Ctrl))
 	m_StoryPage -= !!m_StoryPage;
-    else {
+    else if (key < XKM_Released) {
 	++ m_StoryPage;
-	if (m_StoryPage > 2 || key == key_Esc) {
+	if (m_StoryPage > 2 || key == XK_Escape) {
 	    m_StoryPage = 2;
 	    GoToState (state_Game);
 	}
@@ -250,19 +250,19 @@ void GJID::LevelKeys (key_t key)
 {
     switch (key) {
 	case 'k':
-	case key_Up:	m_CurLevel.MoveRobot (North);	break;
+	case XK_Up:	m_CurLevel.MoveRobot (North);	break;
 	case 'j':
-	case key_Down:	m_CurLevel.MoveRobot (South);	break;
+	case XK_Down:	m_CurLevel.MoveRobot (South);	break;
 	case 'l':
-	case key_Right:	m_CurLevel.MoveRobot (East);	break;
+	case XK_Right:	m_CurLevel.MoveRobot (East);	break;
 	case 'h':
-	case key_Left:	m_CurLevel.MoveRobot (West);	break;
-	case key_F1:	GoToState (state_Story);	break;
+	case XK_Left:	m_CurLevel.MoveRobot (West);	break;
+	case XK_F1:	GoToState (state_Story);	break;
 	case 'q':
-	case key_Esc:	Quit();				break;
-	case key_F10:	GoToState (state_Loser);	break;
-	case key_F8:	m_Level = (m_Level + 1) % m_Levels.size();
-	case key_F6:	m_CurLevel = m_Levels [m_Level];	break;
+	case XK_Escape:	Quit();				break;
+	case XK_F10:	GoToState (state_Loser);	break;
+	case XK_F8:	m_Level = (m_Level + 1) % m_Levels.size();
+	case XK_F6:	m_CurLevel = m_Levels [m_Level];	break;
     }
     if (m_CurLevel.Finished()) {
 	++ m_Level;

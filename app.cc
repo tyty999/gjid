@@ -96,7 +96,7 @@ bool CApplication::OnSignal (int sig)
 void CApplication::OnKey (key_t key)
 {
     CEventProcessor::OnKey (key);
-    if (key == key_F10 || key == ('\\'|ks_Ctrl))
+    if (key == XK_F10 || key == ('\\'|XKM_Ctrl))
 	Quit();
 }
 

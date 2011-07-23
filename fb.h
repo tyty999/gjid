@@ -42,9 +42,6 @@ private:
     inline rcmode_t		CurMode (void) const		{ return (m_CurMode); }
     void			SwitchToMode (const CXlibMode& nm);
     void			CloseWindow (void);
-    inline void			DecodeMotion (CEventProcessor* pep, const XMotionEvent& e);
-    inline void			DecodeButton (CEventProcessor* pep, const XButtonEvent& e);
-    inline void			DecodeKey (CEventProcessor* pep, const XKeyEvent& e);
     void			WaitForEvents (void);
     void			SetFullscreenMode (bool v = true);
     template <typename PixelType>

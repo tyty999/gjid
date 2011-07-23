@@ -4,7 +4,6 @@
 #include "fb.h"
 #include <unistd.h>
 #include <errno.h>
-#include <X11/keysym.h>
 #include <X11/Xutil.h>
 #include "xept.h"
 
@@ -278,85 +277,6 @@ const CXlibMode& CXlibFramebuffer::FindClosestMode (size_t w, size_t h, size_t f
 // Event processing
 //----------------------------------------------------------------------
 
-/// Translates Xlib keycode to fbgl equivalent.
-static CEventProcessor::key_t TranslateKeycode (int key)
-{
-    struct SKMap {
-	int				xlibValue;
-	CEventProcessor::EKeyDataValue	fbglValue;
-    };
-    static const SKMap kmap[] = {
-	{ ' ',		CEventProcessor::key_Space	},
-	{ XK_Tab,	CEventProcessor::key_Tab	},
-	{ XK_Return,	CEventProcessor::key_Enter	},
-	{ XK_Escape,	CEventProcessor::key_Esc	},
-	{ XK_BackSpace,	CEventProcessor::key_Backspace	},
-	{ XK_KP_5,	CEventProcessor::key_Center	},
-	{ XK_Delete,	CEventProcessor::key_Delete	},
-	{ XK_Down,	CEventProcessor::key_Down	},
-	{ XK_KP_1,	CEventProcessor::key_DownLeft	},
-	{ XK_KP_3,	CEventProcessor::key_DownRight	},
-	{ XK_End,	CEventProcessor::key_End	},
-	{ XK_F1,	CEventProcessor::key_F1		},
-	{ XK_F2,	CEventProcessor::key_F2		},
-	{ XK_F3,	CEventProcessor::key_F3		},
-	{ XK_F4,	CEventProcessor::key_F4		},
-	{ XK_F5,	CEventProcessor::key_F5		},
-	{ XK_F6,	CEventProcessor::key_F6		},
-	{ XK_F7,	CEventProcessor::key_F7		},
-	{ XK_F8,	CEventProcessor::key_F8		},
-	{ XK_F9,	CEventProcessor::key_F9		},
-	{ XK_F10,	CEventProcessor::key_F10	},
-	{ XK_F11,	CEventProcessor::key_F11	},
-	{ XK_F12,	CEventProcessor::key_F12	},
-	{ XK_Home,	CEventProcessor::key_Home	},
-	{ XK_Insert,	CEventProcessor::key_Insert	},
-	{ XK_Left,	CEventProcessor::key_Left	},
-	{ XK_Page_Down,	CEventProcessor::key_PageDown	},
-	{ XK_Page_Up,	CEventProcessor::key_PageUp	},
-	{ XK_Right,	CEventProcessor::key_Right	},
-	{ XK_Up,	CEventProcessor::key_Up		},
-	{ XK_KP_7,	CEventProcessor::key_UpLeft	},
-	{ XK_KP_9,	CEventProcessor::key_UpRight	}
-    };
-    for (uoff_t i = 0; i < VectorSize(kmap); ++ i)
-	if (kmap[i].xlibValue == key)
-	    return (kmap[i].fbglValue);
-    return (key);
-}
-
-/// Translates xlib key metastate to fbgl equivalents.
-static wchar_t TranslateKeystate (int kbms)
-{
-    static const int metamap[] = { ShiftMask, Mod1Mask, ControlMask };
-    wchar_t ks = 0;
-    for (uoff_t i = 0; i < VectorSize(metamap); ++ i)
-	if (kbms & metamap[i])
-	    ks |= 1 << (i + 24);
-    return (ks);
-}
-
-/// Decodes and executes a button event.
-inline void CXlibFramebuffer::DecodeButton (CEventProcessor* pep, const XButtonEvent& e)
-{
-    pep->OnButtonDown (e.button, e.x, e.y);
-}
-
-/// Decodes and executes a motion event.
-inline void CXlibFramebuffer::DecodeMotion (CEventProcessor* pep, const XMotionEvent& e)
-{
-    pep->OnMouseMove (e.x, e.y);
-}
-
-/// Decodes and executes a key event.
-inline void CXlibFramebuffer::DecodeKey (CEventProcessor* pep, const XKeyEvent& e)
-{
-    if (e.type == KeyRelease)
-	return;
-    const int ksym = XKeycodeToKeysym (m_pDisplay, e.keycode, 0);
-    pep->OnKey (TranslateKeycode (ksym) | TranslateKeystate (e.state));
-}
-
 void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
 {
     while (XPending (m_pDisplay)) {
@@ -364,14 +284,15 @@ void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
 	    throw XlibError (g_ErrorEvent);
 	XEvent e;
 	XNextEvent (m_pDisplay, &e);
+	key_t keymods = e.xkey.state;
 	switch (e.type) {
 	    case MapNotify:	SetFullscreenMode();
-	    case Expose:	Flush();			break;
-	    case ButtonPress:
-	    case ButtonRelease:	DecodeButton (pep, e.xbutton);	break;
-	    case MotionNotify:	DecodeMotion (pep, e.xmotion);	break;
-	    case KeyPress:
-	    case KeyRelease:	DecodeKey (pep, e.xkey);	break;
+	    case Expose:	Flush(); break;
+	    case ButtonRelease:	pep->OnButtonDown (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
+	    case MotionNotify:	pep->OnMouseMove (e.xmotion.x, e.xmotion.y); break;
+	    case KeyRelease:	keymods |= ModKeyReleasedMask;
+	    case KeyPress:	pep->OnKey (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|
+					    ((keymods << _XKM_Bitshift) & XKM_Mask)); break;
 	}
     }
     WaitForEvents();
@@ -404,7 +325,7 @@ void CXlibFramebuffer::OnFocus (bool bFocus)
 void CXlibFramebuffer::OnIOError (void)
 {
     cout.flush();
-    cerr << "Error: the connection to the X server has been unexpectedly terminated" << endl;
+    cerr << "Error: the connection to the X server has been unexpectedly terminated\n";
 }
 
 //----------------------------------------------------------------------
