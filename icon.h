@@ -9,7 +9,7 @@
 #ifndef ICON_H_2BA53522369CAE38636AFA57387DDC64
 #define ICON_H_2BA53522369CAE38636AFA57387DDC64
 
-#include <fbgl.h>
+#include "fbgl.h"
 using namespace fbgl;
 
 #define ICON_ID_STRING			"ICON"

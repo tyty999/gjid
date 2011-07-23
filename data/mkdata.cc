@@ -1,5 +1,5 @@
-#include "gjid.h"
-#include "font.h"
+#include "../gjid.h"
+#include "../font.h"
 
 class CDataBuilder {
 public:
@@ -133,4 +133,3 @@ int main (void)
     }
     return (rv);
 }
-

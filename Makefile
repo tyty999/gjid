@@ -3,7 +3,7 @@
 ################ Source files ##########################################
 
 EXE	:= ${NAME}
-SRCS	:= $(filter-out mkdata.cc,$(wildcard *.cc))
+SRCS	:= $(wildcard *.cc fbgl/*.cc fbgl/con/*.cc fbgl/gob/*.cc fbgl/x11/*.cc)
 OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 
 ################ Compilation ###########################################
@@ -19,17 +19,21 @@ ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
 	@${CXX} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
 
-$Omkdata:	$Omkdata.o $(filter-out $Ogjid.o,${OBJS})
+$Omkdata:	$Odata/mkdata.o $(filter-out $Ogjid.o,${OBJS})
 	@echo "Linking $@ ... "
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-data/gjid.dat:	$Omkdata $(filter-out data/gjid.dat,$(wildcard data/*)) data/strings.strt
+$Otxt2strt:	$Odata/txt2strt.o $(filter-out $Ogjid.o,${OBJS})
+	@echo "Linking $@ ... "
+	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
+
+data/gjid.dat:	$Omkdata $(wildcard data/*.gif) data/default.fnt data/levels.dat data/strings.strt
 	@echo "Creating the data file ... "
 	@$Omkdata
 
-data/strings.strt:	data/strings.txt
+data/strings.strt:	data/strings.txt $Otxt2strt
 	@echo "Creating the strings file ... "
-	@txt2strt $^
+	@$Otxt2strt $<
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."
