@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// evp.h
-//
 
-#ifndef EVP_H_3F79AF7B241A85637686DA127727B280
-#define EVP_H_3F79AF7B241A85637686DA127727B280
-
+#pragma once
 #include "gob/primi.h"
 
 namespace fbgl {
@@ -78,6 +71,3 @@ public:
 } // namespace fbgl
 
 CAST_STREAMABLE (fbgl::CEventProcessor::EKeyDataValue, fbgl::CEventProcessor::key_t)
-
-#endif
-

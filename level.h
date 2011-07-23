@@ -1,14 +1,7 @@
-// This file is part of the GJID game.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// level.h
-//
 
-#ifndef LEVEL_H_31AE019508B493103BF90EFB5C5BDDE0
-#define LEVEL_H_31AE019508B493103BF90EFB5C5BDDE0
-
+#pragma once
 #include "icon.h"
 
 //----------------------------------------------------------------------
@@ -107,6 +100,3 @@ ALIGNOF (Level, 4)
 STD_STREAMABLE (ObjectType)
 STD_STREAMABLE (Level)
 CAST_STREAMABLE (PicIndex, int)
-
-#endif
-

@@ -1,14 +1,7 @@
-// This file is part of the GJID game.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// icon.h
-//
 
-#ifndef ICON_H_2BA53522369CAE38636AFA57387DDC64
-#define ICON_H_2BA53522369CAE38636AFA57387DDC64
-
+#pragma once
 #include "fbgl.h"
 using namespace fbgl;
 
@@ -30,6 +23,3 @@ public:
     inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ at(Point(x,y)) = c; }
     inline color_t		GetPixel (coord_t x, coord_t y) const		{ return (at(Point(x,y))); }
 };	
-
-#endif
-

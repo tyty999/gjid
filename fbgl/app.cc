@@ -1,10 +1,5 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// app.cc
-//
 
 #include "app.h"
 #include "x11/fb.h"
@@ -110,4 +105,3 @@ void CApplication::OnKey (key_t key)
 void CApplication::OnQuit (void) { SetFlag (f_QuitRequested); }
 
 } // namespace fbgl
-

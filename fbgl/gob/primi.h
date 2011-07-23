@@ -1,16 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// primi.h
-//
-//	Geometric primitive types.
-//
 
-#ifndef PRIMI_H_71C24D056D1C3A4C09C315734ABA986D
-#define PRIMI_H_71C24D056D1C3A4C09C315734ABA986D
-
+#pragma once
 #include "pal.h"
 
 namespace fbgl {
@@ -46,6 +37,3 @@ public:
 //----------------------------------------------------------------------
 
 } // namespace fbgl
-
-#endif
-

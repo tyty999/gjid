@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// mode.h
-//
 
-#ifndef MODE_H_305B7A305F04122E318379A84269939F
-#define MODE_H_305B7A305F04122E318379A84269939F
-
+#pragma once
 #include "gob/primi.h"
 
 namespace fbgl {
@@ -84,6 +77,3 @@ inline void CMode::SetFlag (EFlag f, bool v)
 } // namespace fbgl
 
 TEXT_STREAMABLE(fbgl::CMode)
-
-#endif
-

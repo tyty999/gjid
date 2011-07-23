@@ -1,16 +1,7 @@
-// This file is part of the GJID game.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// gjid.h
-//
-//	Defines puzzle game structures.
-//
 
-#ifndef GJID_H_70CAC3810A6C8B6422EDC4165A5EA40C
-#define GJID_H_70CAC3810A6C8B6422EDC4165A5EA40C
-
+#pragma once
 #include "level.h"
 #include "font.h"
 
@@ -70,8 +61,3 @@ private:
     vector<Level>	m_Levels;
     CStringTable	m_Strings;
 };
-
-//----------------------------------------------------------------------
-
-#endif
-

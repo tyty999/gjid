@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// pal.h
-//
 
-#ifndef PAL_H_1AAA82416DDBAF8A56F30C956E52D7CE
-#define PAL_H_1AAA82416DDBAF8A56F30C956E52D7CE
-
+#pragma once
 #include <ustl.h>
 
 namespace fbgl {
@@ -43,6 +36,3 @@ public:
 };
 
 } // namespace fbgl
-
-#endif
-

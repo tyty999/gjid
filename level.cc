@@ -1,12 +1,5 @@
-// This file is part of the GJID game.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// level.cc
-//
-//	Implements the level class.
-//
 
 #include "level.h"
 
@@ -139,4 +132,3 @@ size_t Level::stream_size (void) const
 {
     return (stream_size_of (m_Map) + stream_size_of (m_Objects));
 }
-

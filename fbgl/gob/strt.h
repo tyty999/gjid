@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// strt.h
-//
 
-#ifndef STRT_H_2D10D5005E82A1AC666F7ED976236431
-#define STRT_H_2D10D5005E82A1AC666F7ED976236431
-
+#pragma once
 #include <ustl.h>
 
 namespace fbgl {
@@ -50,6 +43,3 @@ private:
 } // namespace fbgl
 
 STD_STREAMABLE (fbgl::CStringTable)
-
-#endif
-

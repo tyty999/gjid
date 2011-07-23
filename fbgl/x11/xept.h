@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// xept.h
-//
 
-#ifndef XEPT_H_70C75AE21AC13FBB0069942B3BCA8A76
-#define XEPT_H_70C75AE21AC13FBB0069942B3BCA8A76
-
+#pragma once
 #include <ustl.h>
 #include <X11/Xlib.h>
 
@@ -25,6 +18,3 @@ public:
 public:
     XErrorEvent		m_Event;
 };
-
-#endif
-

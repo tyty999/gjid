@@ -1,10 +1,5 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-//
-// gc.cc
-//
 
 #include "gc.h"
 
@@ -84,4 +79,3 @@ void CGC::Bitmap (Rect r, const uint8_t* p, color_t c)
 }
 
 } // namespace fbgl
-

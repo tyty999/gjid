@@ -1,14 +1,7 @@
-/// This file is part of the fbgl library.
-///
-/// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
-/// This file is free software, distributed under the MIT License.
-/// 
-/// \file image.h
-///
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
 
-#ifndef IMAGE_H_48CDC049577DEEC84CA92EA51BA0E7C0
-#define IMAGE_H_48CDC049577DEEC84CA92EA51BA0E7C0
-
+#pragma once
 #include "primi.h"
 
 namespace fbgl {
@@ -81,6 +74,3 @@ private:
 
 ALIGNOF (fbgl::CImage, 1)
 STD_STREAMABLE (fbgl::CImage)
-
-#endif
-

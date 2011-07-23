@@ -1,10 +1,5 @@
-// This file is part of the GJID game.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// font.cc
-//
 
 #include "font.h"
 
@@ -110,4 +105,3 @@ int Font::PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t colo
     }
     return (cmw + 2);
 }
-

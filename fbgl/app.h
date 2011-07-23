@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// app.h
-//
 
-#ifndef APP_H_0AEE96827DC77ABC0A46F062495765A9
-#define APP_H_0AEE96827DC77ABC0A46F062495765A9
-
+#pragma once
 #include "fb.h"
 
 namespace fbgl {
@@ -85,6 +78,3 @@ inline int TFbglMain (int argc, const char* const* argv)
 //----------------------------------------------------------------------
 
 } // namespace fbgl
-
-#endif
-

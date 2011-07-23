@@ -1,12 +1,5 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-//
-// mode.cc
-//
-
-#include "mode.h"
 
 namespace fbgl {
 
@@ -134,4 +127,3 @@ void CMode::text_write (ostringstream& os) const
 }
 
 } // namespace fbgl
-

@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// mode.h
-//
 
-#ifndef MODE_H_22ADB375297D59971D8F23CA76B19534
-#define MODE_H_22ADB375297D59971D8F23CA76B19534
-
+#pragma once
 #include "../mode.h"
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
@@ -44,6 +37,3 @@ public:
 };
 
 } // namespace fbgl
-
-#endif
-

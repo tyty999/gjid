@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// gc.h
-//
 
-#ifndef GC_H_355C59EC4607EE327E5914582DC9A02E
-#define GC_H_355C59EC4607EE327E5914582DC9A02E
-
+#pragma once
 #include "image.h"
 
 namespace fbgl {
@@ -34,6 +27,3 @@ public:
 };
 
 } // namespace fbgl
-
-#endif
-

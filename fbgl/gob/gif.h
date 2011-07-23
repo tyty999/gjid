@@ -1,15 +1,9 @@
-/// This file is part of the fbgl library.
-///
-/// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
-/// This file is free software, distributed under the MIT License.
-/// 
-/// \file gif.h
-/// \brief Objects for working with the GIF file format.
-///
-/// Thanks to Gunter Born and his "The File Format Handbook" for the
-/// structure of the headers and the data blocks. Also, big thanks to
-/// John Barkaus for his '89 USENET post explaining the LZW algorithm.
-///
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+//
+// Thanks to Gunter Born and his "The File Format Handbook" for the
+// structure of the headers and the data blocks. Also, big thanks to
+// John Barkaus for his '89 USENET post explaining the LZW algorithm.
 
 #include <ustl.h>
 
@@ -245,4 +239,3 @@ STD_STREAMABLE (gif::CFileHeader)
 STD_STREAMABLE (gif::CImageHeader)
 STD_STREAMABLE (gif::CGraphicsControl)
 STD_STREAMABLE (gif::CComment)
-

@@ -1,10 +1,5 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// fb.cc
-//
 
 #include "fb.h"
 
@@ -68,4 +63,3 @@ const CMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) con
 }
 
 } // namespace fbgl
-

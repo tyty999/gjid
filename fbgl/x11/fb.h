@@ -1,14 +1,7 @@
-// This file is part of the fbgl library.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// fb.h
-//
 
-#ifndef FB_H_03AB4F7E09259B61062C6ACD0AB3CC92
-#define FB_H_03AB4F7E09259B61062C6ACD0AB3CC92
-
+#pragma once
 #include "../fb.h"
 #include "mode.h"
 
@@ -55,6 +48,3 @@ private:
 };
 
 } // namespace fbgl
-
-#endif
-

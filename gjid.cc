@@ -1,12 +1,5 @@
-// This file is part of the GJID game.
-//
-// Copyright (C) 2005 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-// 
-// gjid.cc
-//
-//	Implements a puzzle game based on DOS shareware version.
-//
 
 #include "gjid.h"
 #include <time.h>
@@ -378,4 +371,3 @@ void GJID::SaveData (const char* filename) const
 
     buf.write_file (filename);
 }
-
