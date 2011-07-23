@@ -55,7 +55,7 @@ private:
     Level		m_CurLevel;
     PicIndex		m_SelectedPic;
     Point		m_SelectedTile;
-    Font		m_Font;
+    CFont		m_Font;
     picvec_t		m_Pics;
     CPalette		m_Palette;
     vector<Level>	m_Levels;

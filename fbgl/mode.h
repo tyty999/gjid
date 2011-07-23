@@ -3,12 +3,10 @@
 
 #pragma once
 #include "primi.h"
+#include <X11/Xlib.h>
+#include <X11/extensions/xf86vmode.h>
 
-/// \class CMode mode.h "mode.h"
-///
-/// \brief Stores information about a framebuffer mode from fb.modes
-///
-class CMode {
+class CXlibMode {
 public:
     enum EFlag {
 	flag_HSyncHigh,
@@ -21,15 +19,28 @@ public:
 	flag_Broadcast,
 	flag_Last
     };
+    enum XModeFlagBits {		/// Bits for flags in XF86VidModeModeInfo
+	xflag_PosHSync,
+	xflag_NegHSync,
+	xflag_PosVSync,
+	xflag_NegVSync,
+	xflag_Interlaced,
+	xflag_Doublescan,
+	xflag_CSync,
+	xflag_PosCSync,
+	xflag_NegCSync,
+	xflag_HSkew,
+	xflag_Last
+    };
     typedef string::const_iterator	mdbiter_t;
     typedef const string&		rcname_t;
-    static const CMode			null_Mode;
+    static const CXlibMode			null_Mode;
 public:
-			CMode (void);
-			CMode (const CMode& m);
-		       ~CMode (void);
-    const CMode&	operator= (const CMode& m);
-    bool		operator== (const CMode& m) const;
+			CXlibMode (void);
+			CXlibMode (const CXlibMode& m);
+		       ~CXlibMode (void);
+    const CXlibMode&	operator= (const CXlibMode& m);
+    bool		operator== (const CXlibMode& m) const;
     void		text_write (ostringstream& os) const;
     inline rcname_t	Name (void) const	{ return (m_Name); }
     inline size_t	Width (void) const	{ return (m_Width); }
@@ -38,6 +49,8 @@ public:
     inline void		SetDepth (size_t v)	{ m_Depth = v; }
     inline bool		Flag (EFlag f) const	{ return (m_Flags & (1 << f)); }
     size_t		RefreshRate (void) const;
+    void		WriteToX (XF86VidModeModeInfo& vi) const;
+    void		ReadFromX (const XF86VidModeModeInfo& i);
 protected:
     inline void		SetFlag (EFlag f, bool v = true);
 protected:
@@ -61,7 +74,7 @@ protected:
 //----------------------------------------------------------------------
 
 /// Sets flag \p f to \p v.
-inline void CMode::SetFlag (EFlag f, bool v)
+inline void CXlibMode::SetFlag (EFlag f, bool v)
 {
     const uint16_t mask = 1 << f;
     if (v)
@@ -72,4 +85,4 @@ inline void CMode::SetFlag (EFlag f, bool v)
 
 //----------------------------------------------------------------------
 
-TEXT_STREAMABLE(CMode)
+TEXT_STREAMABLE(CXlibMode)

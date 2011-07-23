@@ -17,7 +17,7 @@ enum EStdFbMode {
 /// \brief Abstract framebuffer interface.
 class CFramebuffer {
 public:
-    typedef const CMode&	rcmode_t;
+    typedef const CXlibMode&	rcmode_t;
 public:
     virtual void		Open (void);
     virtual void		Close (void) = 0;
@@ -30,7 +30,7 @@ public:
     inline const CGC&		GC (void) const	{ return (m_GC); }
     inline CGC&			GC (void)	{ return (m_GC); }
 protected:
-    typedef vector<CMode>	modevec_t;
+    typedef vector<CXlibMode>	modevec_t;
 protected:
 				CFramebuffer (void);
     virtual		       ~CFramebuffer (void);
@@ -41,7 +41,7 @@ protected:
     inline rcmode_t		CurMode (void) const		{ return (m_CurMode); }
 private:
     modevec_t			m_Modes;
-    CMode			m_OrigMode;
-    CMode			m_CurMode;
+    CXlibMode			m_OrigMode;
+    CXlibMode			m_CurMode;
     CGC				m_GC;
 };

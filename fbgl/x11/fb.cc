@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
-#include "mode.h"
 #include "xept.h"
 
 //----------------------------------------------------------------------

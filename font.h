@@ -4,9 +4,9 @@
 #pragma once
 #include "fbgl.h"
 
-class Font {
+class CFont {
 public:
-			Font (void);
+			CFont (void);
     int			PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color);
     int			PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color);
     void		ActivatePoint (wchar_t c, coord_t xpos, coord_t ypos);
@@ -28,6 +28,6 @@ private:
     dim_t		m_Height;
 };
 
-extern Font font;
+extern CFont font;
 
-STD_STREAMABLE (Font)
+STD_STREAMABLE (CFont)

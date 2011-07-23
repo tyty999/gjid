@@ -3,9 +3,9 @@
 
 #include "font.h"
 
-Font font;
+CFont font;
 
-Font::Font (void)
+CFont::CFont (void)
 : m_Data (),
   m_LetterSize (0),
   m_Width (0),
@@ -13,7 +13,7 @@ Font::Font (void)
 {
 }
 
-void Font::read (istream& is)
+void CFont::read (istream& is)
 {
     uint8_t w, h;
     is >> w >> h;
@@ -22,54 +22,54 @@ void Font::read (istream& is)
     is.align(4);
 }
 
-void Font::write (ostream& os) const
+void CFont::write (ostream& os) const
 {
     os << uint8_t(m_Width) << uint8_t(m_Height);
     os.write (m_Data.begin(), m_LetterSize * 256);
     os.align(4);
 }
 
-size_t Font::stream_size (void) const
+size_t CFont::stream_size (void) const
 {
     return (Align (stream_size_of(uint8_t(m_Width)) +
 		   stream_size_of(uint8_t(m_Height)) +
 		   m_LetterSize * 256, 4));
 }
 
-memblock::iterator Font::GetLetterStart (wchar_t c)
+memblock::iterator CFont::GetLetterStart (wchar_t c)
 {
     return (m_Data.begin() + c * m_LetterSize);
 }
 
-void Font::ActivatePoint (wchar_t c, coord_t xpos, coord_t ypos)
+void CFont::ActivatePoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
     memblock::iterator li = GetLetterStart (c);
     const uoff_t offset = ypos * m_Width + xpos;
     li [offset / 8] |= (1 << offset % 8);
 }
 
-void Font::DeactivatePoint (wchar_t c, coord_t xpos, coord_t ypos)
+void CFont::DeactivatePoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
     memblock::iterator li = GetLetterStart (c);
     const uoff_t offset = ypos * m_Width + xpos;
     li [offset / 8] &= (~(1 << offset % 8));
 }
 
-void Font::TogglePoint (wchar_t c, coord_t xpos, coord_t ypos)
+void CFont::TogglePoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
     memblock::iterator li = GetLetterStart (c);
     const uoff_t offset = ypos * m_Width + xpos;
     li [offset / 8] ^= (1 << offset % 8);
 }
 
-bool Font::ReadPoint (wchar_t c, coord_t xpos, coord_t ypos)
+bool CFont::ReadPoint (wchar_t c, coord_t xpos, coord_t ypos)
 {
     memblock::iterator li = GetLetterStart (c);
     const uoff_t offset = ypos * m_Width + xpos;
     return (li [offset / 8] & (1 << offset % 8));
 }
 
-void Font::Resize (dim_t w, dim_t h)
+void CFont::Resize (dim_t w, dim_t h)
 {
     m_Width = w;
     m_Height = h;
@@ -77,7 +77,7 @@ void Font::Resize (dim_t w, dim_t h)
     m_Data.resize (m_LetterSize * 256);
 }
 
-int Font::PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color)
+int CFont::PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color)
 {
     size_t m = x;
     for (uoff_t n = 0; n < strlen(s); ++ n)
@@ -85,7 +85,7 @@ int Font::PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t col
     return (m - x);
 }
 
-int Font::PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color)
+int CFont::PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color)
 {
     memblock::const_iterator li = GetLetterStart (c);
     size_t bit = 0, cmw = 0;

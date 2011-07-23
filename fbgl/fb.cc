@@ -43,12 +43,12 @@ void CFramebuffer::OnFocus (bool bFocus)
 }
 
 /// Looks up a video mode closest to the given parameters.
-const CMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
+const CXlibMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) const
 {
     uoff_t found (m_Modes.size());
     size_t diff (SIZE_MAX);
     for (uoff_t i = 0; i < m_Modes.size(); ++i) {
-	const CMode& m (m_Modes[i]);
+	const CXlibMode& m (m_Modes[i]);
 	const size_t md = absv<int>(m.Width() - w) +
 			  absv<int>(m.Height() - h) +
 			  absv<int>(m.RefreshRate() - freq);
@@ -56,6 +56,6 @@ const CMode& CFramebuffer::FindClosestMode (size_t w, size_t h, size_t freq) con
 	    found = i;
 	diff = min (diff, md);
     }
-    const CMode& foundNode (m_Modes[found]);
-    return (found < m_Modes.size() ? foundNode : CMode::null_Mode);
+    const CXlibMode& foundNode (m_Modes[found]);
+    return (found < m_Modes.size() ? foundNode : CXlibMode::null_Mode);
 }

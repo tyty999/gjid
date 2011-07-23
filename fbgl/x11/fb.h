@@ -3,7 +3,6 @@
 
 #pragma once
 #include "../fb.h"
-#include "mode.h"
 
 /// \class CXlibFramebuffer xfb fbgl.h
 ///
