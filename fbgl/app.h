@@ -37,9 +37,9 @@ protected:
     inline void		SetFlag (uoff_t i, bool v=true)	{ m_Flags.set (i, v); }
     inline void		SetMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60) { m_pFb->SetStandardMode (m, freq); }
 private:
-    CFramebuffer*	GetFramebuffer (void) const;
+    CXlibFramebuffer*	GetFramebuffer (void) const;
 private:
-    CFramebuffer*	m_pFb;		///< Pointer to the framebuffer backend.
+    CXlibFramebuffer*	m_pFb;		///< Pointer to the framebuffer backend.
     CGC			m_GC;		///< GC for drawing onto the offscreen buffer.
     bitset<f_Max>	m_Flags;	///< See f_ constants for flag values.
    static CApplication*	s_pApp;		///< App pointer for Instance()

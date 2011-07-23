@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #include "app.h"
-#include "x11/fb.h"
+#include "fb.h"
 
 //----------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ void CApplication::MainLoop (void)
 }
 
 /// Gets an appropriate framebuffer pointer.
-CFramebuffer* CApplication::GetFramebuffer (void) const
+CXlibFramebuffer* CApplication::GetFramebuffer (void) const
 {
     const char* pDisp = getenv ("DISPLAY");
     if (!pDisp)
