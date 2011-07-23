@@ -10,19 +10,13 @@
 ///
 class CGC : public CImage {
 public:
-				CGC (void);
-    inline void			SetPixel (Point pt, color_t c)	{ at(pt) = c; }
-    inline color_t		GetPixel (Point pt) const	{ return (at(pt)); }
-    void			Clear (color_t c = 0);
-    void			Bar (Rect r, color_t c);
-    void			Box (Rect r, color_t c);
-    void			HLine (Point pt, size_t l, color_t c);
-    void			VLine (Point pt, size_t l, color_t c);
-    void			Image (Rect r, const uint8_t* p);
-    void			ImageMasked (Rect r, const uint8_t* p);
-    void			GetImage (Rect r, uint8_t* p) const;
-    inline void			Image (const CImage& img, coord_t x, coord_t y)		{ Image (img.Area(x,y), img.begin()); }
-    inline void			ImageMasked (const CImage& img, coord_t x, coord_t y)	{ ImageMasked (img.Area(x,y), img.begin()); }
-    inline void			GetImage (CImage& img, coord_t x, coord_t y)		{ GetImage (img.Area(x,y), img.begin()); }
-    void			Bitmap (Rect r, const uint8_t* p, color_t c);
+    inline		CGC (void) : CImage() {}
+    void		Clear (color_t c = 0);
+    void		Box (Rect r, color_t c);
+    inline void		SetPixel (Point pt, color_t c)	{ at(pt) = c; }
+    void		Image (const CImage& img, coord_t x, coord_t y);
+    void		ImageMasked (const CImage& img, coord_t x, coord_t y);
+private:
+    void		HLine (Point pt, size_t l, color_t c);
+    void		VLine (Point pt, size_t l, color_t c);
 };
