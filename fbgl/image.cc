@@ -134,6 +134,17 @@ void CImage::ReadGifColormap (istream& is, size_t bpp)
     }
 }
 
+void CImage::WriteGifColormap (ostream& os) const
+{
+    const size_t nCols (1 << BitsPerPixel());
+    for (uoff_t i = 0; i < nCols; ++ i) {
+	ray_t r = 0, g = 0, b = 0;
+	if (i < m_Palette.size())
+	    unRGB (m_Palette[i], r, g, b);
+	os << r << g << b;
+    }
+}
+
 /// Reads the object from stream \p is.
 void CImage::read (istream& is)
 {
@@ -186,4 +197,58 @@ void CImage::read (istream& is)
 	else if (c)
 	    throw runtime_error ("unrecognized block type found in the gif file");
     }
+}
+
+/// Writes the object to stream \p os.
+void CImage::write (ostream& os) const
+{
+    assert (!Flag(f_MergedPalette) && "The image can not be written in merged state. Call NormalizePalette to rebuild the palette of the image.");
+    using namespace gif;
+    CFileHeader fh;
+    fh.m_Width = Width();
+    fh.m_Height = Height();
+    fh.SetGlobalCmap (true);
+    fh.SetBitsPerPixel (BitsPerPixel());
+    fh.SetSortedCmap (Flag (f_SortedPalette));
+    os << fh;
+    WriteGifColormap (os);
+
+    if (Flag (f_Transparent)) {
+	CGraphicsControl gch;
+	for (uoff_t i = 0; i < m_Palette.size(); ++ i)
+	    if (!m_Palette[i])
+		gch.SetTransparent (i);
+	os << GIF_EXT_BLOCK_SIG << GIF_EXT_GC_SIG << gch;
+    }
+
+    CImageHeader ih;
+    ih.m_Width = Width();
+    ih.m_Height = Width();
+    os << GIF_IMAGE_BLOCK_SIG << ih;
+    CCompressor c;
+    istream is (begin(), Width() * Height());
+    c.SetCodeSize (fh.BitsPerPixel());
+    c.Run (is, os);
+
+    os << GIF_END_OF_DATA_SIG;
+}
+
+/// Returns the size of the written object.
+size_t CImage::stream_size (void) const
+{
+    size_t s = stream_size_of (gif::CFileHeader());
+    const size_t bpp (BitsPerPixel());
+    s += 3 * (1 << bpp);	// colormap
+    if (Flag (f_Transparent)) {
+	s += stream_size_of (GIF_EXT_BLOCK_SIG) + stream_size_of (GIF_EXT_GC_SIG);
+	s += stream_size_of (gif::CGraphicsControl());
+    }
+    s += stream_size_of (GIF_IMAGE_BLOCK_SIG);
+    s += stream_size_of (gif::CImageHeader());
+    gif::CCompressor c;
+    istream is (begin(), Width() * Height());
+    c.SetCodeSize (bpp);
+    s += c.EstimateSize (is);
+    s += stream_size_of (GIF_END_OF_DATA_SIG);
+    return (s);
 }

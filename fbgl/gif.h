@@ -86,6 +86,32 @@ private:
 };
 
 //----------------------------------------------------------------------
+// Compressor.
+//----------------------------------------------------------------------
+
+/// \class CCompressor gif.h fbgl/gif.h
+///
+/// \brief Compresses pixel data with the GIF LZW algorithm.
+///
+class CCompressor {
+public:
+			CCompressor (void);
+    void		Run (istream& is, ostream& os);
+    size_t		EstimateSize (istream& is);
+    void		SetCodeSize (size_t n);
+private:
+    void		WriteCode (ostream& os, CTable::code_t c);
+    inline void		FlushCurByte (ostream& os);
+    void		StartNextBlock (ostream& os);
+private:
+    CTable		t;
+    uint8_t		m_CodeSize;
+    uint8_t		m_BlockSize;
+    uint8_t		m_CurByte;
+    uint8_t		m_BitsUsed;
+};
+
+//----------------------------------------------------------------------
 // Block headers.
 //----------------------------------------------------------------------
 

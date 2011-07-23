@@ -14,7 +14,7 @@ private:
     void		SaveToDat (const char* filename);
     void		RotatePixClockwise (PicIndex src, PicIndex dest);
 private:
-    Font		m_Font;
+    CFont		m_Font;
     vector<Level>	m_Levels;
     picvec_t		m_Pics;
 };
