@@ -327,7 +327,7 @@ void GJID::EditorKeys (key_t key)
 	case key_F2:
 	case 's':
 	    m_Levels [m_Level] = m_CurLevel;
-	    SaveData (DATAFILE);
+	    SaveData ("data/levels.dat");
 	    break;
 	case key_Left:	if (m_SelectedTile[0] > 0) -- m_SelectedTile[0];		break;
 	case key_Right:	if (m_SelectedTile[0] < MAP_WIDTH - 1) ++ m_SelectedTile[0];	break;
@@ -378,15 +378,11 @@ void GJID::LoadData (const char* filename)
 
 void GJID::SaveData (const char* filename) const
 {
-    const size_t dataSize = stream_size_of(m_Font) +
-		stream_size_of (m_Pics) +
-		stream_size_of (m_Levels);
+    const size_t dataSize = stream_size_of (m_Levels);
 
     memblock buf (dataSize);
     ostream os (buf);
 
-    os << m_Font;
-    os << m_Pics;
     os << m_Levels;
 
     buf.write_file (filename);

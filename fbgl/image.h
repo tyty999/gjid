@@ -56,11 +56,9 @@ public:
     void			MergePaletteInto (CPalette& pal);
     void			NormalizePalette (void);
     void			read (istream& is);
-    void			write (ostream& os) const;
-    size_t			stream_size (void) const;
+    inline size_t		stream_size (void) const	{ return (0); }
 private:
     void			ReadGifColormap (istream& is, size_t bpp);
-    void			WriteGifColormap (ostream& os) const;
 private:
     pixvec_t			m_Pixels;	///< Pixel data.
     CPalette			m_Palette;	///< Palette for the image.
