@@ -2,20 +2,20 @@
 
 ################ Source files ##########################################
 
-SRCS	:= $(wildcard *.cc gob/*.cc con/*.cc x11/*.cc)
-INCS	:= $(filter-out ${NAME}.h,$(wildcard *.h gob/*.h con/*.h x11/*.h))
+SRCS	:= $(wildcard fbgl/*.cc fbgl/gob/*.cc fbgl/con/*.cc fbgl/x11/*.cc)
+INCS	:= $(wildcard fbgl/*.h fbgl/gob/*.h fbgl/con/*.h fbgl/x11/*.h)
 OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 
 TTSEXE	:= $Otxt2strt
-TTSSRC	:= txt2strt.cc gob/strt.cc gob/gif.cc
+TTSSRC	:= fbgl/txt2strt.cc fbgl/gob/strt.cc fbgl/gob/gif.cc
 TTSOBJ	:= $(addprefix $O,$(TTSSRC:.cc=.o))
 
 ################ Compilation ###########################################
 
 .PHONY: all clean html check dist distclean maintainer-clean
 
-all:	Config.mk config.h ${NAME}/config.h
-ALLTGTS	:= Config.mk config.h ${NAME}/config.h
+all:	Config.mk
+ALLTGTS	:= Config.mk
 
 ifdef BUILD_SHARED
 SLIBL	:= $O$(call slib_lnk,${NAME})
@@ -69,9 +69,9 @@ include bvt/Module.mk
 ####### Install headers
 
 ifdef INCDIR	# These ifdefs allow cold bootstrap to work correctly
-LIDIR	:= ${INCDIR}/${NAME}
-INCSI	:= $(addprefix ${LIDIR}/,$(filter-out ${NAME}.h,${INCS}))
-RINCI	:= ${LIDIR}.h
+LIDIR	:= ${INCDIR}
+INCSI	:= $(addprefix ${LIDIR}/,${INCS})
+RINCI	:= ${LIDIR}/${NAME}.h
 
 install:	install-incs
 install-incs: ${INCSI} ${RINCI}
@@ -83,7 +83,7 @@ ${RINCI}: ${NAME}.h
 	@${INSTALLDATA} $< $@
 uninstall:	uninstall-incs
 uninstall-incs:
-	@echo "Removing ${LIDIR}/ and ${LIDIR}.h ..."
+	@echo "Removing ${LIDIR}/${NAME} and ${NAME}.h ..."
 	@(cd ${INCDIR}; rm -f ${INCSI} ${NAME}.h; [ ! -d ${NAME} ] || rm -rf ${NAME})
 endif
 
@@ -149,21 +149,14 @@ dist:
 endif
 
 distclean:	clean
-	@rm -f Config.mk config.h config.status ${NAME}
+	@rm -f Config.mk config.status ${NAME}
 
 maintainer-clean: distclean
 	@if [ -d docs/html ]; then rm -f docs/html/*; rmdir docs/html; fi
 
-INPLACE_INCS := $(addprefix ${NAME}/,$(filter-out config.h,${INCS}))
-${INPLACE_INCS}: ${NAME}/%:	${NAME}/config.h
-${NAME}/config.h:	config.h
-	@echo "    Linking inplace header location ..."
-	@rm -f ${NAME}; ln -s . ${NAME}
-
-${OBJS}:		Makefile Config.mk config.h
-Config.mk:		Config.mk.in
-config.h:		config.h.in
-Config.mk config.h:	configure
+${OBJS}:	Makefile Config.mk
+Config.mk:	Config.mk.in
+Config.mk:	configure
 	@if [ -x config.status ]; then echo "Reconfiguring ..."; ./config.status; \
 	else echo "Running configure ..."; ./configure; fi
 

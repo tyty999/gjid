@@ -28,7 +28,7 @@ bvt/run:	${bvt/BVTS}
 
 ${bvt/BVTS}: bvt/%: $Obvt/%.o $Obvt/stdtest.o ${ALLTGTS}
 	@echo "Linking $@ ..."
-	@${LD} ${LDFLAGS} -o $@ $< $Obvt/stdtest.o ${bvt/LIBS}
+	@${CXX} ${LDFLAGS} -o $@ $< $Obvt/stdtest.o ${bvt/LIBS}
 
 ################ Maintenance ###########################################
 
@@ -40,6 +40,6 @@ bvt/clean:
 check:		bvt/run
 bvt/check:	check
 
-${bvt/OBJS}: Makefile bvt/Module.mk Config.mk ${NAME}/config.h
+${bvt/OBJS}: Makefile bvt/Module.mk Config.mk
 
 -include ${bvt/OBJS:.o=.d}
