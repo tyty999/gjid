@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "fbgl.h"
+#include "gc.h"
 
 class CFont {
 public:

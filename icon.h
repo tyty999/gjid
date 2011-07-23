@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "fbgl.h"
+#include "gc.h"
 
 #define ICON_ID_STRING			"ICON"
 #define ICON_ID_STRING_LENGTH		4		       
