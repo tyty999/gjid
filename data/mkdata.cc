@@ -16,7 +16,6 @@ private:
 private:
     Font		m_Font;
     vector<Level>	m_Levels;
-    CStringTable	m_Strings;
     picvec_t		m_Pics;
 };
 
@@ -91,7 +90,6 @@ void CDataBuilder::LoadFromFiles (void)
     RotatePixClockwise (RobotSouthPix, RobotWestPix);
 
     Load (m_Levels, "data/levels.dat");
-    Load (m_Strings, "data/strings.strt");
 }
 
 void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
@@ -106,7 +104,6 @@ void CDataBuilder::SaveToDat (const char* filename)
 {
     const size_t dataSize = stream_size_of(m_Font) +
 		stream_size_of (m_Pics) +
-		stream_size_of (m_Strings) +
 		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
@@ -114,7 +111,6 @@ void CDataBuilder::SaveToDat (const char* filename)
 
     os << m_Font;
     os << m_Pics;
-    os << m_Strings;
     os << m_Levels;
 
     buf.write_file (filename);

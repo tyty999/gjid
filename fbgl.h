@@ -3,4 +3,3 @@
 
 #pragma once
 #include "fbgl/app.h"
-#include "fbgl/strt.h"

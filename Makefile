@@ -23,17 +23,9 @@ $Omkdata:	$Odata/mkdata.o $(filter-out $Ogjid.o,${OBJS})
 	@echo "Linking $@ ... "
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-$Otxt2strt:	$Odata/txt2strt.o $(filter-out $Ogjid.o,${OBJS})
-	@echo "Linking $@ ... "
-	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
-
-data/gjid.dat:	$Omkdata $(wildcard data/*.gif) data/default.fnt data/levels.dat data/strings.strt
+data/gjid.dat:	$Omkdata $(wildcard data/*.gif) data/default.fnt data/levels.dat
 	@echo "Creating the data file ... "
 	@$Omkdata
-
-data/strings.strt:	data/strings.txt $Otxt2strt
-	@echo "Creating the strings file ... "
-	@$Otxt2strt $<
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."

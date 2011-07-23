@@ -22,8 +22,7 @@ GJID::GJID (void)
   m_Font (),
   m_Pics (),
   m_Palette (),
-  m_Levels (0),
-  m_Strings ()
+  m_Levels (0)
 {
     m_Palette.AllocColor (0,0,0);
 }
@@ -58,12 +57,12 @@ void GJID::OnIdle (void)
     CApplication::OnIdle();
     if (m_State == state_Title) {
 	static const time_t titleDelay (time (NULL));
-	if (m_Strings.empty() || m_Levels.empty()) {
+	if (m_Levels.empty()) {
 	    LoadData (DATAFILE);
 	    Update();
 	    if (!m_Levels.empty())
 		m_CurLevel = m_Levels[0];
-	    if (m_Levels.empty() || m_Strings.empty() || !m_EditedPackage.empty())
+	    if (m_Levels.empty() || !m_EditedPackage.empty())
 		GoToState (state_Editor);
 	} else if (time(NULL) > titleDelay + 3)
 	    GoToState (state_Story);
@@ -183,8 +182,35 @@ void GJID::PrintStory (CGC& gc)
 	row = 8;
     }
     if (m_StoryPage < 2) {
+	static const char storyPage1[] =
+	    "In the year 32333 AD two robot cities on the planet Nikarad were arming\n"
+	    "themselves against each other. The both set up large complexes in which\n"
+	    "powerful photon disrupters were stored. After many years of increasing\n"
+	    "tension on of the cities elected another leader who attempted to make\n"
+	    "peace with the enemy. The cities finally agreed for an entente to start\n"
+	    "in 32407 and to recycle some of the created weapons.\n"
+	    "\n"
+	    "The problem was that no robot wanted to go down into the dungeons and\n"
+	    "accomplish this dangerous task. Finally, one robot named GJID came\n"
+	    "forward and offered to help. He was a simple robot and had not much to\n"
+	    "lose. Besides, there was a reward offered for the job :)";
+	static const char storyPage2[] =
+	    "You play GJID in this game as he carefully moves the weapon crates into\n"
+	    "recycling bins. Complex mazes and one-way doors make this quite difficult\n"
+	    "at times. Unfortunately, GJID is not very powerful and can only move one\n"
+	    "crate at a time. Furthermore, he can only push the crates, not pull.\n"
+	    "\n"
+	    "When you have recycled all the crates on the level you should use the\n"
+	    "exit door to move on to the next. In this first mission you will go\n"
+	    "through 14 levels.\n"
+	    "\n"
+	    "     Controls:   Cursor keys to move\n"
+	    "                 F1   show this help\n"
+	    "                 F6   restart the level\n"
+	    "                 F8   skip the level\n"
+	    "                 F10 quit the game";
 	string line;
-	const string storyPage (m_Strings [m_StoryPage]);
+	const string storyPage (m_StoryPage == 0 ? storyPage1 : storyPage2);
 	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
 	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
 	    m_Font.PrintString (gc, TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
@@ -212,16 +238,12 @@ void GJID::PrintStory (CGC& gc)
 
 void GJID::StoryKeys (key_t key)
 {
-    cerr.format ("GJID::StoryKeys '%c' = %x\n", key, key);
-    if (key == key_PageUp || key == key_Up || key == ('b'|ks_Ctrl)) {
-	cerr << "Paging back\n";
+    if (key == key_PageUp || key == key_Up || key == ('b'|ks_Ctrl))
 	m_StoryPage -= !!m_StoryPage;
-    } else {
-	cerr << "Paging forward\n";
+    else {
 	++ m_StoryPage;
 	if (m_StoryPage > 2 || key == key_Esc) {
 	    m_StoryPage = 2;
-	    cerr << "Going to game\n";
 	    GoToState (state_Game);
 	}
     }
@@ -246,6 +268,7 @@ void GJID::LevelKeys (key_t key)
 	case 'h':
 	case key_Left:	m_CurLevel.MoveRobot (West);	break;
 	case key_F1:	GoToState (state_Story);	break;
+	case 'q':
 	case key_Esc:	Quit();				break;
 	case key_F10:	GoToState (state_Loser);	break;
 	case key_F8:	m_Level = (m_Level + 1) % m_Levels.size();
@@ -348,7 +371,6 @@ void GJID::LoadData (const char* filename)
     is >> m_Pics;
     if (m_Pics.size() != NumberOfPics)
 	throw runtime_error ("not enough tile pictures in the data file");
-    is >> m_Strings;
     is >> m_Levels;
     foreach (picvec_t::iterator, i, m_Pics)
 	i->MergePaletteInto (m_Palette);
@@ -358,7 +380,6 @@ void GJID::SaveData (const char* filename) const
 {
     const size_t dataSize = stream_size_of(m_Font) +
 		stream_size_of (m_Pics) +
-		stream_size_of (m_Strings) +
 		stream_size_of (m_Levels);
 
     memblock buf (dataSize);
@@ -366,7 +387,6 @@ void GJID::SaveData (const char* filename) const
 
     os << m_Font;
     os << m_Pics;
-    os << m_Strings;
     os << m_Levels;
 
     buf.write_file (filename);
