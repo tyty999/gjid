@@ -9,7 +9,6 @@ MINOR		:= @PKG_MINOR@
 ################ Programs ############################################
 
 CXX		:= @CXX@
-LD		:= @CC@
 INSTALL		:= @INSTALL@
 
 INSTALLEXE	:= ${INSTALL} -D -p -m 755 -s
@@ -18,28 +17,19 @@ INSTALLDATA	:= ${INSTALL} -D -p -m 644
 ################ Destination #########################################
 
 prefix		:= @prefix@
-exec_prefix	:= @exec_prefix@
 BINDIR		:= @bindir@
-INCDIR		:= @includedir@
-LIBDIR		:= @libdir@
 
 ################ Compiler options ####################################
 
-WARNOPTS	:= -Wall -Wextra -Wpointer-arith -Wcast-qual -Wsynth \
-		-Wwrite-strings -Wno-cast-align -Wno-strict-aliasing \
-		-Woverloaded-virtual -Wredundant-decls -Wno-overflow \
-		-Wsign-promo -Wshadow @SYSWARNS@
-TGTOPTS		:= @PROCESSOR_OPTS@
-INLINEOPTS	:= @INLINE_OPTS@
-
-CXXFLAGS	:= ${WARNOPTS} ${TGTOPTS} @CUSTOMINCDIR@
+WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
+		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
+CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@
 LDFLAGS		:= @CUSTOMLIBDIR@
 LIBS		:= @libfbgl@ @libustl@
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
-    LDFLAGS	+= -rdynamic
 else
-    CXXFLAGS	+= -Os -g0 -DNDEBUG=1 ${INLINEOPTS}
-    LDFLAGS	+= -s -Wl,-gc-sections
+    CXXFLAGS	+= -Os -g0 -DNDEBUG=1
+    LDFLAGS	+= -s
 endif
 O		:= .o/

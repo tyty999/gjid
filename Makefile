@@ -12,13 +12,16 @@ OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 
 all:	Config.mk config.h ${EXE} data/gjid.dat
 
+run:	${EXE}
+	@./${EXE}
+
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
-	@${LD} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
+	@${CXX} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
 
 $Omkdata:	$Omkdata.o $(filter-out $Ogjid.o,${OBJS})
 	@echo "Linking $@ ... "
-	@${LD} ${LDFLAGS} -o $@ $^ ${LIBS}
+	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
 
 data/gjid.dat:	$Omkdata $(filter-out data/gjid.dat,$(wildcard data/*)) data/strings.strt
 	@echo "Creating the data file ... "
