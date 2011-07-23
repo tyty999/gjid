@@ -13,7 +13,6 @@ FbglMain (GJID)
 GJID::GJID (void)
 : CApplication (),
   m_State (state_Title),
-  m_EditedPackage (),
   m_StoryPage (0),
   m_Level (0),
   m_CurLevel (),
@@ -39,13 +38,6 @@ void GJID::OnCreate (void)
     SetMode (stdmode_320x240x8);
 }
 
-void GJID::ProcessArguments (argc_t argc, argv_t argv)
-{
-    CApplication::ProcessArguments (argc, argv);
-    if (argc >= 2)
-	m_EditedPackage = argv[1];
-}
-
 void GJID::GoToState (EGameState state)
 {
     m_State = state;
@@ -60,10 +52,10 @@ void GJID::OnIdle (void)
 	if (m_Levels.empty()) {
 	    LoadData (DATAFILE);
 	    Update();
-	    if (!m_Levels.empty())
+	    if (m_Levels.empty())
+		Quit();
+	    else
 		m_CurLevel = m_Levels[0];
-	    if (m_Levels.empty() || !m_EditedPackage.empty())
-		GoToState (state_Editor);
 	} else if (time(NULL) > titleDelay + 3)
 	    GoToState (state_Story);
     }
@@ -82,7 +74,6 @@ void GJID::OnDraw (CGC& gc)
 	&GJID::DrawLevel,	// state_Game
 	&GJID::WinnerScreen,	// state_Winner
 	&GJID::LoserScreen,	// state_Loser
-	&GJID::DrawEditor	// state_Editor
     };
     (this->*dfn[m_State])(gc);
 }
@@ -96,7 +87,6 @@ void GJID::OnKey (key_t key)
 	&GJID::LevelKeys,	// state_Game
 	&GJID::WinnerKeys,	// state_Winner
 	&GJID::LoserKeys,	// state_Loser
-	&GJID::EditorKeys	// state_Editor
     };
     (this->*kfn[m_State])(key);
 }
@@ -282,82 +272,6 @@ void GJID::LevelKeys (key_t key)
 	    m_Level = 0;
 	    GoToState (state_Winner);
 	}
-    }
-    Update();
-}
-
-void GJID::DrawEditor (CGC& gc)
-{
-    gc.Clear();
-    m_CurLevel.Draw (gc, m_Pics);
-    for (uoff_t i = 0; i < NumberOfMapPics; ++ i)
-	gc.Image (m_Pics[i], i * TILE_W, gc.Height() - TILE_H);
-    const Point strtl (m_SelectedTile * TILE_W);
-    const Point sprtl (m_SelectedPic * TILE_W, gc.Height() - TILE_H);
-    const color_t white (gc.AllocColor (255,255,255));
-    gc.Box (Rect (strtl, strtl + TILE_W - 1), white);
-    gc.Box (Rect (sprtl, sprtl + TILE_W - 1), white);
-}
-
-void GJID::EditorKeys (key_t key)
-{
-    switch (key) {
-	case key_F10:
-	case 'q':
-	    Quit();
-	    break;
-	case key_F8:
-	case 'n':
-	    if (m_Level >= m_Levels.size())
-		m_Level = 0;
-	    else {
-		m_Levels [m_Level] = m_CurLevel;
-		++ m_Level;
-	    }
-	    if (m_Level >= m_Levels.size())
-		m_Levels.push_back();
-	    m_CurLevel = m_Levels [m_Level];
-	    break;
-	case key_F7:
-	case 'p':
-	    if (m_Level < m_Levels.size())
-		m_Levels [m_Level] = m_CurLevel;
-	    m_Level -= !!m_Level;
-	    break;
-	case key_F2:
-	case 's':
-	    m_Levels [m_Level] = m_CurLevel;
-	    SaveData (DATAFILE);
-	    break;
-	case key_Left:	if (m_SelectedTile[0] > 0) -- m_SelectedTile[0];		break;
-	case key_Right:	if (m_SelectedTile[0] < MAP_WIDTH - 1) ++ m_SelectedTile[0];	break;
-	case key_Up:	if (m_SelectedTile[1] > 0) -- m_SelectedTile[1];		break;
-	case key_Down:	if (m_SelectedTile[1] < MAP_HEIGHT - 1) ++ m_SelectedTile[1];	break;
-	case key_Space:
-	case key_Enter:
-	    switch (m_SelectedPic) {
-		case Barrel1Pix:
-		case Barrel2Pix: {
-		    int crate;
-		    if ((crate = m_CurLevel.FindCrate (m_SelectedTile[0], m_SelectedTile[1])) < 0)
-			m_CurLevel.AddCrate (m_SelectedTile[0], m_SelectedTile[1], m_SelectedPic);
-		    else
-			m_CurLevel.DisposeCrate (crate);
-		    break; }
-		case RobotNorthPix:
-		case RobotSouthPix:
-		case RobotEastPix:
-		case RobotWestPix:
-		    m_CurLevel.MoveRobot (m_SelectedTile[0], m_SelectedTile[1], m_SelectedPic);
-		    break;
-		default:
-		    m_CurLevel.SetCell (m_SelectedTile[0], m_SelectedTile[1], m_SelectedPic);
-		    break;
-	    }
-	    break;
-	case key_Tab:
-	    m_SelectedPic = PicIndex ((m_SelectedPic + 1) % NumberOfMapPics);
-	    break;
     }
     Update();
 }
