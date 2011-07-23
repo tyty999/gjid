@@ -29,8 +29,10 @@ public:
     typedef pixvec_t::difference_type	difference_type;
 public:
 				CImage (void);
-			       ~CImage (void);
+				CImage (dim_t w, dim_t h, const color_t* p = NULL);
+				~CImage (void);
     void			Resize (const Size2d& sz);
+    void			SetImage (dim_t Width, dim_t Height, const color_t* p = NULL);
     void			link (const memlink& l, const Size2d& sz);
     void			unlink (void);
     inline const_iterator	begin (void) const	{ return (m_Pixels.begin()); }
@@ -58,6 +60,9 @@ public:
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;
+    inline Rect			Area (coord_t x, coord_t y) const		{ return (Rect (x, y, x + Width(), y + Height())); }
+    inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ at(Point(x,y)) = c; }
+    inline color_t		GetPixel (coord_t x, coord_t y) const		{ return (at(Point(x,y))); }
 private:
     void			ReadGifColormap (istream& is, size_t bpp);
     void			WriteGifColormap (ostream& os) const;

@@ -23,10 +23,10 @@ seds=[s/^#\(DEBUG\)/\1/]
 }';
 
 # Header files
-HEADERS="utio.h ustl.h"
+HEADERS="ustl.h"
 
 # Libraries
-LIBS="utio ustl X11 Xxf86vm"
+LIBS="ustl X11 Xxf86vm"
 
 # First pair is used if nothing matches
 PROGS="CXX=g++ INSTALL=install"

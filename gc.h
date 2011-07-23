@@ -21,5 +21,8 @@ public:
     void			Image (Rect r, const uint8_t* p);
     void			ImageMasked (Rect r, const uint8_t* p);
     void			GetImage (Rect r, uint8_t* p) const;
+    inline void			Image (const CImage& img, coord_t x, coord_t y)		{ Image (img.Area(x,y), img.begin()); }
+    inline void			ImageMasked (const CImage& img, coord_t x, coord_t y)	{ ImageMasked (img.Area(x,y), img.begin()); }
+    inline void			GetImage (CImage& img, coord_t x, coord_t y)		{ GetImage (img.Area(x,y), img.begin()); }
     void			Bitmap (Rect r, const uint8_t* p, color_t c);
 };

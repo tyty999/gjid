@@ -17,6 +17,20 @@ CImage::CImage (void)
 {
 }
 
+/// Default constructor.
+CImage::CImage (dim_t w, dim_t h, const color_t* p)
+{
+    SetImage (w, h, p);
+}
+
+/// Copies data from the given source.
+void CImage::SetImage (dim_t w, dim_t h, const color_t* p)
+{
+    Resize (Size2d (w, h));
+    if (p)
+	copy_n (p, w * h, begin());
+}
+
 /// Default destructor.
 CImage::~CImage (void)
 {
