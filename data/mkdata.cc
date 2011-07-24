@@ -57,20 +57,20 @@ void CDataBuilder::LoadFromFiles (void)
 	"data/dispose.gif",
 	"data/exit.gif",
 	"data/floor.gif",
-	"data/oneway.gif",
-	"data/oneway.gif",
-	"data/oneway.gif",
-	"data/oneway.gif",
+	"data/oneway_n.gif",
+	"data/oneway_s.gif",
+	"data/oneway_e.gif",
+	"data/oneway_w.gif",
 	"data/wall1.gif",
 	"data/wall2.gif",
 	"data/wall3.gif",
 	"data/back1.gif",
 	"data/back2.gif",
 	"data/back3.gif",
-	"data/robot.gif",
-	"data/robot.gif",
-	"data/robot.gif",
-	"data/robot.gif",
+	"data/robot_n.gif",
+	"data/robot_s.gif",
+	"data/robot_e.gif",
+	"data/robot_w.gif",
 	"data/barrel1.gif",
 	"data/barrel2.gif",
 	"data/logo_g.gif",
@@ -81,23 +81,7 @@ void CDataBuilder::LoadFromFiles (void)
     m_Pics.resize (VectorSize(gifs));
     for (uoff_t i = 0; i < VectorSize(gifs); ++ i)
 	Load (m_Pics[i], gifs[i]);
-
-    RotatePixClockwise (OWDNorthPix, OWDEastPix);
-    RotatePixClockwise (OWDEastPix, OWDSouthPix);
-    RotatePixClockwise (OWDSouthPix, OWDWestPix);
-    RotatePixClockwise (RobotNorthPix, RobotEastPix);
-    RotatePixClockwise (RobotEastPix, RobotSouthPix);
-    RotatePixClockwise (RobotSouthPix, RobotWestPix);
-
     Load (m_Levels, "data/levels.dat");
-}
-
-void CDataBuilder::RotatePixClockwise (PicIndex src, PicIndex dest)
-{
-    m_Pics[dest].SetImage (m_Pics[src].Height(), m_Pics[src].Width(), m_Pics[src].begin());
-    for (dim_t y = 0; y < m_Pics[src].Height(); ++ y)
-	for (dim_t x = 0; x < m_Pics[src].Width(); ++ x)
-	    m_Pics[dest].SetPixel (m_Pics[src].Height() - (y + 1), x, m_Pics[src].GetPixel (x, y));
 }
 
 void CDataBuilder::SaveToDat (const char* filename)

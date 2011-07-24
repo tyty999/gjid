@@ -25,8 +25,6 @@ public:
     rcmode_t			FindClosestMode (size_t w, size_t h, size_t freq) const;
     void			CheckEvents (CEventProcessor* evp);
     void			Flush (void);
-    void			OnIOError (void);
-    void			OnFocus (bool bFocus);
     inline const CGC&		GC (void) const	{ return (m_GC); }
     inline CGC&			GC (void)	{ return (m_GC); }
 private:

@@ -25,7 +25,8 @@ static int OnXlibError (Display*, XErrorEvent* e)
 static int OnXIOError (Display*)
 {
     // Xlib will terminate anyway after this call returns, so there is no way to throw.
-    CXlibFramebuffer::Instance().OnIOError();
+    cout.flush();
+    cerr << "Error: the connection to the X server has been unexpectedly terminated\n";
     exit (EXIT_FAILURE);
     return (EXIT_FAILURE);
 }
@@ -312,20 +313,6 @@ void CXlibFramebuffer::WaitForEvents (void)
     } while (errno == EINTR); 
     if (rv < 0)
 	throw file_exception ("select", "X server connection");
-}
-
-/// Performs actions on focus acquisition.
-void CXlibFramebuffer::OnFocus (bool bFocus)
-{
-    if (bFocus)
-	Flush();
-}
-
-/// Called when X server connection is abruptly terminated.
-void CXlibFramebuffer::OnIOError (void)
-{
-    cout.flush();
-    cerr << "Error: the connection to the X server has been unexpectedly terminated\n";
 }
 
 //----------------------------------------------------------------------
