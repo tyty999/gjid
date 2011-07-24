@@ -2,6 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #include "gjid.h"
+#include "cpio.h"
 #include <time.h>
 
 //----------------------------------------------------------------------
@@ -278,16 +279,26 @@ void GJID::LevelKeys (key_t key)
 
 void GJID::LoadData (const char* filename)
 {
-    memblock buf;
-    buf.read_file (filename);
-    istream is (buf);
-    is >> m_Font;
-    is >> m_Pics;
-    if (m_Pics.size() != NumberOfPics)
-	throw runtime_error ("not enough tile pictures in the data file");
-    is >> m_Levels;
-    foreach (picvec_t::iterator, i, m_Pics)
+    CPIO datafile (filename);
+
+    istream fntstm = datafile.File ("default.fnt"); fntstm >> m_Font;
+    istream lvlstm = datafile.File ("levels.dat"); lvlstm >> m_Levels;
+
+    m_Pics.resize (NumberOfPics);
+    static const char c_PicFiles[] =
+	"dispose.gif\0" "exit.gif\0" "floor.gif\0"
+	"oneway_n.gif\0" "oneway_s.gif\0" "oneway_e.gif\0" "oneway_w.gif\0"
+	"wall1.gif\0" "wall2.gif\0" "wall3.gif\0" "back1.gif\0" "back2.gif\0" "back3.gif\0"
+	"robot_n.gif\0" "robot_s.gif\0" "robot_e.gif\0" "robot_w.gif\0"
+	"barrel1.gif\0" "barrel2.gif\0"
+	"logo_g.gif\0" "logo_j.gif\0" "logo_i.gif\0" "logo_d.gif\0";
+    const char* picfilename = c_PicFiles;
+    foreach (picvec_t::iterator, i, m_Pics) {
+	istream picstm = datafile.File (picfilename);
+	picstm >> *i;
 	i->MergePaletteInto (m_Palette);
+	picfilename += strlen(picfilename)+1;
+    }
 }
 
 void GJID::SaveData (const char* filename) const

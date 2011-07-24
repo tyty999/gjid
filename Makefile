@@ -5,27 +5,25 @@
 EXE	:= ${NAME}
 SRCS	:= $(wildcard *.cc fbgl/*.cc fbgl/con/*.cc fbgl/gob/*.cc fbgl/x11/*.cc)
 OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
+DATAF	:= data/${NAME}.cpio
+DATAFC	:= $(wildcard data/*.gif) data/default.fnt data/levels.dat
 
 ################ Compilation ###########################################
 
 .PHONY: all clean dist distclean maintainer-clean
 
-all:	Config.mk config.h ${EXE} data/gjid.dat
+all:	Config.mk config.h ${EXE} ${DATAF}
 
 run:	${EXE}
 	@./${EXE}
 
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
-	@${CC} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
-
-$Omkdata:	$Odata/mkdata.o $(filter-out $Ogjid.o,${OBJS})
-	@echo "Linking $@ ... "
 	@${CC} ${LDFLAGS} -o $@ $^ ${LIBS}
 
-data/gjid.dat:	$Omkdata $(wildcard data/*.gif) data/default.fnt data/levels.dat
+${DATAF}:	${DATAFC}
 	@echo "Creating the data file ... "
-	@$Omkdata
+	@(cd data; ls $(notdir $^) | cpio -o > $(notdir $@))
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."
@@ -56,7 +54,7 @@ endif
 ################ Maintenance ###########################################
 
 clean:
-	@[ ! -d ./$O ] || rm -rf ./$O
+	@[ ! -d ./$O ] || rm -rf ./$O data/${EXE}.cpio
 
 ifdef MAJOR
 DISTVER	:= ${MAJOR}.${MINOR}

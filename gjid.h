@@ -6,8 +6,6 @@
 #include "font.h"
 #include "app.h"
 
-#define DATAFILE	"data/gjid.dat"
-
 //----------------------------------------------------------------------
 
 class GJID : public CApplication {

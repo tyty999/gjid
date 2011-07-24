@@ -9,3 +9,14 @@
 #define @PKG_UNAME@_VERSTRING	"@PKG_VERSTR@"
 // Define to the address where bug reports for this package should be sent.
 #define @PKG_UNAME@_BUGREPORT	"@PKG_BUGREPORT@"
+
+#define DATAFILE		"data/gjid.cpio"
+
+// Define to 1 if you have asydna.h
+#define HAVE_USTL_H 1
+#if HAVE_USTL_H
+    #include <ustl.h>
+    using namespace ustl;
+#else
+    #error "uSTL library (http://sourceforge.net/projects/ustl) is required to compile this package"
+#endif

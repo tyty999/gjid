@@ -2,9 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include <ustl.h>
-
-using namespace ustl;
+#include "config.h"
 
 typedef uint8_t		ray_t;
 typedef uint8_t		color_t;

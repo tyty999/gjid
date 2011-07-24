@@ -2,6 +2,5 @@
 config.status
 Config.mk
 config.h
-data/gjid.dat
-data/strings.strt
+data/gjid.cpio
 gjid

@@ -2,7 +2,6 @@
 // This file is free software, distributed under the MIT License.
 
 #include "xept.h"
-using namespace ustl;
 
 //----------------------------------------------------------------------
 
@@ -33,21 +32,21 @@ const char* XlibError::what (void) const throw()
     return ("Xlib error");
 }
 
-void XlibError::info (ustl::string& msgbuf, const char* fmt) const throw()
+void XlibError::info (string& msgbuf, const char* fmt) const throw()
 {
     if (!fmt) fmt = "%s: %s";
     const char* errorText = m_Arg.begin() ? m_Arg.begin() : "[out of memory]";
     try { msgbuf.format (fmt, RequestCodeText(m_Event.request_code), errorText); } catch (...) {}
 }
 
-void XlibError::read (ustl::istream& is)
+void XlibError::read (istream& is)
 {
     runtime_error::read (is);
     is.read (&m_Event, sizeof(m_Event));
     is.align();
 }
 
-void XlibError::write (ustl::ostream& os) const
+void XlibError::write (ostream& os) const
 {
     runtime_error::write (os);
     os.write (&m_Event, sizeof(m_Event));

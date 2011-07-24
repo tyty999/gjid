@@ -5,12 +5,12 @@
 // structure of the headers and the data blocks. Also, big thanks to
 // John Barkaus for his '89 USENET post explaining the LZW algorithm.
 
-#include <ustl.h>
+#pragma once
+#include "config.h"
 
 class CImage;
 
 namespace gif {
-using namespace ustl;
 
 //----------------------------------------------------------------------
 // LZW string table
