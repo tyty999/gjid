@@ -56,13 +56,6 @@ CXlibFramebuffer::~CXlibFramebuffer (void)
     Close();
 }
 
-/// Singleton instance accessor.
-/*static*/ CXlibFramebuffer& CXlibFramebuffer::Instance (void)
-{
-    static CXlibFramebuffer s_Fb;
-    return (s_Fb);
-}
-
 /// Opens a connection to the X server (no windows opened)
 void CXlibFramebuffer::Open (void)
 {

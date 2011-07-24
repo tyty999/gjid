@@ -66,31 +66,3 @@ extern "C" void InstallCleanupHandlers (void)
     std::set_terminate (Terminate);
     std::set_unexpected (OnUnexpected);
 }
-
-#ifndef HAVE_STRSIGNAL
-/// Returns the textual description of a system signal \p sig.
-const char* strsignal (int sig)
-{
-    static const char* c_Signals[] = {
-	"Invalid signal",
-	"Terminal close command",
-	"Interrupt",
-	"Quit command",
-	"Illegal operation",
-	"I/O trap",
-	"Bus error",
-	"Floating point exception",
-	"Kill command",
-	"Console switch acknowledgement",
-	"Segmentation fault",
-	"Console release request",
-	"Broken pipe",
-	"Unhandled alarm",
-	"Termination signal",
-	"Stack fault error",
-	"Child process message",
-	"Unknown system error"
-    };
-    return (c_Signals [min (uoff_t(sig), VectorSize(c_Signals) - 1)]);
-}
-#endif

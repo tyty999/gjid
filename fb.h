@@ -17,7 +17,8 @@ class CXlibFramebuffer {
 public:
     typedef const CXlibMode&	rcmode_t;
 public:
-    static CXlibFramebuffer&	Instance (void);
+				CXlibFramebuffer (void);
+				~CXlibFramebuffer (void);
     void			Open (void);
     void			Close (void);
     void			SetMode (rcmode_t m);
@@ -31,8 +32,6 @@ private:
     typedef vector<CXlibMode>	modevec_t;
     typedef ::GC		XGC;
 private:
-				CXlibFramebuffer (void);
-				~CXlibFramebuffer (void);
     void			LoadModes (modevec_t& mv);
     inline void			SetOrigMode (rcmode_t m)	{ m_OrigMode = m; }
     inline rcmode_t		OrigMode (void) const		{ return (m_OrigMode); }

@@ -12,9 +12,10 @@ CApplication* CApplication::s_pApp = NULL;
 
 /// Default constructor.
 CApplication::CApplication (void)
-: CEventProcessor (),
-  m_pFb (NULL),
-  m_Flags (0)
+: CEventProcessor ()
+, m_Fb()
+, m_GC()
+, m_Flags (0)
 {
     assert (!s_pApp && "CApplication derivatives must be singletons!");
     s_pApp = this;
@@ -24,6 +25,7 @@ CApplication::CApplication (void)
 CApplication::~CApplication (void)
 {
     assert (s_pApp == this && "CApplication derivatives must be singletons!");
+    OnDestroy();
     s_pApp = NULL;
 }
 
@@ -40,53 +42,32 @@ void CApplication::ProcessArguments (argc_t, argv_t)
 /// Main event loop.
 void CApplication::MainLoop (void)
 {
-    m_pFb = GetFramebuffer();
-    try {
-	OnCreate();
-	Update();
-	SetFlag (f_QuitRequested, false);
-	while (!Flag (f_QuitRequested)) {
-	    m_pFb->CheckEvents (this);
-	    OnIdle();
-	}
-    } catch (...) {
-	OnDestroy();
-	throw;
+    OnCreate();
+    Update();
+    SetFlag (f_QuitRequested, false);
+    while (!Flag (f_QuitRequested)) {
+	m_Fb.CheckEvents (this);
+	OnIdle();
     }
-    OnDestroy();
-}
-
-/// Gets an appropriate framebuffer pointer.
-CXlibFramebuffer* CApplication::GetFramebuffer (void) const
-{
-    const char* pDisp = getenv ("DISPLAY");
-    if (!pDisp)
-	throw runtime_error ("this program requires the framebuffer console or an X server");
-    return (&CXlibFramebuffer::Instance());
 }
 
 /// Redraws the application.
 void CApplication::Update (void)
 {
-    if (m_pFb) {
-	OnDraw (m_pFb->GC());
-	m_pFb->Flush();
-    }
+    OnDraw (m_Fb.GC());
+    m_Fb.Flush();
 }
 
 void CApplication::OnCreate (void)
 {
-    m_pFb->Open();
+    m_Fb.Open();
 }
 
 void CApplication::OnDestroy (void)
 {
-    m_pFb->Close();
+    m_Fb.Close();
 }
 
-#ifndef HAVE_STRSIGNAL
-const char* strsignal (int sig);	// In app.cc
-#endif
 bool CApplication::OnSignal (int sig)
 {
     cerr.format ("Fatal error: %s\n", strsignal(sig));

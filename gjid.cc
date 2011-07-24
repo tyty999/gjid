@@ -62,35 +62,32 @@ void GJID::OnIdle (void)
     }
 }
 
-void GJID::OnDraw (CGC& gc)
+void GJID::LoadData (const char* filename)
 {
-    CApplication::OnDraw (gc);
-    if (m_Pics.empty())
-	return;
-    gc.Palette() = m_Palette;
-    typedef void (GJID::*pfndraw_t)(CGC& gc);
-    static const pfndraw_t dfn [state_Last] = {
-	&GJID::IntroScreen,	// state_Title
-	&GJID::PrintStory,	// state_Story
-	&GJID::DrawLevel,	// state_Game
-	&GJID::WinnerScreen,	// state_Winner
-	&GJID::LoserScreen,	// state_Loser
-    };
-    (this->*dfn[m_State])(gc);
+    CPIO datafile (filename);
+
+    istream fntstm = datafile.File ("default.fnt"); fntstm >> m_Font;
+    istream lvlstm = datafile.File ("levels.dat"); lvlstm >> m_Levels;
+
+    m_Pics.resize (NumberOfPics);
+    static const char c_PicFiles[] =
+	"dispose.gif\0" "exit.gif\0" "floor.gif\0"
+	"oneway_n.gif\0" "oneway_s.gif\0" "oneway_e.gif\0" "oneway_w.gif\0"
+	"wall1.gif\0" "wall2.gif\0" "wall3.gif\0" "back1.gif\0" "back2.gif\0" "back3.gif\0"
+	"robot_n.gif\0" "robot_s.gif\0" "robot_e.gif\0" "robot_w.gif\0"
+	"barrel1.gif\0" "barrel2.gif\0"
+	"logo_g.gif\0" "logo_j.gif\0" "logo_i.gif\0" "logo_d.gif\0";
+    const char* picfilename = c_PicFiles;
+    foreach (picvec_t::iterator, i, m_Pics) {
+	istream picstm = datafile.File (picfilename);
+	picstm >> *i;
+	i->MergePaletteInto (m_Palette);
+	picfilename += strlen(picfilename)+1;
+    }
 }
 
-void GJID::OnKey (key_t key)
-{
-    typedef void (GJID::*pfnkey_t)(key_t key);
-    static const pfnkey_t kfn [state_Last] = {
-	&GJID::TitleKeys,	// state_Title
-	&GJID::StoryKeys,	// state_Story
-	&GJID::LevelKeys,	// state_Game
-	&GJID::WinnerKeys,	// state_Winner
-	&GJID::LoserKeys,	// state_Loser
-    };
-    (this->*kfn[m_State])(key);
-}
+//----------------------------------------------------------------------
+// Tile screen helpers
 
 void GJID::FillWithTile (CGC& gc, PicIndex tidx) const
 {
@@ -107,7 +104,10 @@ void GJID::DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex 
 		gc.Image (m_Pics [tidx], (x + 2) * TILE_W, (y + 3) * TILE_H);
 }
 
-void GJID::IntroScreen (CGC& gc)
+//----------------------------------------------------------------------
+// Screen drawing
+
+inline void GJID::IntroScreen (CGC& gc)
 {
     static const uint16_t title[] = {	// "GJID"
 	0xEEEC, 0x824A, 0x824A, 0xA24A, 0xAA4A, 0xE6EC
@@ -116,40 +116,7 @@ void GJID::IntroScreen (CGC& gc)
     DecodeBitmapWithTile (gc, title, VectorSize(title), Wall2Pix);
 }
 
-void GJID::TitleKeys (key_t key)
-{
-    GoToState (key == XK_Escape ? state_Game : state_Story);
-}
-
-void GJID::WinnerScreen (CGC& gc)
-{
-    static const uint16_t title[] = {	// "WIN"
-	0x45D2, 0x449A, 0x449E, 0x5496, 0x5492, 0x29D2
-    };
-    FillWithTile (gc, Wall1Pix);
-    DecodeBitmapWithTile (gc, title, VectorSize(title), RobotNorthPix);
-}
-
-void GJID::WinnerKeys (key_t)
-{
-    Quit();
-}
-
-void GJID::LoserScreen (CGC& gc)
-{
-    static const uint16_t title[] = {	// "LOSE"
-	0x8F77, 0x8944, 0x8966, 0x8934, 0x8914, 0xEF77
-    };
-    FillWithTile (gc, Back3Pix);
-    DecodeBitmapWithTile (gc, title, VectorSize(title), DisposePix);
-}
-
-void GJID::LoserKeys (key_t)
-{
-    Quit();
-}
-
-void GJID::PrintStory (CGC& gc)
+inline void GJID::PrintStory (CGC& gc)
 {
     coord_t x, y, row = 0;
 
@@ -227,7 +194,55 @@ void GJID::PrintStory (CGC& gc)
     }
 }
 
-void GJID::StoryKeys (key_t key)
+inline void GJID::DrawLevel (CGC& gc)
+{
+    gc.Clear();
+    m_CurLevel.Draw (gc, m_Pics);
+}
+
+inline void GJID::WinnerScreen (CGC& gc)
+{
+    static const uint16_t title[] = {	// "WIN"
+	0x45D2, 0x449A, 0x449E, 0x5496, 0x5492, 0x29D2
+    };
+    FillWithTile (gc, Wall1Pix);
+    DecodeBitmapWithTile (gc, title, VectorSize(title), RobotNorthPix);
+}
+
+inline void GJID::LoserScreen (CGC& gc)
+{
+    static const uint16_t title[] = {	// "LOSE"
+	0x8F77, 0x8944, 0x8966, 0x8934, 0x8914, 0xEF77
+    };
+    FillWithTile (gc, Back3Pix);
+    DecodeBitmapWithTile (gc, title, VectorSize(title), DisposePix);
+}
+
+void GJID::OnDraw (CGC& gc)
+{
+    CApplication::OnDraw (gc);
+    if (m_Pics.empty())
+	return;
+    gc.Palette() = m_Palette;
+    switch (m_State) {
+	default:
+	case state_Title:	return (IntroScreen (gc));
+	case state_Story:	return (PrintStory (gc));
+	case state_Game:	return (DrawLevel (gc));
+	case state_Winner:	return (WinnerScreen (gc));
+	case state_Loser:	return (LoserScreen (gc));
+    }
+}
+
+//----------------------------------------------------------------------
+// Input handling
+
+inline void GJID::TitleKeys (key_t key)
+{
+    GoToState (key == XK_Escape ? state_Game : state_Story);
+}
+
+inline void GJID::StoryKeys (key_t key)
 {
     if (key == XK_Page_Up || key == XK_Up || key == ('b'|XKM_Ctrl))
 	m_StoryPage -= !!m_StoryPage;
@@ -241,13 +256,7 @@ void GJID::StoryKeys (key_t key)
     Update();
 }
 
-void GJID::DrawLevel (CGC& gc)
-{
-    gc.Clear();
-    m_CurLevel.Draw (gc, m_Pics);
-}
-
-void GJID::LevelKeys (key_t key)
+inline void GJID::LevelKeys (key_t key)
 {
     switch (key) {
 	case 'k':
@@ -277,42 +286,14 @@ void GJID::LevelKeys (key_t key)
     Update();
 }
 
-void GJID::LoadData (const char* filename)
+void GJID::OnKey (key_t key)
 {
-    CPIO datafile (filename);
-
-    istream fntstm = datafile.File ("default.fnt"); fntstm >> m_Font;
-    istream lvlstm = datafile.File ("levels.dat"); lvlstm >> m_Levels;
-
-    m_Pics.resize (NumberOfPics);
-    static const char c_PicFiles[] =
-	"dispose.gif\0" "exit.gif\0" "floor.gif\0"
-	"oneway_n.gif\0" "oneway_s.gif\0" "oneway_e.gif\0" "oneway_w.gif\0"
-	"wall1.gif\0" "wall2.gif\0" "wall3.gif\0" "back1.gif\0" "back2.gif\0" "back3.gif\0"
-	"robot_n.gif\0" "robot_s.gif\0" "robot_e.gif\0" "robot_w.gif\0"
-	"barrel1.gif\0" "barrel2.gif\0"
-	"logo_g.gif\0" "logo_j.gif\0" "logo_i.gif\0" "logo_d.gif\0";
-    const char* picfilename = c_PicFiles;
-    foreach (picvec_t::iterator, i, m_Pics) {
-	istream picstm = datafile.File (picfilename);
-	picstm >> *i;
-	i->MergePaletteInto (m_Palette);
-	picfilename += strlen(picfilename)+1;
+    switch (m_State) {
+	default:
+	case state_Title:	return (TitleKeys (key));
+	case state_Story:	return (StoryKeys (key));
+	case state_Game:	return (LevelKeys (key));
+	case state_Winner:
+	case state_Loser:	Quit(); break;
     }
-}
-
-void GJID::SaveData (const char* filename) const
-{
-    const size_t dataSize = stream_size_of(m_Font) +
-		stream_size_of (m_Pics) +
-		stream_size_of (m_Levels);
-
-    memblock buf (dataSize);
-    ostream os (buf);
-
-    os << m_Font;
-    os << m_Pics;
-    os << m_Levels;
-
-    buf.write_file (filename);
 }

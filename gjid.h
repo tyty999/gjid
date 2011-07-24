@@ -30,18 +30,15 @@ private:
     void		GoToState (EGameState state);
     void		FillWithTile (CGC& gc, PicIndex tidx) const;
     void		DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx) const;
-    void		IntroScreen (CGC& gc);
-    void		LoserScreen (CGC& gc);
-    void		PrintStory (CGC& gc);
-    void		WinnerScreen (CGC& gc);
-    void		DrawLevel (CGC& gc);
-    void		TitleKeys (key_t key);
-    void		StoryKeys (key_t key);
-    void		LevelKeys (key_t key);
-    void		WinnerKeys (key_t key);
-    void		LoserKeys (key_t key);
+    inline void		IntroScreen (CGC& gc);
+    inline void		LoserScreen (CGC& gc);
+    inline void		PrintStory (CGC& gc);
+    inline void		WinnerScreen (CGC& gc);
+    inline void		DrawLevel (CGC& gc);
+    inline void		TitleKeys (key_t key);
+    inline void		StoryKeys (key_t key);
+    inline void		LevelKeys (key_t key);
     void		LoadData (const char* filename);
-    void		SaveData (const char* filename) const;
 private:
     EGameState		m_State;
     uoff_t		m_StoryPage;
