@@ -17,11 +17,11 @@ run:	${EXE}
 
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
-	@${CXX} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
+	@${CC} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
 
 $Omkdata:	$Odata/mkdata.o $(filter-out $Ogjid.o,${OBJS})
 	@echo "Linking $@ ... "
-	@${CXX} ${LDFLAGS} -o $@ $^ ${LIBS}
+	@${CC} ${LDFLAGS} -o $@ $^ ${LIBS}
 
 data/gjid.dat:	$Omkdata $(wildcard data/*.gif) data/default.fnt data/levels.dat
 	@echo "Creating the data file ... "
