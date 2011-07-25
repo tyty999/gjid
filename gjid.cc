@@ -17,8 +17,6 @@ GJID::GJID (void)
   m_StoryPage (0),
   m_Level (0),
   m_CurLevel (),
-  m_SelectedPic (Wall1Pix),
-  m_SelectedTile (0, 0),
   m_Font (),
   m_Pics (),
   m_Palette (),

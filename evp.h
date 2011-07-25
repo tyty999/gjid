@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "primi.h"
+#include "pal.h"
 #include <X11/keysym.h>
 
 enum {

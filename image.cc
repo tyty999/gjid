@@ -10,10 +10,11 @@
 
 /// Default constructor.
 CImage::CImage (void)
-: m_Pixels (),
-  m_Palette (),
-  m_Size (0, 0),
-  m_Flags (0)
+: m_Pixels ()
+, m_Palette ()
+, m_Width (0)
+, m_Height (0)
+, m_Flags (0)
 {
 }
 
@@ -26,7 +27,7 @@ CImage::CImage (dim_t w, dim_t h, const color_t* p)
 /// Copies data from the given source.
 void CImage::SetImage (dim_t w, dim_t h, const color_t* p)
 {
-    Resize (Size2d (w, h));
+    Resize (w, h);
     if (p)
 	copy_n (p, w * h, begin());
 }
@@ -37,25 +38,27 @@ CImage::~CImage (void)
 }
 
 /// Resize the image to the given dimensions.
-void CImage::Resize (const Size2d& sz)
+void CImage::Resize (dim_t w, dim_t h)
 {
-    m_Pixels.resize (sz[0] * sz[1]);
-    m_Size = sz;
+    m_Pixels.resize (w * h);
+    m_Width = w;
+    m_Height = h;
 }
 
 /// Attaches to pixels at \p l of size \p sz.
-void CImage::link (const memlink& l, const Size2d& sz)
+void CImage::link (const memlink& l, dim_t w, dim_t h)
 {
     m_Pixels.link ((pixel_t*) l.begin(), (pixel_t*) l.end());
-    m_Size = sz;
-    assert (m_Pixels.size() == size_t(Width() * Height()));
+    m_Width = w;
+    m_Height = h;
+    assert (m_Pixels.size() == size_t(w*h));
 }
 
 /// Detaches from the current pixel data.
 void CImage::unlink (void)
 {
     m_Pixels.unlink();
-    m_Size = Size2d();
+    m_Width = m_Height = 0;
 }
 
 //----------------------------------------------------------------------
@@ -198,7 +201,7 @@ void CImage::read (istream& is)
 	    is >> ih;
 	    if (ih.m_Width > 16000 || ih.m_Height > 16000)
 		throw runtime_error ("invalid image size");
-	    Resize (Size2d (ih.m_Width, ih.m_Height));
+	    Resize (ih.m_Width, ih.m_Height);
 	    if (ih.HasLocalCmap()) {
 		SetFlag (f_SortedPalette, ih.SortedCmap());
 		ReadGifColormap (is, ih.BitsPerPixel());

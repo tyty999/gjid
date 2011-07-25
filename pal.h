@@ -7,6 +7,8 @@
 typedef uint8_t		ray_t;
 typedef uint8_t		color_t;
 typedef uint32_t	colordef_t;
+typedef int16_t		coord_t;	///< Scaled coordinate
+typedef uint16_t	dim_t;		///< Linear dimension, scaled
 
 inline colordef_t RGB (ray_t r, ray_t g, ray_t b, ray_t a = 0)
     { return ((a << 24) | (r << 16) | (g << 8) | b); }

@@ -244,14 +244,14 @@ void CXlibFramebuffer::SetMode (rcmode_t m)
     for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
 	GC().Palette()[i] = RGB (i, i, i);
 
-    m_GC.Resize (Size2d (m.Width(), m.Height()));
+    m_GC.Resize (m.Width(), m.Height());
 }
 
 void CXlibFramebuffer::SetStandardMode (EStdFbMode m, size_t freq)
 {
     if (m)
 	SetMode (FindClosestMode (640, 480, freq));
-    m_GC.Resize (Size2d (m * 320, m * 240));
+    m_GC.Resize (m * 320, m * 240);
 }
 
 /// Looks up a video mode closest to the given parameters.

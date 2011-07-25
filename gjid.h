@@ -44,8 +44,6 @@ private:
     uoff_t		m_StoryPage;
     uoff_t		m_Level;
     Level		m_CurLevel;
-    PicIndex		m_SelectedPic;
-    Point		m_SelectedTile;
     CFont		m_Font;
     picvec_t		m_Pics;
     CPalette		m_Palette;

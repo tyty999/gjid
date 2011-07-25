@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "primi.h"
+#include "config.h"
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 

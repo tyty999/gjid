@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "primi.h"
+#include "pal.h"
 
 /// \class CImage image.h fbgl.h
 ///
@@ -31,9 +31,9 @@ public:
 				CImage (void);
 				CImage (dim_t w, dim_t h, const color_t* p = NULL);
 				~CImage (void);
-    void			Resize (const Size2d& sz);
+    void			Resize (dim_t w, dim_t h);
     void			SetImage (dim_t Width, dim_t Height, const color_t* p = NULL);
-    void			link (const memlink& l, const Size2d& sz);
+    void			link (const memlink& l, dim_t w, dim_t h);
     void			unlink (void);
     inline const_iterator	begin (void) const	{ return (m_Pixels.begin()); }
     inline iterator		begin (void)		{ return (m_Pixels.begin()); }
@@ -43,13 +43,12 @@ public:
     inline size_type		capacity (void) const	{ return (m_Pixels.capacity()); }
     inline const CPalette&	Palette (void) const	{ return (m_Palette); }
     inline CPalette&		Palette (void)		{ return (m_Palette); }
-    inline Size2d		Size (void) const	{ return (m_Size); }
-    inline dim_t		Width (void) const	{ return (m_Size[0]); }
-    inline dim_t		Height (void) const	{ return (m_Size[1]); }
-    inline value_type&		at (Point p)		{ return (m_Pixels [p[1] * Width() + p[0]]); }
-    inline value_type		at (Point p) const	{ return (m_Pixels [p[1] * Width() + p[0]]); }
-    inline iterator		iat (Point p)		{ return (begin() + p[1] * Width() + p[0]); }
-    inline const_iterator	iat (Point p) const	{ return (begin() + p[1] * Width() + p[0]); }
+    inline dim_t		Width (void) const	{ return (m_Width); }
+    inline dim_t		Height (void) const	{ return (m_Height); }
+    inline value_type&		at (coord_t x, coord_t y)	{ return (m_Pixels [y * Width() + x]); }
+    inline value_type		at (coord_t x, coord_t y) const	{ return (m_Pixels [y * Width() + x]); }
+    inline iterator		iat (coord_t x, coord_t y)		{ return (begin() + y * Width() + x); }
+    inline const_iterator	iat (coord_t x, coord_t y) const	{ return (begin() + y * Width() + x); }
     inline bool			Flag (EFlag f) const		{ return (m_Flags[f]); }
     inline void			SetFlag (EFlag f, bool v =true)	{ m_Flags.set (f, v); }
     color_t			AllocColor (colordef_t c);
@@ -60,16 +59,15 @@ public:
     void			read (istream& is);
     void			write (ostream& os) const;
     size_t			stream_size (void) const;
-    inline Rect			Area (coord_t x, coord_t y) const		{ return (Rect (x, y, x + Width(), y + Height())); }
-    inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ at(Point(x,y)) = c; }
-    inline color_t		GetPixel (coord_t x, coord_t y) const		{ return (at(Point(x,y))); }
+    inline void			SetPixel (coord_t x, coord_t y, color_t c)	{ at(x,y) = c; }
 private:
     void			ReadGifColormap (istream& is, size_t bpp);
     void			WriteGifColormap (ostream& os) const;
 private:
     pixvec_t			m_Pixels;	///< Pixel data.
     CPalette			m_Palette;	///< Palette for the image.
-    Size2d			m_Size;		///< Image dimensions.
+    dim_t			m_Width;
+    dim_t			m_Height;
     bitset<f_Last>		m_Flags;
 };
 

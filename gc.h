@@ -12,7 +12,7 @@ class CGC : public CImage {
 public:
     inline		CGC (void) : CImage() {}
     void		Clear (color_t c = 0);
-    inline void		SetPixel (Point pt, color_t c)	{ at(pt) = c; }
+    inline void		SetPixel (coord_t x, coord_t y, color_t c)	{ at(x,y) = c; }
     void		Image (const CImage& img, coord_t x, coord_t y);
     void		ImageMasked (const CImage& img, coord_t x, coord_t y);
 };

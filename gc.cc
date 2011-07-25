@@ -10,7 +10,7 @@ void CGC::Clear (color_t c)
 
 void CGC::Image (const CImage& img, coord_t x, coord_t y)
 {
-    iterator d (iat (Point (x,y)));
+    iterator d (iat (x,y));
     const uint8_t* s = img.begin();
     for (unsigned l = 0; l < img.Height(); ++l, d+=Width(), s+=img.Width())
 	copy_n (s, img.Width(), d);
@@ -18,7 +18,7 @@ void CGC::Image (const CImage& img, coord_t x, coord_t y)
 
 void CGC::ImageMasked (const CImage& img, coord_t x, coord_t y)
 {
-    iterator d (iat (Point (x,y)));
+    iterator d (iat (x,y));
     const uint8_t* s = img.begin();
     for (unsigned l = 0; l < img.Height(); ++l, d+=Width()-img.Width())
 	for (unsigned c = 0; c < img.Width(); ++c, ++s, ++d)
