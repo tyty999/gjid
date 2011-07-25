@@ -5,7 +5,22 @@
 #include <unistd.h>
 #include <errno.h>
 #include <X11/Xutil.h>
-#include "xept.h"
+
+//----------------------------------------------------------------------
+
+class XlibError : public runtime_error {
+public:
+			XlibError (const XErrorEvent& e) throw();
+    virtual const char*	what (void) const throw() { return ("Xlib error"); }
+};
+
+XlibError::XlibError (const XErrorEvent& e) throw()
+: runtime_error ("")
+{
+    char errbuf [512];
+    XGetErrorText (e.display, e.error_code, VectorBlock(errbuf));
+    try { m_Arg.format ("%hhu,%hhu: %s", e.request_code, e.minor_code, errbuf); } catch (...) {}
+}
 
 //----------------------------------------------------------------------
 // Can't throw an exception through a C callstack, hence this junk.
@@ -20,15 +35,6 @@ static int OnXlibError (Display*, XErrorEvent* e)
 	g_ErrorEvent = *e;
     }
     return (EXIT_SUCCESS);
-}
-
-static int OnXIOError (Display*)
-{
-    // Xlib will terminate anyway after this call returns, so there is no way to throw.
-    cout.flush();
-    cerr << "Error: the connection to the X server has been unexpectedly terminated\n";
-    exit (EXIT_FAILURE);
-    return (EXIT_FAILURE);
 }
 
 //----------------------------------------------------------------------
@@ -60,7 +66,6 @@ CXlibFramebuffer::~CXlibFramebuffer (void)
 void CXlibFramebuffer::Open (void)
 {
     XSetErrorHandler (OnXlibError);
-    XSetIOErrorHandler (OnXIOError);
 
     m_pDisplay = XOpenDisplay (NULL);
     if (!m_pDisplay)
