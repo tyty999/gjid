@@ -4,43 +4,32 @@
 #pragma once
 #include "fb.h"
 
-/// \class CApplication app.h fbgl.h
-///
-/// \brief Base class for user applications.
-///
-class CApplication : protected CEventProcessor {
+/// Base class for application objects
+class CApp {
 public:
-    enum {
-	f_QuitRequested,
-	f_Last,
-	f_Max = 32
-    };
     typedef int			argc_t;
     typedef const char* const*	argv_t;
+    typedef wchar_t		key_t;		///< Used for keycodes.
+    typedef uint32_t		bidx_t;		///< Mouse button index.
 public:
-    virtual void	ProcessArguments (argc_t argc, argv_t argv);
-    void		MainLoop (void);
-    void		Update (void);
-    inline void		Quit (void)			{ OnQuit(); }
-    virtual bool	OnSignal (int sig);
-   static CApplication*	Instance (void);
+    inline virtual void		ProcessArguments (argc_t, argv_t) {}
+    inline void			Quit (void)	{ OnQuit(); }
+    void			Update (void);
+    void			MainLoop (void);
 protected:
-			CApplication (void);
-    virtual	       ~CApplication (void);
-    inline virtual void	OnIdle (void)	{ }
-    inline virtual void	OnDraw (CGC&)	{ }
-    virtual void	OnQuit (void);
-    virtual void	OnCreate (void);
-    virtual void	OnDestroy (void);
-    virtual void	OnKey (key_t key);
-    inline bool		Flag (uoff_t i) const		{ return (m_Flags[i]); }
-    inline void		SetFlag (uoff_t i, bool v=true)	{ m_Flags.set (i, v); }
-    inline void		SetMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60) { m_Fb.SetStandardMode (m, freq); }
+    friend class CXlibFramebuffer;
+    inline			CApp (void)	: m_Fb(), m_GC(), m_WantQuit (false) { m_Fb.Open(); }
+    inline virtual void		OnIdle (void)	{ }
+    inline virtual void		OnDraw (CGC&)	{ }
+    inline virtual void		OnQuit (void)	{ m_WantQuit = true; }
+    inline virtual void		OnKey (key_t)	{ }
+    inline virtual void		OnMouseMove (coord_t, coord_t) {}
+    inline virtual void		OnButtonDown (bidx_t, coord_t, coord_t) {}
+    inline void			SetMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60) { m_Fb.SetStandardMode (m, freq); }
 private:
-    CXlibFramebuffer	m_Fb;		///< The framebuffer backend.
-    CGC			m_GC;		///< GC for drawing onto the offscreen buffer.
-    bitset<f_Max>	m_Flags;	///< See f_ constants for flag values.
-   static CApplication*	s_pApp;		///< App pointer for Instance()
+    CXlibFramebuffer		m_Fb;		///< The framebuffer backend.
+    CGC				m_GC;		///< GC for drawing onto the offscreen buffer.
+    bool			m_WantQuit;	///< True if want to quit
 };
 
 //----------------------------------------------------------------------
@@ -53,14 +42,14 @@ inline int TFbglMain (int argc, const char* const* argv)
     int rv = EXIT_FAILURE;
     InstallCleanupHandlers();
     try {
-	CApplication& rApp = AppClass::Instance();
-	rApp.ProcessArguments (argc, argv);
-	rApp.MainLoop();
+	AppClass& rApp = AppClass::Instance();
+	rApp.AppClass::ProcessArguments (argc, argv);
+	rApp.AppClass::MainLoop();
 	rv = EXIT_SUCCESS;
     } catch (exception& e) {
 	cout.flush(); cerr << "Error: " << e << endl;
     } catch (...) {
-	cout.flush(); cerr.format ("Unexpected fatal error has occured\n");
+	cout.flush(); cerr << "Unexpected fatal error has occured\n";
     }
     return (rv);
 }

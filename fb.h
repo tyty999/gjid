@@ -3,8 +3,11 @@
 
 #pragma once
 #include "mode.h"
-#include "evp.h"
 #include "gc.h"
+#include "pal.h"
+#include <X11/keysym.h>
+
+//----------------------------------------------------------------------
 
 enum EStdFbMode {
     stdmode_Text,
@@ -12,6 +15,20 @@ enum EStdFbMode {
     stdmode_640x480x8,
     stdmode_Last
 };
+
+enum {
+    ModKeyReleasedMask = Mod4Mask,
+    _XKM_Bitshift = 24,
+    XKM_Shift = ShiftMask << _XKM_Bitshift,
+    XKM_Ctrl = ControlMask << _XKM_Bitshift,
+    XKM_Alt = Mod1Mask << _XKM_Bitshift,
+    XKM_Released = ModKeyReleasedMask << _XKM_Bitshift,
+    XKM_Mask = XKM_Shift| XKM_Ctrl| XKM_Alt| XKM_Released
+};
+
+class CApp;
+
+//----------------------------------------------------------------------
 
 class CXlibFramebuffer {
 public:
@@ -24,7 +41,7 @@ public:
     void			SetMode (rcmode_t m);
     void			SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
     rcmode_t			FindClosestMode (size_t w, size_t h, size_t freq) const;
-    void			CheckEvents (CEventProcessor* evp);
+    void			CheckEvents (CApp* evp);
     void			Flush (void);
     inline const CGC&		GC (void) const	{ return (m_GC); }
     inline CGC&			GC (void)	{ return (m_GC); }

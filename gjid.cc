@@ -12,29 +12,24 @@ FbglMain (GJID)
 //----------------------------------------------------------------------
 
 GJID::GJID (void)
-: CApplication (),
-  m_State (state_Title),
-  m_StoryPage (0),
-  m_Level (0),
-  m_CurLevel (),
-  m_Font (),
-  m_Pics (),
-  m_Palette (),
-  m_Levels (0)
+: CApp ()
+, m_State (state_Title)
+, m_StoryPage (0)
+, m_Level (0)
+, m_CurLevel ()
+, m_Font ()
+, m_Pics ()
+, m_Palette ()
+, m_Levels (0)
 {
     m_Palette.AllocColor (0,0,0);
+    SetMode (stdmode_320x240x8);
 }
 
 /*static*/ GJID& GJID::Instance (void)
 {
     static GJID s_App;
     return (s_App);
-}
-
-void GJID::OnCreate (void)
-{
-    CApplication::OnCreate();
-    SetMode (stdmode_320x240x8);
 }
 
 void GJID::GoToState (EGameState state)
@@ -45,7 +40,7 @@ void GJID::GoToState (EGameState state)
 
 void GJID::OnIdle (void)
 {
-    CApplication::OnIdle();
+    CApp::OnIdle();
     if (m_State == state_Title) {
 	static const time_t titleDelay (time (NULL));
 	if (m_Levels.empty()) {
@@ -218,7 +213,7 @@ inline void GJID::LoserScreen (CGC& gc)
 
 void GJID::OnDraw (CGC& gc)
 {
-    CApplication::OnDraw (gc);
+    CApp::OnDraw (gc);
     if (m_Pics.empty())
 	return;
     gc.Palette() = m_Palette;

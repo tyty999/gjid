@@ -2,6 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #include "fb.h"
+#include "app.h"
 #include <unistd.h>
 #include <errno.h>
 #include <X11/Xutil.h>
@@ -276,7 +277,7 @@ const CXlibMode& CXlibFramebuffer::FindClosestMode (size_t w, size_t h, size_t f
 // Event processing
 //----------------------------------------------------------------------
 
-void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
+void CXlibFramebuffer::CheckEvents (CApp* papp)
 {
     while (XPending (m_pDisplay)) {
 	if (g_bErrorHappened)
@@ -287,10 +288,10 @@ void CXlibFramebuffer::CheckEvents (CEventProcessor* pep)
 	switch (e.type) {
 	    case MapNotify:	SetFullscreenMode();
 	    case Expose:	Flush(); break;
-	    case ButtonRelease:	pep->OnButtonDown (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
-	    case MotionNotify:	pep->OnMouseMove (e.xmotion.x, e.xmotion.y); break;
+	    case ButtonRelease:	papp->OnButtonDown (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
+	    case MotionNotify:	papp->OnMouseMove (e.xmotion.x, e.xmotion.y); break;
 	    case KeyRelease:	keymods |= ModKeyReleasedMask;
-	    case KeyPress:	pep->OnKey (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|
+	    case KeyPress:	papp->OnKey (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|
 					    ((keymods << _XKM_Bitshift) & XKM_Mask)); break;
 	}
     }

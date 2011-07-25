@@ -8,12 +8,11 @@
 
 //----------------------------------------------------------------------
 
-class GJID : public CApplication {
+class GJID : public CApp {
 public:
     static GJID&	Instance (void);
 protected:
 			GJID (void);
-    virtual void	OnCreate (void);
     virtual void	OnIdle (void);
     virtual void	OnDraw (CGC& gc);
     virtual void	OnKey (key_t key);
