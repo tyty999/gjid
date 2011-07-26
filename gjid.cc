@@ -50,7 +50,7 @@ void GJID::OnIdle (void)
 		Quit();
 	    else
 		m_CurLevel = m_Levels[0];
-	} else if (time(NULL) > titleDelay + 3)
+	} else if (time(NULL) > titleDelay + 1)
 	    GoToState (state_Story);
     }
 }
@@ -239,7 +239,7 @@ inline void GJID::StoryKeys (key_t key)
 {
     if (key == XK_Page_Up || key == XK_Up || key == ('b'|XKM_Ctrl))
 	m_StoryPage -= !!m_StoryPage;
-    else if (key < XKM_Released) {
+    else {
 	++ m_StoryPage;
 	if (m_StoryPage > 2 || key == XK_Escape) {
 	    m_StoryPage = 2;

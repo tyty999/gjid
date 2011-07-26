@@ -23,8 +23,10 @@ protected:
     inline virtual void		OnDraw (CGC&)	{ }
     inline virtual void		OnQuit (void)	{ m_WantQuit = true; }
     inline virtual void		OnKey (key_t)	{ }
+    inline virtual void		OnKeyUp (key_t)	{ }
     inline virtual void		OnMouseMove (coord_t, coord_t) {}
-    inline virtual void		OnButtonDown (bidx_t, coord_t, coord_t) {}
+    inline virtual void		OnButton (bidx_t, coord_t, coord_t) {}
+    inline virtual void		OnButtonUp (bidx_t, coord_t, coord_t) {}
     inline void			CreateWindow (const char* title, coord_t w, coord_t h) { m_Fb.CreateWindow (title, w, h); }
 private:
     CXlibFramebuffer		m_Fb;		///< The framebuffer backend.

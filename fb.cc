@@ -114,6 +114,22 @@ void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t h
     XChangeProperty (m_pDisplay, m_Window, xa_wm_protocols, XA_ATOM, 32, PropModeReplace, (const unsigned char*) &xa_wm_delete_window, 1);
     // Set window title
     XChangeProperty (m_pDisplay, m_Window, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (const unsigned char*) title, strlen(title));
+    // Get all relevant events.
+    const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
+	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+    XSelectInput (m_pDisplay, m_Window, eventMask);
+    // And put it on the screen
+    XMapRaised (m_pDisplay, m_Window);
+
+    // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
+    GC().Palette().resize (256);
+    for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
+	GC().Palette()[i] = RGB (i, i, i);
+    m_GC.Resize (width, height);
+}
+
+inline void CXlibFramebuffer::OnMap (void)
+{
     // Set the fullscreen flag on the window
     XEvent xev;
     memset (&xev, 0, sizeof(xev));
@@ -125,25 +141,20 @@ void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t h
     xev.xclient.data.l[0] = 1;
     xev.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
     XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureRedirectMask|SubstructureNotifyMask, &xev);
-    // Get all relevant events.
-    const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
-	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
-    XSelectInput (m_pDisplay, m_Window, eventMask);
-    // And put it on the screen
-    XMapRaised (m_pDisplay, m_Window);
+}
 
-    // Create a gc and a backbuffer image.
+inline void CXlibFramebuffer::OnConfigure (coord_t width, coord_t height)
+{
     const int imageDepth = DefaultDepth (m_pDisplay, DefaultScreen(m_pDisplay));
     m_ImageData.resize (width * height * (imageDepth == 24 ? 32 : imageDepth) / 8);
+    // Create the backbuffer image.
+    if (m_pImage) {
+	m_pImage->data = NULL;	// Managed by m_ImageData
+	XDestroyImage (m_pImage);
+    }
     m_pImage = XCreateImage (m_pDisplay, m_pVisual, imageDepth, ZPixmap, 0, m_ImageData.begin(), width, height, 8, 0);
     if (!m_pImage)
 	throw bad_alloc (sizeof(XImage));
-
-    // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
-    GC().Palette().resize (256);
-    for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
-	GC().Palette()[i] = RGB (i, i, i);
-    m_GC.Resize (width, height);
 }
 
 //----------------------------------------------------------------------
@@ -159,13 +170,14 @@ void CXlibFramebuffer::CheckEvents (CApp* papp)
 	XNextEvent (m_pDisplay, &e);
 	key_t keymods = e.xkey.state;
 	switch (e.type) {
-	    case MapNotify:	break;
+	    case MapNotify:	OnMap(); break;
+	    case ConfigureNotify: OnConfigure (e.xconfigure.width, e.xconfigure.height); break;
 	    case Expose:	Flush(); break;
-	    case ButtonRelease:	papp->OnButtonDown (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
+	    case ButtonPress:	papp->OnButton (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
+	    case ButtonRelease:	papp->OnButtonUp (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
 	    case MotionNotify:	papp->OnMouseMove (e.xmotion.x, e.xmotion.y); break;
-	    case KeyRelease:	keymods |= ModKeyReleasedMask;
-	    case KeyPress:	papp->OnKey (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|
-					    ((keymods << _XKM_Bitshift) & XKM_Mask)); break;
+	    case KeyPress:	papp->OnKey (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
+	    case KeyRelease:	papp->OnKeyUp (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
 	}
     }
     WaitForEvents();

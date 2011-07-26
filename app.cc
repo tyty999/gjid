@@ -17,6 +17,8 @@ void CApp::MainLoop (void)
 
 void CApp::Update (void)
 {
+    if (!m_Fb.GC().begin())
+	return;
     OnDraw (m_Fb.GC());
     m_Fb.Flush();
 }
