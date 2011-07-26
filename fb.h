@@ -30,8 +30,8 @@ public:
     void			CreateWindow (const char* title, coord_t w, coord_t h);
     void			CheckEvents (CApp* evp);
     void			Flush (void);
-    inline const CGC&		GC (void) const	{ return (m_GC); }
-    inline CGC&			GC (void)	{ return (m_GC); }
+    inline const CGC&		GC (void) const	{ return (_gc); }
+    inline CGC&			GC (void)	{ return (_gc); }
 private:
     typedef ::GC		XGC;
 private:
@@ -44,11 +44,11 @@ private:
     template <typename PixelType>
     void			CopyGCToImage (void);
 private:
-    CGC				m_GC;
-    Display*			m_pDisplay;
-    Visual*			m_pVisual;
-    XGC				m_XGC;
-    memblock			m_ImageData;
-    XImage*			m_pImage;
-    Window			m_Window;
+    CGC				_gc;
+    Display*			_pDisplay;
+    Visual*			_pVisual;
+    XGC				_xgc;
+    memblock			_imageData;
+    XImage*			_pImage;
+    Window			_window;
 };

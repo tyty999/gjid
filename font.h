@@ -11,12 +11,12 @@ public:
     void		read (istream& is);
 private:
     int			PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color);
-    memblock::iterator	GetLetterStart (wchar_t c)	{ return (m_Data.begin() + c * m_LetterSize); }
+    memblock::iterator	GetLetterStart (wchar_t c)	{ return (_data.begin() + c * _letterSize); }
 private:
-    memblock		m_Data;
-    size_t		m_LetterSize;
-    dim_t		m_Width;
-    dim_t		m_Height;
+    memblock		_data;
+    size_t		_letterSize;
+    dim_t		_width;
+    dim_t		_height;
 };
 
 STD_STREAMABLE (CFont)

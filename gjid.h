@@ -39,12 +39,12 @@ private:
     inline void		LevelKeys (key_t key);
     void		LoadData (const char* filename);
 private:
-    EGameState		m_State;
-    uoff_t		m_StoryPage;
-    uoff_t		m_Level;
-    Level		m_CurLevel;
-    CFont		m_Font;
-    picvec_t		m_Pics;
-    CPalette		m_Palette;
-    vector<Level>	m_Levels;
+    EGameState		_state;
+    uoff_t		_storyPage;
+    uoff_t		_level;
+    Level		_curLevel;
+    CFont		_font;
+    picvec_t		_pics;
+    CPalette		_palette;
+    vector<Level>	_levels;
 };

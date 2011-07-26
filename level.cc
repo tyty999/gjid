@@ -23,20 +23,20 @@ size_t ObjectType::stream_size (void) const
 //----------------------------------------------------------------------
 
 Level::Level (void)
-: m_Map (MAP_WIDTH * MAP_HEIGHT),
-  m_Objects ()
+: _map (MAP_WIDTH * MAP_HEIGHT),
+  _objects ()
 {
-    m_Objects.push_back (ObjectType (0, 0, RobotNorthPix));
-    fill (m_Map, tilemap_t::value_type(FloorPix));
+    _objects.push_back (ObjectType (0, 0, RobotNorthPix));
+    fill (_map, tilemap_t::value_type(FloorPix));
 }
 
 void Level::Draw (CGC& gc, const picvec_t& tiles) const
 {
-    tilemap_t::const_iterator it (m_Map.begin());
+    tilemap_t::const_iterator it (_map.begin());
     for (coord_t y = 0; y < MAP_HEIGHT * TILE_H; y += TILE_H)
 	for (coord_t x = 0; x < MAP_WIDTH * TILE_W; x += TILE_W)
 	    gc.Image (tiles [*it++], x, y);
-    foreach (objvec_t::const_iterator, i, m_Objects)
+    foreach (objvec_t::const_iterator, i, _objects)
 	gc.ImageMasked (tiles[i->pic], i->x * TILE_W, i->y * TILE_H);
 }
 
@@ -56,8 +56,8 @@ bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
 
 int Level::FindCrate (coord_t x, coord_t y) const
 {
-    for (uoff_t i = 1; i < m_Objects.size(); ++ i)
-	if (m_Objects[i].x == x && m_Objects[i].y == y)
+    for (uoff_t i = 1; i < _objects.size(); ++ i)
+	if (_objects[i].x == x && _objects[i].y == y)
 	    return (i);
     return (-1);
 }
@@ -81,11 +81,11 @@ void Level::MoveRobot (RobotDir where)
 	// Can only move one crate - this checks for another one behind ciw
 	//	also checks if the square behind crate can be moved into
 	if (FindCrate (Robot().x + 2 * dx, Robot().y + 2 * dy) < 0 && CanMoveTo (Robot().x + 2 * dx, Robot().y + 2 * dy, where)) {
-	    m_Objects[ciw].x += dx;
-	    m_Objects[ciw].y += dy;
+	    _objects[ciw].x += dx;
+	    _objects[ciw].y += dy;
 	    Robot().x += dx;
 	    Robot().y += dy;
-	    if (At(m_Objects[ciw].x, m_Objects[ciw].y) == DisposePix)
+	    if (At(_objects[ciw].x, _objects[ciw].y) == DisposePix)
 		DisposeCrate (ciw);
 	}
     } else {
@@ -105,30 +105,30 @@ void Level::MoveRobot (coord_t x, coord_t y, PicIndex pic)
 
 void Level::AddCrate (coord_t x, coord_t y, PicIndex pic)
 {
-    m_Objects.push_back();
-    m_Objects.back().x = x;
-    m_Objects.back().y = y;
-    m_Objects.back().pic = pic;
+    _objects.push_back();
+    _objects.back().x = x;
+    _objects.back().y = y;
+    _objects.back().pic = pic;
 }
 
 bool Level::Finished (void) const
 {
-    return (m_Objects.size() == 1 && At(Robot().x, Robot().y) == ExitPix);
+    return (_objects.size() == 1 && At(Robot().x, Robot().y) == ExitPix);
 }
 
 void Level::read (istream& is)
 {
-    is >> m_Map >> m_Objects;
-    if (m_Objects.empty())
-	m_Objects.push_back (ObjectType (0, 0, RobotNorthPix));
+    is >> _map >> _objects;
+    if (_objects.empty())
+	_objects.push_back (ObjectType (0, 0, RobotNorthPix));
 }
 
 void Level::write (ostream& os) const
 {
-    os << m_Map << m_Objects;
+    os << _map << _objects;
 }
 
 size_t Level::stream_size (void) const
 {
-    return (stream_size_of (m_Map) + stream_size_of (m_Objects));
+    return (stream_size_of (_map) + stream_size_of (_objects));
 }

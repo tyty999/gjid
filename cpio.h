@@ -15,11 +15,11 @@ public:
 				CPIO (const char* filename);
 				~CPIO (void);
     istream			File (const char* filename);
-    inline uint32_t		size (void) const	{ return (m_DataSize); }
-    inline const_iterator	begin (void) const	{ return (m_pData); }
-    inline const_iterator	end (void) const	{ return (m_pData + size()); }
+    inline uint32_t		size (void) const	{ return (_dataSize); }
+    inline const_iterator	begin (void) const	{ return (_pData); }
+    inline const_iterator	end (void) const	{ return (_pData + size()); }
 private:
-    uint8_t*			m_pData;
-    uint32_t			m_DataSize;
-    int				m_fd;
+    uint8_t*			_pData;
+    uint32_t			_dataSize;
+    int				_fd;
 };

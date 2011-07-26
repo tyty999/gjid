@@ -4,10 +4,10 @@
 #include "font.h"
 
 CFont::CFont (void)
-: m_Data (),
-  m_LetterSize (0),
-  m_Width (0),
-  m_Height (0)
+:_data()
+,_letterSize (0)
+,_width (0)
+,_height (0)
 {
 }
 
@@ -15,11 +15,11 @@ void CFont::read (istream& is)
 {
     uint8_t w, h;
     is >> w >> h;
-    m_Width = w;
-    m_Height = h;
-    m_LetterSize = (m_Width * m_Height + 7) / 8;
-    m_Data.resize (m_LetterSize * 256);
-    is.read (m_Data.begin(), m_LetterSize * 256);
+    _width = w;
+    _height = h;
+    _letterSize = (_width * _height + 7) / 8;
+    _data.resize (_letterSize * 256);
+    is.read (_data.begin(), _letterSize * 256);
     is.align(4);
 }
 
@@ -36,8 +36,8 @@ int CFont::PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t col
 {
     memblock::const_iterator li = GetLetterStart (c);
     size_t bit = 0, cmw = 0;
-    for (uoff_t j = 0; j < m_Height; ++ j) {
-	for (uoff_t i = 0; i < m_Width; ++ i) {
+    for (uoff_t j = 0; j < _height; ++ j) {
+	for (uoff_t i = 0; i < _width; ++ i) {
 	    if ((*li & (1 << bit)) > 0) {
 		gc.SetPixel (x+i, y+j, color);
 		cmw = max (i, cmw);

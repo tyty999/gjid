@@ -42,19 +42,19 @@ public:
     void		Reset (size_t nRootBits);
     code_t		AddString (code_t base, chr_t c, bool bWriting = false);
     void		WriteString (code_t code, ostream& os) const;
-    inline chr_t	FirstCharOf (code_t code) const	{ return (m_Char [m_First [code]]); }
-    inline bool		IsUnused (code_t code) const	{ return (code >= m_nCodes); }
-    inline code_t	ResetCode (void) const		{ return (m_ResetCode); }
-    inline code_t	EndCode (void) const		{ return (m_EndCode); }
-    inline uint8_t	CodeBits (void) const		{ return (m_CodeBits); }
+    inline chr_t	FirstCharOf (code_t code) const	{ return (_char [_first [code]]); }
+    inline bool		IsUnused (code_t code) const	{ return (code >= _nCodes); }
+    inline code_t	ResetCode (void) const		{ return (_resetCode); }
+    inline code_t	EndCode (void) const		{ return (_endCode); }
+    inline uint8_t	CodeBits (void) const		{ return (_codeBits); }
 private:
-    chrvec_t		m_Char;		///< Last characters of each string.
-    ptrvec_t		m_Prev;		///< Pointers to the previous character.
-    ptrvec_t		m_First;	///< Pointers to the first character of the string.
-    code_t		m_nCodes;	///< Last used string index.
-    code_t		m_ResetCode;	///< "Reset Table" code.
-    code_t		m_EndCode;	///< "End Of Input" code.
-    uint16_t		m_CodeBits;	///< Bits required to address all active codes.
+    chrvec_t		_char;		///< Last characters of each string.
+    ptrvec_t		_prev;		///< Pointers to the previous character.
+    ptrvec_t		_first;	///< Pointers to the first character of the string.
+    code_t		_nCodes;	///< Last used string index.
+    code_t		_resetCode;	///< "Reset Table" code.
+    code_t		_endCode;	///< "End Of Input" code.
+    uint16_t		_codeBits;	///< Bits required to address all active codes.
 };
 
 //----------------------------------------------------------------------
@@ -76,9 +76,9 @@ private:
     CTable::code_t	ReadCode (istream& is);
 private:
     CTable		t;		///< The decompression string table.
-    uint8_t		m_CurByte;	///< Last byte read from the input stream.
-    uint8_t		m_BitsLeft;	///< Unread bits left in m_CurByte.
-    uint8_t		m_BlockSize;	///< Remaining bytes in the current block.
+    uint8_t		_curByte;	///< Last byte read from the input stream.
+    uint8_t		_bitsLeft;	///< Unread bits left in _curByte.
+    uint8_t		_blockSize;	///< Remaining bytes in the current block.
 };
 
 //----------------------------------------------------------------------
@@ -106,20 +106,20 @@ public:
     void		read (istream& is);
     void		write (ostream& os) const;
     inline size_t	stream_size (void) const	{ return (13); }
-    inline bool		HasGlobalCmap (void) const	{ return (m_Resolution & 0x80); }
-    inline void		SetGlobalCmap (bool v = true)	{ if (v) m_Resolution |= 0x80; else m_Resolution &= 0x7F; }
-    inline bool		SortedCmap (void) const		{ return (m_Resolution & 0x08); }
-    inline void		SetSortedCmap (bool v = true)	{ if (v) m_Resolution |= 0x08; else m_Resolution &= 0xF7; }
-    inline size_t	BitsPerPixel (void) const	{ return ((m_Resolution & 0x07) + 1); }
-    inline void		SetBitsPerPixel (size_t n)	{ m_Resolution &= 0xF8; m_Resolution |= (n - 1) & 0x07; }
-    inline size_t	BitsPerRay (void) const		{ return (((m_Resolution >> 4) & 0x07) + 1); }
-    inline void		SetBitsPerRay (size_t n)	{ m_Resolution &= 0x8F; m_Resolution |= ((n - 1) & 0x07) << 4; }
+    inline bool		HasGlobalCmap (void) const	{ return (_resolution & 0x80); }
+    inline void		SetGlobalCmap (bool v = true)	{ if (v) _resolution |= 0x80; else _resolution &= 0x7F; }
+    inline bool		SortedCmap (void) const		{ return (_resolution & 0x08); }
+    inline void		SetSortedCmap (bool v = true)	{ if (v) _resolution |= 0x08; else _resolution &= 0xF7; }
+    inline size_t	BitsPerPixel (void) const	{ return ((_resolution & 0x07) + 1); }
+    inline void		SetBitsPerPixel (size_t n)	{ _resolution &= 0xF8; _resolution |= (n - 1) & 0x07; }
+    inline size_t	BitsPerRay (void) const		{ return (((_resolution >> 4) & 0x07) + 1); }
+    inline void		SetBitsPerRay (size_t n)	{ _resolution &= 0x8F; _resolution |= ((n - 1) & 0x07) << 4; }
 public:
-    uint16_t		m_Width;		///< Width of the "screen", the total area for all images in this file.
-    uint16_t		m_Height;		///< Height of the "screen".
-    uint8_t		m_Resolution;		///< Miscellaneous flags.
-    uint8_t		m_Background;		///< Background color index.
-    uint8_t		m_AspectRatio;		///< Image aspect ratio.
+    uint16_t		_width;		///< Width of the "screen", the total area for all images in this file.
+    uint16_t		_height;		///< Height of the "screen".
+    uint8_t		_resolution;		///< Miscellaneous flags.
+    uint8_t		_background;		///< Background color index.
+    uint8_t		_aspectRatio;		///< Image aspect ratio.
     static const char	s_GifSig [7];		///< "GIF89a" signature string.
 };
 
@@ -135,20 +135,20 @@ public:
     void		read (istream& is);
     void		write (ostream& os) const;
     inline size_t	stream_size (void) const	{ return (9); }
-    inline bool		HasLocalCmap (void) const	{ return (m_Flags & 0x80); }
-    inline void		SetLocalCmap (bool v = true)	{ if (v) m_Flags |= 0x80; else m_Flags &= 0x7F; }
-    inline bool		Interlaced (void) const		{ return (m_Flags & 0x40); }
-    inline void		SetInterlaced (bool v = true)	{ if (v) m_Flags |= 0x40; else m_Flags &= 0xBF; }
-    inline bool		SortedCmap (void) const		{ return (m_Flags & 0x20); }
-    inline void		SetSortedCmap (bool v = true)	{ if (v) m_Flags |= 0x20; else m_Flags &= 0xDF; }
-    inline size_t	BitsPerPixel (void) const	{ return ((m_Flags & 0x07) + 1); }
-    inline void		SetBitsPerPixel (size_t n)	{ m_Flags &= 0xF8; m_Flags |= (n - 1) & 0x07; }
+    inline bool		HasLocalCmap (void) const	{ return (_flags & 0x80); }
+    inline void		SetLocalCmap (bool v = true)	{ if (v) _flags |= 0x80; else _flags &= 0x7F; }
+    inline bool		Interlaced (void) const		{ return (_flags & 0x40); }
+    inline void		SetInterlaced (bool v = true)	{ if (v) _flags |= 0x40; else _flags &= 0xBF; }
+    inline bool		SortedCmap (void) const		{ return (_flags & 0x20); }
+    inline void		SetSortedCmap (bool v = true)	{ if (v) _flags |= 0x20; else _flags &= 0xDF; }
+    inline size_t	BitsPerPixel (void) const	{ return ((_flags & 0x07) + 1); }
+    inline void		SetBitsPerPixel (size_t n)	{ _flags &= 0xF8; _flags |= (n - 1) & 0x07; }
 public:
-    uint16_t		m_LeftBorder;	///< Pixel width of the left/right border.
-    uint16_t		m_TopBorder;	///< Width of the top/bottom border.
-    uint16_t		m_Width;	///< Width of the image.
-    uint16_t		m_Height;	///< Height of the image.
-    uint8_t		m_Flags;	///< Various flags.
+    uint16_t		_leftBorder;	///< Pixel width of the left/right border.
+    uint16_t		_topBorder;	///< Width of the top/bottom border.
+    uint16_t		_width;	///< Width of the image.
+    uint16_t		_height;	///< Height of the image.
+    uint8_t		_flags;	///< Various flags.
 };
 
 //----------------------------------------------------------------------
@@ -171,16 +171,16 @@ public:
     void		read (istream& is);
     void		write (ostream& os) const;
     inline size_t	stream_size (void) const	{ return (6); }
-    inline bool		HasTransparent (void) const	{ return (m_Flags & 1); }
-    inline void		SetTransparent (uint8_t c)	{ m_Flags |= 1; m_TransparentColor = c; }
-    inline bool		RequiresInput (void) const	{ return (m_Flags & 2); }
-    inline void		SetRequiresInput (bool v)	{ if (v) m_Flags |= 2; else m_Flags &= ~2; }
-    inline EDisposal	Disposal (void) const		{ return (EDisposal (m_Flags >> 2)); }
-    inline void		SetDisposal (EDisposal d)	{ m_Flags &= 0x1A; m_Flags |= d << 2; }
+    inline bool		HasTransparent (void) const	{ return (_flags & 1); }
+    inline void		SetTransparent (uint8_t c)	{ _flags |= 1; _transparentColor = c; }
+    inline bool		RequiresInput (void) const	{ return (_flags & 2); }
+    inline void		SetRequiresInput (bool v)	{ if (v) _flags |= 2; else _flags &= ~2; }
+    inline EDisposal	Disposal (void) const		{ return (EDisposal (_flags >> 2)); }
+    inline void		SetDisposal (EDisposal d)	{ _flags &= 0x1A; _flags |= d << 2; }
 public:
-    uint16_t		m_DelayTime;		///< Delay time before action (0.01s)
-    uint8_t		m_Flags;		///< Various flags.
-    uint8_t		m_TransparentColor;	///< Transparent color index.
+    uint16_t		_delayTime;		///< Delay time before action (0.01s)
+    uint8_t		_flags;		///< Various flags.
+    uint8_t		_transparentColor;	///< Transparent color index.
 };
 
 /// \class CComment gif fbgl/gif.h
@@ -189,12 +189,12 @@ public:
 ///
 class CComment {
 public:
-			CComment (const string& s) : m_s (s) {}
+			CComment (const string& s) : _s (s) {}
     void		read (istream& is);
     void		write (ostream& os) const;
     size_t		stream_size (void) const;
 private:
-    string		m_s;	///< Comment text.
+    string		_s;	///< Comment text.
 };
 
 //----------------------------------------------------------------------

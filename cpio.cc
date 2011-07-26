@@ -35,27 +35,27 @@ private:
 
 /// Opens \p filename as a CPIO file
 CPIO::CPIO (const char* filename)
-: m_pData (NULL)
+: _pData (NULL)
 {
-    m_fd = open (filename, O_RDONLY);	// Any errors here will result in mmap failure and m_pData being NULL
+    _fd = open (filename, O_RDONLY);	// Any errors here will result in mmap failure and _pData being NULL
     struct stat st;
-    fstat (m_fd, &st);
-    m_pData = (pointer) mmap (NULL, m_DataSize = st.st_size, PROT_READ, MAP_PRIVATE, m_fd, 0);
-    if (m_pData == MAP_FAILED)
-	m_pData = NULL;
+    fstat (_fd, &st);
+    _pData = (pointer) mmap (NULL, _dataSize = st.st_size, PROT_READ, MAP_PRIVATE, _fd, 0);
+    if (_pData == MAP_FAILED)
+	_pData = NULL;
 }
 
 /// Closes the file and frees all memory
 CPIO::~CPIO (void)
 {
-    munmap (m_pData, m_DataSize);
-    close (m_fd);
+    munmap (_pData, _dataSize);
+    close (_fd);
 }
 
 /// Returns the stream with \p filename data. If not found, an empty stream is returned.
 istream CPIO::File (const char* filename)
 {
-    if (!m_pData)
+    if (!_pData)
 	return (istream());
     typedef const CpioHeader* pch_t;
     for (pch_t pi = (pch_t) begin(), pe = (pch_t) end(); pi < pe; pi = pi->Next())

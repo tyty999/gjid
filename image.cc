@@ -10,10 +10,10 @@
 
 /// Default constructor.
 CImage::CImage (void)
-: m_Pixels ()
-, m_Palette ()
-, m_Width (0)
-, m_Height (0)
+:_pixels()
+,_palette()
+,_width (0)
+,_height (0)
 {
 }
 
@@ -22,15 +22,15 @@ CImage::CImage (dim_t w, dim_t h, const color_t* p)
 {
     Resize (w, h);
     if (p)
-	copy_n (p, w * h, m_Pixels.begin());
+	copy_n (p, w * h, _pixels.begin());
 }
 
 /// Resize the image to the given dimensions.
 void CImage::Resize (dim_t w, dim_t h)
 {
-    m_Pixels.resize (w * h);
-    m_Width = w;
-    m_Height = h;
+    _pixels.resize (w * h);
+    _width = w;
+    _height = h;
 }
 
 //----------------------------------------------------------------------
@@ -40,11 +40,11 @@ void CImage::Resize (dim_t w, dim_t h)
 /// Maps the image colors onto \p pal. Call after reading, before drawing.
 void CImage::MergePaletteInto (CPalette& pal)
 {
-    assert (!m_Palette.empty() && "This image doesn't have a palette to merge");
-    foreach (CPalette::iterator, i, m_Palette)
+    assert (!_palette.empty() && "This image doesn't have a palette to merge");
+    foreach (CPalette::iterator, i, _palette)
 	setRayA (*i, pal.AllocColor(*i));
-    foreach (pixvec_t::iterator, i, m_Pixels)
-	*i = getRayA (m_Palette [min (*i, m_Palette.size()-1)]);
+    foreach (pixvec_t::iterator, i, _pixels)
+	*i = getRayA (_palette [min (*i, _palette.size()-1)]);
 }
 
 //----------------------------------------------------------------------
@@ -54,8 +54,8 @@ void CImage::MergePaletteInto (CPalette& pal)
 /// Reads the colormap from a GIF file.
 void CImage::ReadGifColormap (istream& is, size_t bpp)
 {
-    m_Palette.resize (1 << bpp);
-    foreach (CPalette::iterator, i, m_Palette) {
+    _palette.resize (1 << bpp);
+    foreach (CPalette::iterator, i, _palette) {
 	ray_t r, g, b;
 	is >> r >> g >> b;
 	*i = RGB(r,g,b);
@@ -94,9 +94,9 @@ void CImage::read (istream& is)
 	    if (is.remaining() < stream_size_of(ih))
 		throw stream_bounds_exception ("lzw image header read", "gif", is.pos(), stream_size_of(ih), is.remaining());
 	    is >> ih;
-	    if (ih.m_Width > 16000 || ih.m_Height > 16000)
+	    if (ih._width > 16000 || ih._height > 16000)
 		throw runtime_error ("invalid image size");
-	    Resize (ih.m_Width, ih.m_Height);
+	    Resize (ih._width, ih._height);
 	    if (ih.HasLocalCmap())
 		ReadGifColormap (is, ih.BitsPerPixel());
 	    ostream os (begin(), Width() * Height());

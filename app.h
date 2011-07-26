@@ -18,20 +18,20 @@ public:
     void			MainLoop (void);
 protected:
     friend class CXlibFramebuffer;
-    inline			CApp (void)	: m_Fb(), m_GC(), m_WantQuit (false) { m_Fb.Open(); }
+    inline			CApp (void)	: _fb(), _gc(), _wantQuit (false) { _fb.Open(); }
     inline virtual void		OnIdle (void)	{ }
     inline virtual void		OnDraw (CGC&)	{ }
-    inline virtual void		OnQuit (void)	{ m_WantQuit = true; }
+    inline virtual void		OnQuit (void)	{ _wantQuit = true; }
     inline virtual void		OnKey (key_t)	{ }
     inline virtual void		OnKeyUp (key_t)	{ }
     inline virtual void		OnMouseMove (coord_t, coord_t) {}
     inline virtual void		OnButton (bidx_t, coord_t, coord_t) {}
     inline virtual void		OnButtonUp (bidx_t, coord_t, coord_t) {}
-    inline void			CreateWindow (const char* title, coord_t w, coord_t h) { m_Fb.CreateWindow (title, w, h); }
+    inline void			CreateWindow (const char* title, coord_t w, coord_t h) { _fb.CreateWindow (title, w, h); }
 private:
-    CXlibFramebuffer		m_Fb;		///< The framebuffer backend.
-    CGC				m_GC;		///< GC for drawing onto the offscreen buffer.
-    bool			m_WantQuit;	///< True if want to quit
+    CXlibFramebuffer		_fb;		///< The framebuffer backend.
+    CGC				_gc;		///< GC for drawing onto the offscreen buffer.
+    bool			_wantQuit;	///< True if want to quit
 };
 
 //----------------------------------------------------------------------

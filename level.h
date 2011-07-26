@@ -72,10 +72,10 @@ class Level {
 public:
 			Level (void);
     void		Draw (CGC& gc, const picvec_t& tiles) const;
-    inline PicIndex	At (coord_t x, coord_t y) const			{ return (PicIndex (m_Map [y * MAP_WIDTH + x])); }
-    inline void		SetCell (coord_t x, coord_t y, PicIndex pic)	{ m_Map [y * MAP_WIDTH + x] = pic; }
+    inline PicIndex	At (coord_t x, coord_t y) const			{ return (PicIndex (_map [y * MAP_WIDTH + x])); }
+    inline void		SetCell (coord_t x, coord_t y, PicIndex pic)	{ _map [y * MAP_WIDTH + x] = pic; }
     bool		Finished (void) const;
-    inline void		DisposeCrate (uoff_t index)			{ m_Objects.erase (m_Objects.begin() + index); }
+    inline void		DisposeCrate (uoff_t index)			{ _objects.erase (_objects.begin() + index); }
     void		AddCrate (coord_t x, coord_t y, PicIndex pic);
     void		MoveRobot (RobotDir where);
     void		MoveRobot (coord_t x, coord_t y, PicIndex pic);
@@ -88,11 +88,11 @@ private:
     typedef vector<uint8_t>	tilemap_t;
     typedef vector<ObjectType>	objvec_t;
 private:
-    inline const ObjectType&	Robot (void) const	{ return (m_Objects[0]); }
-    inline ObjectType&		Robot (void)		{ return (m_Objects[0]); }
+    inline const ObjectType&	Robot (void) const	{ return (_objects[0]); }
+    inline ObjectType&		Robot (void)		{ return (_objects[0]); }
 private:
-    tilemap_t		m_Map;
-    objvec_t		m_Objects;
+    tilemap_t		_map;
+    objvec_t		_objects;
 };
 
 ALIGNOF (ObjectType, 1)

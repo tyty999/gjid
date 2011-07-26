@@ -45,13 +45,13 @@ static int OnXlibError (Display*, XErrorEvent* e)
 
 /// Default constructor.
 CXlibFramebuffer::CXlibFramebuffer (void)
-: m_GC()
-, m_pDisplay (NULL)
-, m_pVisual (NULL)
-, m_XGC (NULL)
-, m_ImageData()
-, m_pImage (NULL)
-, m_Window (None)
+:_gc()
+,_pDisplay (NULL)
+,_pVisual (NULL)
+,_xgc (NULL)
+,_imageData()
+,_pImage (NULL)
+,_window (None)
 {
 }
 
@@ -60,41 +60,41 @@ void CXlibFramebuffer::Open (void)
 {
     XSetErrorHandler (OnXlibError);
 
-    m_pDisplay = XOpenDisplay (NULL);
-    if (!m_pDisplay)
+    _pDisplay = XOpenDisplay (NULL);
+    if (!_pDisplay)
 	throw runtime_error ("unable to open an X display, either X is not running or DISPLAY environment variable is not set");
-    m_pVisual = DefaultVisual (m_pDisplay, DefaultScreen(m_pDisplay));
+    _pVisual = DefaultVisual (_pDisplay, DefaultScreen(_pDisplay));
 }
 
 /// Closes all active resources, windows, and server connections.
 void CXlibFramebuffer::Close (void)
 {
-    if (!m_pDisplay)
+    if (!_pDisplay)
 	return;
     CloseWindow();
-    XSync (m_pDisplay, DefaultScreen(m_pDisplay));
-    XCloseDisplay (m_pDisplay);
-    m_pDisplay = NULL;
+    XSync (_pDisplay, DefaultScreen(_pDisplay));
+    XCloseDisplay (_pDisplay);
+    _pDisplay = NULL;
 }
 
 /// Closes the application window and frees its resources.
 void CXlibFramebuffer::CloseWindow (void)
 {
-    if (!m_pDisplay || m_Window == None)
+    if (!_pDisplay || _window == None)
 	return;
-    if (m_XGC) {
-	XFreeGC (m_pDisplay, m_XGC);
-	m_XGC = NULL;
+    if (_xgc) {
+	XFreeGC (_pDisplay, _xgc);
+	_xgc = NULL;
     }
-    XUngrabPointer (m_pDisplay, CurrentTime);
-    if (m_pImage) {
-	m_pImage->data = NULL;	// Managed by m_ImageData
-	XDestroyImage (m_pImage);
-	m_pImage = NULL;
+    XUngrabPointer (_pDisplay, CurrentTime);
+    if (_pImage) {
+	_pImage->data = NULL;	// Managed by _imageData
+	XDestroyImage (_pImage);
+	_pImage = NULL;
     }
-    XUnmapWindow (m_pDisplay, m_Window);
-    XDestroyWindow (m_pDisplay, m_Window);
-    m_Window = None;
+    XUnmapWindow (_pDisplay, _window);
+    XDestroyWindow (_pDisplay, _window);
+    _window = None;
 }
 
 void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t height)
@@ -102,30 +102,30 @@ void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t h
     CloseWindow();	// The old one, if exists.
 
     // Create the window with full-screen dimensions
-    const int black = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
-    m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, width, height, 0, black, black);
-    if (m_Window == None)
+    const int black = BlackPixel (_pDisplay, DefaultScreen (_pDisplay));
+    _window = XCreateSimpleWindow (_pDisplay, DefaultRootWindow(_pDisplay), 0, 0, width, height, 0, black, black);
+    if (_window == None)
 	throw runtime_error ("unable to create the application window");
     // Create a GC for this window
-    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
+    _xgc = XCreateGC (_pDisplay, _window, 0, NULL);
     // Enable WM close message
-    Atom xa_wm_protocols = XInternAtom (m_pDisplay, "WM_PROTOCOLS", False);
-    Atom xa_wm_delete_window = XInternAtom (m_pDisplay, "WM_DELETE_WINDOW", False);
-    XChangeProperty (m_pDisplay, m_Window, xa_wm_protocols, XA_ATOM, 32, PropModeReplace, (const unsigned char*) &xa_wm_delete_window, 1);
+    Atom xa_w_protocols = XInternAtom (_pDisplay, "WM_PROTOCOLS", False);
+    Atom xa_w_delete_window = XInternAtom (_pDisplay, "WM_DELETE_WINDOW", False);
+    XChangeProperty (_pDisplay, _window, xa_w_protocols, XA_ATOM, 32, PropModeReplace, (const unsigned char*) &xa_w_delete_window, 1);
     // Set window title
-    XChangeProperty (m_pDisplay, m_Window, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (const unsigned char*) title, strlen(title));
+    XChangeProperty (_pDisplay, _window, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (const unsigned char*) title, strlen(title));
     // Get all relevant events.
     const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
 	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
-    XSelectInput (m_pDisplay, m_Window, eventMask);
+    XSelectInput (_pDisplay, _window, eventMask);
     // And put it on the screen
-    XMapRaised (m_pDisplay, m_Window);
+    XMapRaised (_pDisplay, _window);
 
     // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
     GC().Palette().resize (256);
     for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
 	GC().Palette()[i] = RGB (i, i, i);
-    m_GC.Resize (width, height);
+    _gc.Resize (width, height);
 }
 
 inline void CXlibFramebuffer::OnMap (void)
@@ -134,26 +134,26 @@ inline void CXlibFramebuffer::OnMap (void)
     XEvent xev;
     memset (&xev, 0, sizeof(xev));
     xev.type = ClientMessage;
-    xev.xclient.display = m_pDisplay;
-    xev.xclient.window = m_Window;
-    xev.xclient.message_type = XInternAtom (m_pDisplay, "_NET_WM_STATE", False);
+    xev.xclient.display = _pDisplay;
+    xev.xclient.window = _window;
+    xev.xclient.message_type = XInternAtom (_pDisplay, "_NET_WM_STATE", False);
     xev.xclient.format = 32;
     xev.xclient.data.l[0] = 1;
-    xev.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
-    XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureRedirectMask|SubstructureNotifyMask, &xev);
+    xev.xclient.data.l[1] = XInternAtom (_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
+    XSendEvent (_pDisplay, DefaultRootWindow(_pDisplay), False, SubstructureRedirectMask|SubstructureNotifyMask, &xev);
 }
 
 inline void CXlibFramebuffer::OnConfigure (coord_t width, coord_t height)
 {
-    const int imageDepth = DefaultDepth (m_pDisplay, DefaultScreen(m_pDisplay));
-    m_ImageData.resize (width * height * (imageDepth == 24 ? 32 : imageDepth) / 8);
+    const int imageDepth = DefaultDepth (_pDisplay, DefaultScreen(_pDisplay));
+    _imageData.resize (width * height * (imageDepth == 24 ? 32 : imageDepth) / 8);
     // Create the backbuffer image.
-    if (m_pImage) {
-	m_pImage->data = NULL;	// Managed by m_ImageData
-	XDestroyImage (m_pImage);
+    if (_pImage) {
+	_pImage->data = NULL;	// Managed by _imageData
+	XDestroyImage (_pImage);
     }
-    m_pImage = XCreateImage (m_pDisplay, m_pVisual, imageDepth, ZPixmap, 0, m_ImageData.begin(), width, height, 8, 0);
-    if (!m_pImage)
+    _pImage = XCreateImage (_pDisplay, _pVisual, imageDepth, ZPixmap, 0, _imageData.begin(), width, height, 8, 0);
+    if (!_pImage)
 	throw bad_alloc (sizeof(XImage));
 }
 
@@ -163,11 +163,11 @@ inline void CXlibFramebuffer::OnConfigure (coord_t width, coord_t height)
 
 void CXlibFramebuffer::CheckEvents (CApp* papp)
 {
-    while (XPending (m_pDisplay)) {
+    while (XPending (_pDisplay)) {
 	if (g_bErrorHappened)
 	    throw XlibError (g_ErrorEvent);
 	XEvent e;
-	XNextEvent (m_pDisplay, &e);
+	XNextEvent (_pDisplay, &e);
 	key_t keymods = e.xkey.state;
 	switch (e.type) {
 	    case MapNotify:	OnMap(); break;
@@ -176,8 +176,8 @@ void CXlibFramebuffer::CheckEvents (CApp* papp)
 	    case ButtonPress:	papp->OnButton (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
 	    case ButtonRelease:	papp->OnButtonUp (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
 	    case MotionNotify:	papp->OnMouseMove (e.xmotion.x, e.xmotion.y); break;
-	    case KeyPress:	papp->OnKey (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
-	    case KeyRelease:	papp->OnKeyUp (XKeycodeToKeysym(m_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
+	    case KeyPress:	papp->OnKey (XKeycodeToKeysym(_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
+	    case KeyRelease:	papp->OnKeyUp (XKeycodeToKeysym(_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
 	}
     }
     WaitForEvents();
@@ -188,12 +188,12 @@ void CXlibFramebuffer::WaitForEvents (void)
 {
     fd_set fds;
     FD_ZERO (&fds); 
-    FD_SET (ConnectionNumber (m_pDisplay), &fds);
+    FD_SET (ConnectionNumber (_pDisplay), &fds);
     struct timeval tv = { 0, 200000 };
     int rv;
     do {
 	errno = 0;
-	rv = select (ConnectionNumber(m_pDisplay) + 1, &fds, NULL, NULL, &tv);
+	rv = select (ConnectionNumber(_pDisplay) + 1, &fds, NULL, NULL, &tv);
     } while (errno == EINTR); 
     if (rv < 0)
 	throw file_exception ("select", "X server connection");
@@ -226,11 +226,11 @@ void CXlibFramebuffer::CopyGCToImage (void)
     PixelType cmap [256];
     InitColormap (cmap);
     const color_t* src = GC().begin();
-    PixelType* dest = (PixelType*) m_pImage->data;
+    PixelType* dest = (PixelType*) _pImage->data;
 
     // Scale the gc to the screen resolution.
     const size_t sw = GC().Width(), sh = GC().Height();
-    const size_t dw = m_pImage->width, dh = m_pImage->height;
+    const size_t dw = _pImage->width, dh = _pImage->height;
     size_t dx = 0, dy = 0;
     for (size_t y = 0; y < sh; ++y) {
 	for (; dy < dh; dy += sh) {
@@ -249,11 +249,11 @@ void CXlibFramebuffer::CopyGCToImage (void)
 /// Copies the GC to an XImage and flushes the image to the server.
 void CXlibFramebuffer::Flush (void)
 {
-    if (!m_pDisplay || m_Window == None || !m_pImage)
+    if (!_pDisplay || _window == None || !_pImage)
 	return;
-    if (m_pImage->depth == 16)
+    if (_pImage->depth == 16)
 	CopyGCToImage<uint16_t>();
-    else if (m_pImage->depth == 24 || m_pImage->depth == 32)
+    else if (_pImage->depth == 24 || _pImage->depth == 32)
 	CopyGCToImage<uint32_t>();
-    XPutImage (m_pDisplay, m_Window, m_XGC, m_pImage, 0, 0, 0, 0, m_pImage->width, m_pImage->height);
+    XPutImage (_pDisplay, _window, _xgc, _pImage, 0, 0, 0, 0, _pImage->width, _pImage->height);
 }

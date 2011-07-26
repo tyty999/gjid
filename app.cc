@@ -11,16 +11,16 @@
 void CApp::MainLoop (void)
 {
     Update();
-    for (m_WantQuit = false; !m_WantQuit; OnIdle())
-	m_Fb.CheckEvents (this);
+    for (_wantQuit = false; !_wantQuit; OnIdle())
+	_fb.CheckEvents (this);
 }
 
 void CApp::Update (void)
 {
-    if (!m_Fb.GC().begin())
+    if (!_fb.GC().begin())
 	return;
-    OnDraw (m_Fb.GC());
-    m_Fb.Flush();
+    OnDraw (_fb.GC());
+    _fb.Flush();
 }
 
 //----------------------------------------------------------------------

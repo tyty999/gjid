@@ -13,16 +13,16 @@ FbglMain (GJID)
 
 GJID::GJID (void)
 : CApp ()
-, m_State (state_Title)
-, m_StoryPage (0)
-, m_Level (0)
-, m_CurLevel ()
-, m_Font ()
-, m_Pics ()
-, m_Palette ()
-, m_Levels (0)
+,_state (state_Title)
+,_storyPage (0)
+,_level (0)
+,_curLevel ()
+,_font ()
+,_pics ()
+,_palette ()
+,_levels (0)
 {
-    m_Palette.AllocColor (0,0,0);
+    _palette.AllocColor (0,0,0);
     CreateWindow ("GJID", 320, 240);
 }
 
@@ -34,22 +34,22 @@ GJID::GJID (void)
 
 void GJID::GoToState (EGameState state)
 {
-    m_State = state;
+    _state = state;
     Update();
 }
 
 void GJID::OnIdle (void)
 {
     CApp::OnIdle();
-    if (m_State == state_Title) {
+    if (_state == state_Title) {
 	static const time_t titleDelay (time (NULL));
-	if (m_Levels.empty()) {
+	if (_levels.empty()) {
 	    LoadData (DATAFILE);
 	    Update();
-	    if (m_Levels.empty())
+	    if (_levels.empty())
 		Quit();
 	    else
-		m_CurLevel = m_Levels[0];
+		_curLevel = _levels[0];
 	} else if (time(NULL) > titleDelay + 1)
 	    GoToState (state_Story);
     }
@@ -59,10 +59,10 @@ void GJID::LoadData (const char* filename)
 {
     CPIO datafile (filename);
 
-    istream fntstm = datafile.File ("default.fnt"); fntstm >> m_Font;
-    istream lvlstm = datafile.File ("levels.dat"); lvlstm >> m_Levels;
+    istream fntstm = datafile.File ("default.fnt"); fntstm >> _font;
+    istream lvlstm = datafile.File ("levels.dat"); lvlstm >> _levels;
 
-    m_Pics.resize (NumberOfPics);
+    _pics.resize (NumberOfPics);
     static const char c_PicFiles[] =
 	"dispose.gif\0" "exit.gif\0" "floor.gif\0"
 	"oneway_n.gif\0" "oneway_s.gif\0" "oneway_e.gif\0" "oneway_w.gif\0"
@@ -71,10 +71,10 @@ void GJID::LoadData (const char* filename)
 	"barrel1.gif\0" "barrel2.gif\0"
 	"logo_g.gif\0" "logo_j.gif\0" "logo_i.gif\0" "logo_d.gif\0";
     const char* picfilename = c_PicFiles;
-    foreach (picvec_t::iterator, i, m_Pics) {
+    foreach (picvec_t::iterator, i, _pics) {
 	istream picstm = datafile.File (picfilename);
 	picstm >> *i;
-	i->MergePaletteInto (m_Palette);
+	i->MergePaletteInto (_palette);
 	picfilename += strlen(picfilename)+1;
     }
 }
@@ -86,7 +86,7 @@ void GJID::FillWithTile (CGC& gc, PicIndex tidx) const
 {
     for (dim_t y = 0; y < gc.Height(); y += TILE_H)
 	for (dim_t x = 0; x < gc.Width(); x += TILE_W)
-	    gc.Image (m_Pics[tidx], x, y);
+	    gc.Image (_pics[tidx], x, y);
 }
 
 void GJID::DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx) const
@@ -94,7 +94,7 @@ void GJID::DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex 
     for (uoff_t y = 0; y < n; ++ y)
 	for (uoff_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
 	    if (p[y] & mask)
-		gc.Image (m_Pics [tidx], (x + 2) * TILE_W, (y + 3) * TILE_H);
+		gc.Image (_pics [tidx], (x + 2) * TILE_W, (y + 3) * TILE_H);
 }
 
 //----------------------------------------------------------------------
@@ -115,24 +115,24 @@ inline void GJID::PrintStory (CGC& gc)
 
     gc.Clear (gc.AllocColor (0,0,64));
     for (y = 0; y < gc.Height(); y += TILE_H) {
-	gc.Image (m_Pics [Wall1Pix], 0, y);
-	gc.Image (m_Pics [Wall1Pix], gc.Width() - TILE_W, y);
+	gc.Image (_pics [Wall1Pix], 0, y);
+	gc.Image (_pics [Wall1Pix], gc.Width() - TILE_W, y);
     }
     for (x = TILE_W; x < gc.Width() - TILE_W; x += TILE_W) {
-	gc.Image (m_Pics [Wall1Pix], x, 0);
-	gc.Image (m_Pics [Wall1Pix], x, gc.Height() - TILE_H);
+	gc.Image (_pics [Wall1Pix], x, 0);
+	gc.Image (_pics [Wall1Pix], x, gc.Height() - TILE_H);
     }
-    m_Font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
-    m_Font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
+    _font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
+    _font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
 
-    if (m_StoryPage == 0) {
-	gc.ImageMasked (m_Pics[LogoGPix], 40, TILE_H * 2); 
-	gc.ImageMasked (m_Pics[LogoJPix], 100, TILE_H * 2); 
-	gc.ImageMasked (m_Pics[LogoIPix], 160, TILE_H * 2); 
-	gc.ImageMasked (m_Pics[LogoDPix], 220, TILE_H * 2); 
+    if (_storyPage == 0) {
+	gc.ImageMasked (_pics[LogoGPix], 40, TILE_H * 2); 
+	gc.ImageMasked (_pics[LogoJPix], 100, TILE_H * 2); 
+	gc.ImageMasked (_pics[LogoIPix], 160, TILE_H * 2); 
+	gc.ImageMasked (_pics[LogoDPix], 220, TILE_H * 2); 
 	row = 8;
     }
-    if (m_StoryPage < 2) {
+    if (_storyPage < 2) {
 	static const char storyPage1[] =
 	    "In the year 32333 AD two robot cities on the planet Nikarad were arming\n"
 	    "themselves against each other. The both set up large complexes in which\n"
@@ -161,36 +161,36 @@ inline void GJID::PrintStory (CGC& gc)
 	    "                 F8   skip the level\n"
 	    "                 F10 quit the game";
 	string line;
-	const string storyPage (m_StoryPage == 0 ? storyPage1 : storyPage2);
+	const string storyPage (_storyPage == 0 ? storyPage1 : storyPage2);
 	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
 	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
-	    m_Font.PrintString (gc, TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
+	    _font.PrintString (gc, TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
-    } else if (m_StoryPage == 2) {
+    } else if (_storyPage == 2) {
 	x = TILE_W * 2;
 	y = TILE_H * 2 + 7;
-	m_Font.PrintString (gc, x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
+	_font.PrintString (gc, x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
 	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
-	    gc.ImageMasked (m_Pics [pic[i]], x, y);
-	    m_Font.PrintString (gc, x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
+	    gc.ImageMasked (_pics [pic[i]], x, y);
+	    _font.PrintString (gc, x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
 	    y += 17;
 	}
-	gc.Image (m_Pics [OWDNorthPix], x, y);
-	gc.Image (m_Pics [OWDSouthPix], x += TILE_W, y);
-	gc.Image (m_Pics [OWDEastPix], x += TILE_W, y);
-	gc.Image (m_Pics [OWDWestPix], x += TILE_W, y);
-	m_Font.PrintString (gc, x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
+	gc.Image (_pics [OWDNorthPix], x, y);
+	gc.Image (_pics [OWDSouthPix], x += TILE_W, y);
+	gc.Image (_pics [OWDEastPix], x += TILE_W, y);
+	gc.Image (_pics [OWDWestPix], x += TILE_W, y);
+	_font.PrintString (gc, x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
     }
 }
 
 inline void GJID::DrawLevel (CGC& gc)
 {
     gc.Clear();
-    m_CurLevel.Draw (gc, m_Pics);
+    _curLevel.Draw (gc, _pics);
 }
 
 inline void GJID::WinnerScreen (CGC& gc)
@@ -214,10 +214,10 @@ inline void GJID::LoserScreen (CGC& gc)
 void GJID::OnDraw (CGC& gc)
 {
     CApp::OnDraw (gc);
-    if (m_Pics.empty())
+    if (_pics.empty())
 	return;
-    gc.Palette() = m_Palette;
-    switch (m_State) {
+    gc.Palette() = _palette;
+    switch (_state) {
 	default:
 	case state_Title:	return (IntroScreen (gc));
 	case state_Story:	return (PrintStory (gc));
@@ -238,11 +238,11 @@ inline void GJID::TitleKeys (key_t key)
 inline void GJID::StoryKeys (key_t key)
 {
     if (key == XK_Page_Up || key == XK_Up || key == ('b'|XKM_Ctrl))
-	m_StoryPage -= !!m_StoryPage;
+	_storyPage -= !!_storyPage;
     else {
-	++ m_StoryPage;
-	if (m_StoryPage > 2 || key == XK_Escape) {
-	    m_StoryPage = 2;
+	++ _storyPage;
+	if (_storyPage > 2 || key == XK_Escape) {
+	    _storyPage = 2;
 	    GoToState (state_Game);
 	}
     }
@@ -253,26 +253,26 @@ inline void GJID::LevelKeys (key_t key)
 {
     switch (key) {
 	case 'k':
-	case XK_Up:	m_CurLevel.MoveRobot (North);	break;
+	case XK_Up:	_curLevel.MoveRobot (North);	break;
 	case 'j':
-	case XK_Down:	m_CurLevel.MoveRobot (South);	break;
+	case XK_Down:	_curLevel.MoveRobot (South);	break;
 	case 'l':
-	case XK_Right:	m_CurLevel.MoveRobot (East);	break;
+	case XK_Right:	_curLevel.MoveRobot (East);	break;
 	case 'h':
-	case XK_Left:	m_CurLevel.MoveRobot (West);	break;
+	case XK_Left:	_curLevel.MoveRobot (West);	break;
 	case XK_F1:	GoToState (state_Story);	break;
 	case 'q':
 	case XK_Escape:	Quit();				break;
 	case XK_F10:	GoToState (state_Loser);	break;
-	case XK_F8:	m_Level = (m_Level + 1) % m_Levels.size();
-	case XK_F6:	m_CurLevel = m_Levels [m_Level];	break;
+	case XK_F8:	_level = (_level + 1) % _levels.size();
+	case XK_F6:	_curLevel = _levels [_level];	break;
     }
-    if (m_CurLevel.Finished()) {
-	++ m_Level;
-	if (m_Level < m_Levels.size())
-	    m_CurLevel = m_Levels [m_Level];
+    if (_curLevel.Finished()) {
+	++ _level;
+	if (_level < _levels.size())
+	    _curLevel = _levels [_level];
 	else {
-	    m_Level = 0;
+	    _level = 0;
 	    GoToState (state_Winner);
 	}
     }
@@ -281,7 +281,7 @@ inline void GJID::LevelKeys (key_t key)
 
 void GJID::OnKey (key_t key)
 {
-    switch (m_State) {
+    switch (_state) {
 	default:
 	case state_Title:	return (TitleKeys (key));
 	case state_Story:	return (StoryKeys (key));
