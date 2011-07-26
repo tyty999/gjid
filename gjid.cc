@@ -23,7 +23,7 @@ GJID::GJID (void)
 , m_Levels (0)
 {
     m_Palette.AllocColor (0,0,0);
-    SetMode (stdmode_320x240x8);
+    CreateWindow ("GJID", 320, 240);
 }
 
 /*static*/ GJID& GJID::Instance (void)

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 
 //----------------------------------------------------------------------
 
@@ -96,20 +97,23 @@ void CXlibFramebuffer::CloseWindow (void)
     m_Window = None;
 }
 
-void CXlibFramebuffer::SetStandardMode (EStdFbMode, size_t)
+void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t height)
 {
     CloseWindow();	// The old one, if exists.
 
     // Create the window with full-screen dimensions
     const int black = BlackPixel (m_pDisplay, DefaultScreen (m_pDisplay));
-    const dim_t width = DisplayWidth (m_pDisplay, DefaultScreen (m_pDisplay));
-    const dim_t height = DisplayHeight (m_pDisplay, DefaultScreen (m_pDisplay));
     m_Window = XCreateSimpleWindow (m_pDisplay, DefaultRootWindow(m_pDisplay), 0, 0, width, height, 0, black, black);
     if (m_Window == None)
 	throw runtime_error ("unable to create the application window");
-
-    XStoreName (m_pDisplay, m_Window, "GJID");
-
+    // Create a GC for this window
+    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
+    // Enable WM close message
+    Atom xa_wm_protocols = XInternAtom (m_pDisplay, "WM_PROTOCOLS", False);
+    Atom xa_wm_delete_window = XInternAtom (m_pDisplay, "WM_DELETE_WINDOW", False);
+    XChangeProperty (m_pDisplay, m_Window, xa_wm_protocols, XA_ATOM, 32, PropModeReplace, (const unsigned char*) &xa_wm_delete_window, 1);
+    // Set window title
+    XChangeProperty (m_pDisplay, m_Window, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (const unsigned char*) title, strlen(title));
     // Set the fullscreen flag on the window
     XEvent xev;
     memset (&xev, 0, sizeof(xev));
@@ -120,16 +124,15 @@ void CXlibFramebuffer::SetStandardMode (EStdFbMode, size_t)
     xev.xclient.format = 32;
     xev.xclient.data.l[0] = 1;
     xev.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
-    XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, StructureNotifyMask, &xev);
-
+    XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, SubstructureRedirectMask|SubstructureNotifyMask, &xev);
     // Get all relevant events.
-    XMapRaised (m_pDisplay, m_Window);
     const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
 	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
     XSelectInput (m_pDisplay, m_Window, eventMask);
+    // And put it on the screen
+    XMapRaised (m_pDisplay, m_Window);
 
     // Create a gc and a backbuffer image.
-    m_XGC = XCreateGC (m_pDisplay, m_Window, 0, NULL);
     const int imageDepth = DefaultDepth (m_pDisplay, DefaultScreen(m_pDisplay));
     m_ImageData.resize (width * height * (imageDepth == 24 ? 32 : imageDepth) / 8);
     m_pImage = XCreateImage (m_pDisplay, m_pVisual, imageDepth, ZPixmap, 0, m_ImageData.begin(), width, height, 8, 0);
@@ -140,7 +143,7 @@ void CXlibFramebuffer::SetStandardMode (EStdFbMode, size_t)
     GC().Palette().resize (256);
     for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
 	GC().Palette()[i] = RGB (i, i, i);
-    m_GC.Resize (320, 240);
+    m_GC.Resize (width, height);
 }
 
 //----------------------------------------------------------------------

@@ -9,13 +9,6 @@
 
 //----------------------------------------------------------------------
 
-enum EStdFbMode {
-    stdmode_Text,
-    stdmode_320x240x8,
-    stdmode_640x480x8,
-    stdmode_Last
-};
-
 enum {
     ModKeyReleasedMask = Mod4Mask,
     _XKM_Bitshift = 24,
@@ -36,7 +29,7 @@ public:
     inline			~CXlibFramebuffer (void) { Close(); }
     void			Open (void);
     void			Close (void);
-    void			SetStandardMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60);
+    void			CreateWindow (const char* title, coord_t w, coord_t h);
     void			CheckEvents (CApp* evp);
     void			Flush (void);
     inline const CGC&		GC (void) const	{ return (m_GC); }

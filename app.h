@@ -25,7 +25,7 @@ protected:
     inline virtual void		OnKey (key_t)	{ }
     inline virtual void		OnMouseMove (coord_t, coord_t) {}
     inline virtual void		OnButtonDown (bidx_t, coord_t, coord_t) {}
-    inline void			SetMode (EStdFbMode m = stdmode_320x240x8, size_t freq = 60) { m_Fb.SetStandardMode (m, freq); }
+    inline void			CreateWindow (const char* title, coord_t w, coord_t h) { m_Fb.CreateWindow (title, w, h); }
 private:
     CXlibFramebuffer		m_Fb;		///< The framebuffer backend.
     CGC				m_GC;		///< GC for drawing onto the offscreen buffer.
