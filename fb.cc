@@ -108,15 +108,19 @@ void CXlibFramebuffer::SetStandardMode (EStdFbMode, size_t)
     if (m_Window == None)
 	throw runtime_error ("unable to create the application window");
 
+    XStoreName (m_pDisplay, m_Window, "GJID");
+
     // Set the fullscreen flag on the window
     XEvent xev;
+    memset (&xev, 0, sizeof(xev));
     xev.type = ClientMessage;
+    xev.xclient.display = m_pDisplay;
     xev.xclient.window = m_Window;
-    xev.xclient.message_type = XInternAtom (m_pDisplay, "_NET_WM_STATE", True);
+    xev.xclient.message_type = XInternAtom (m_pDisplay, "_NET_WM_STATE", False);
     xev.xclient.format = 32;
-    xev.xclient.data.l[0] = True;
-    xev.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", True);
-    XSendEvent (m_pDisplay, m_Window, False, SubstructureNotifyMask, &xev);
+    xev.xclient.data.l[0] = 1;
+    xev.xclient.data.l[1] = XInternAtom (m_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
+    XSendEvent (m_pDisplay, DefaultRootWindow(m_pDisplay), False, StructureNotifyMask, &xev);
 
     // Get all relevant events.
     XMapRaised (m_pDisplay, m_Window);
