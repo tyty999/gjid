@@ -29,9 +29,11 @@ class CTable {
 public:
     typedef uint16_t			code_t;
     typedef uint8_t			chr_t;
-    static const code_t	c_MaxCodeBits = 12;
-    static const code_t	c_MaxCodes = 1 << c_MaxCodeBits;
-    static const code_t	c_Unused = c_MaxCodes;
+    enum {
+	c_MaxCodeBits = 12,
+	c_MaxCodes = 1 << c_MaxCodeBits,
+	c_Unused = c_MaxCodes
+    };
     typedef tuple<c_MaxCodes,code_t>	ptrvec_t;
     typedef tuple<c_MaxCodes,chr_t>	chrvec_t;
     typedef chrvec_t::const_iterator	chrciter_t;
@@ -39,18 +41,12 @@ public:
 			CTable (void);
     void		Reset (size_t nRootBits);
     code_t		AddString (code_t base, chr_t c, bool bWriting = false);
-    code_t		Find (chrciter_t first, chrciter_t last) const;
     void		WriteString (code_t code, ostream& os) const;
     inline chr_t	FirstCharOf (code_t code) const	{ return (m_Char [m_First [code]]); }
     inline bool		IsUnused (code_t code) const	{ return (code >= m_nCodes); }
-    inline code_t	BaseOf (code_t code) const	{ return (m_Prev [code]); }
-    inline bool		IsRoot (code_t code) const	{ return (BaseOf(code) == c_Unused); }
     inline code_t	ResetCode (void) const		{ return (m_ResetCode); }
     inline code_t	EndCode (void) const		{ return (m_EndCode); }
-    inline code_t	LastUsedCode (void) const	{ return (m_nCodes - 1); }
     inline uint8_t	CodeBits (void) const		{ return (m_CodeBits); }
-private:
-    inline bool		CodeIsString (code_t c, const chrciter_t first, chrciter_t last) const;
 private:
     chrvec_t		m_Char;		///< Last characters of each string.
     ptrvec_t		m_Prev;		///< Pointers to the previous character.
@@ -83,32 +79,6 @@ private:
     uint8_t		m_CurByte;	///< Last byte read from the input stream.
     uint8_t		m_BitsLeft;	///< Unread bits left in m_CurByte.
     uint8_t		m_BlockSize;	///< Remaining bytes in the current block.
-};
-
-//----------------------------------------------------------------------
-// Compressor.
-//----------------------------------------------------------------------
-
-/// \class CCompressor gif.h fbgl/gif.h
-///
-/// \brief Compresses pixel data with the GIF LZW algorithm.
-///
-class CCompressor {
-public:
-			CCompressor (void);
-    void		Run (istream& is, ostream& os);
-    size_t		EstimateSize (istream& is);
-    void		SetCodeSize (size_t n);
-private:
-    void		WriteCode (ostream& os, CTable::code_t c);
-    inline void		FlushCurByte (ostream& os);
-    void		StartNextBlock (ostream& os);
-private:
-    CTable		t;
-    uint8_t		m_CodeSize;
-    uint8_t		m_BlockSize;
-    uint8_t		m_CurByte;
-    uint8_t		m_BitsUsed;
 };
 
 //----------------------------------------------------------------------
