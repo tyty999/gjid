@@ -20,12 +20,6 @@ static inline void ReadShort (istream& is, uint16_t& v)
     is >> reinterpret_cast<uint8_t*>(&v)[1];
 }
 
-static inline void WriteShort (ostream& os, const uint16_t& v)
-{
-    os << reinterpret_cast<const uint8_t*>(&v)[0];
-    os << reinterpret_cast<const uint8_t*>(&v)[1];
-}
-
 //----------------------------------------------------------------------
 
 /// Default constructor.
@@ -69,8 +63,8 @@ CTable::code_t CTable::AddString (code_t base, chr_t c, bool bWriting)
     _char [_nCodes] = c;
     _prev [_nCodes] = base;
     _first [_nCodes] = _first [base];
-    if (++ _nCodes > BitMask(code_t,_codeBits) + bWriting)
-	++ _codeBits;
+    if (++_nCodes > BitMask(code_t,_codeBits) + bWriting)
+	++_codeBits;
     return (_nCodes - 1);
 }
 
@@ -191,15 +185,6 @@ void CFileHeader::read (istream& is)
     is >> _resolution >> _background >> _aspectRatio;
 }
 
-/// Writes the object to stream \p os.
-void CFileHeader::write (ostream& os) const
-{
-    os.write (s_GifSig, 6);
-    WriteShort (os, _width);
-    WriteShort (os, _height);
-    os << _resolution << _background << _aspectRatio;
-}
-
 //----------------------------------------------------------------------
 
 /// Default constructor.
@@ -220,16 +205,6 @@ void CImageHeader::read (istream& is)
     ReadShort (is, _width);
     ReadShort (is, _height);
     is >> _flags;
-}
-
-/// Writes the object to stream \p os.
-void CImageHeader::write (ostream& os) const
-{
-    WriteShort (os, _leftBorder);
-    WriteShort (os, _topBorder);
-    WriteShort (os, _width);
-    WriteShort (os, _height);
-    os << _flags;
 }
 
 //----------------------------------------------------------------------
@@ -254,53 +229,5 @@ void CGraphicsControl::read (istream& is)
     is >> _transparentColor;
     is >> v;
 }
-
-/// Write the object to stream \p os.
-void CGraphicsControl::write (ostream& os) const
-{
-    uint8_t blockSize = 4;
-    os << blockSize;
-    os << _flags;
-    WriteShort (os, _delayTime);
-    os << _transparentColor;
-    os << GIF_ZERO_BLOCK;
-}
-
-//----------------------------------------------------------------------
-
-/// Reads the object from stream \p is.
-void CComment::read (istream& is)
-{
-    _s.clear();
-    for (;;) {
-	uint8_t bs;
-	is >> bs;
-	if (is.remaining() < bs + 1U)
-	    break;
-	_s.append (is.ipos(), bs);
-	is.skip (bs);
-    }
-}
-
-/// Writes the object to stream \p os.
-void CComment::write (ostream& os) const
-{
-    foreach (string::const_iterator, i, _s) {
-	uint8_t bs = min (distance (i, _s.end()), GIF_MAX_BLOCK_SIZE);
-	os << bs;
-	os.write (i, bs);
-	i += bs;
-    }
-    os << GIF_ZERO_BLOCK;
-}
-
-/// Returns the size of the written object.
-size_t CComment::stream_size (void) const
-{
-    const size_t nBlocks = (_s.size() + GIF_MAX_BLOCK_SIZE - 1) / GIF_MAX_BLOCK_SIZE;
-    return (_s.size() + nBlocks + stream_size_of(GIF_ZERO_BLOCK));
-}
-
-//----------------------------------------------------------------------
 
 } // namespace gif

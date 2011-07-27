@@ -183,20 +183,6 @@ public:
     uint8_t		_transparentColor;	///< Transparent color index.
 };
 
-/// \class CComment gif fbgl/gif.h
-///
-/// \brief Comment block.
-///
-class CComment {
-public:
-			CComment (const string& s) : _s (s) {}
-    void		read (istream& is);
-    void		write (ostream& os) const;
-    size_t		stream_size (void) const;
-private:
-    string		_s;	///< Comment text.
-};
-
 //----------------------------------------------------------------------
 
 } // namespace gif
@@ -204,8 +190,6 @@ private:
 ALIGNOF(gif::CFileHeader, 1)
 ALIGNOF(gif::CImageHeader, 1)
 ALIGNOF(gif::CGraphicsControl, 1)
-ALIGNOF(gif::CComment, 1)
 STD_STREAMABLE (gif::CFileHeader)
 STD_STREAMABLE (gif::CImageHeader)
 STD_STREAMABLE (gif::CGraphicsControl)
-STD_STREAMABLE (gif::CComment)
