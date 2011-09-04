@@ -24,9 +24,9 @@ BINDIR		:= @bindir@
 
 WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
 		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
-CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fno-threadsafe-statics
+CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -std=gnu++0x -fno-threadsafe-statics
 LDFLAGS		:= @CUSTOMLIBDIR@
-LIBS		:= @libustl@ @libX11@
+LIBS		:= @libustl@ @libxcb@ @libxcb-render@ @libxcb-atom@
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else

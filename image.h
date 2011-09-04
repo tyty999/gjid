@@ -10,7 +10,8 @@
 ///
 /// Supports 8-bit images of reasonable size. Reads and writes in GIF format.
 ///
-class CImage { public:
+class CImage {
+public:
     typedef color_t			pixel_t;
     typedef pixel_t			value_type;
     typedef vector<value_type>		pixvec_t;

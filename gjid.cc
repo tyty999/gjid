@@ -24,6 +24,7 @@ GJID::GJID (void)
 {
     _palette.AllocColor (0,0,0);
     CreateWindow ("GJID", 320, 240);
+    LoadData (DATAFILE);
 }
 
 /*static*/ GJID& GJID::Instance (void)
@@ -38,29 +39,13 @@ void GJID::GoToState (EGameState state)
     Update();
 }
 
-void GJID::OnIdle (void)
-{
-    CXApp::OnIdle();
-    if (_state == state_Title) {
-	static const time_t titleDelay (time (NULL));
-	if (_levels.empty()) {
-	    LoadData (DATAFILE);
-	    Update();
-	    if (_levels.empty())
-		Quit();
-	    else
-		_curLevel = _levels[0];
-	} else if (time(NULL) > titleDelay + 1)
-	    GoToState (state_Story);
-    }
-}
-
 void GJID::LoadData (const char* filename)
 {
     CPIO datafile (filename);
 
     istream fntstm = datafile.File ("default.fnt"); fntstm >> _font;
     istream lvlstm = datafile.File ("levels.dat"); lvlstm >> _levels;
+    _curLevel = _levels[0];
 
     _pics.resize (NumberOfPics);
     static const char c_PicFiles[] =

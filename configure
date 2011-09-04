@@ -26,7 +26,7 @@ seds=[s/^#\(DEBUG\)/\1/]
 HEADERS="ustl.h"
 
 # Libraries
-LIBS="ustl X11 Xxf86vm"
+LIBS="ustl xcb xcb-render xcb-atom"
 
 # First pair is used if nothing matches
 PROGS="CXX=g++ CC=gcc INSTALL=install"

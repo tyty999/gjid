@@ -2,12 +2,12 @@
 // This file is free software, distributed under the MIT License.
 
 #include "xapp.h"
+#include <xcb/xcb_atom.h>
+#include <xcb/render.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
 
 //----------------------------------------------------------------------
 
@@ -25,26 +25,22 @@ static void Terminate (void)
     exit (EXIT_FAILURE);
 }
 
-static int OnXlibError (Display* dpy, XErrorEvent* e)
-{
-    char errbuf[64];
-    XGetErrorText (dpy, e->error_code, VectorBlock(errbuf));
-    printf ("Error: %hhu,%hhu: %s", e->request_code, e->minor_code, errbuf);
-    std::terminate();
-}
-
 //----------------------------------------------------------------------
 
 CXApp::CXApp (void)
 :_gc()
-,_pDisplay (NULL)
-,_pVisual (NULL)
-,_xgc (NULL)
-,_imageData()
-,_pImage (NULL)
-,_window (None)
+,_ksyms()
+,_pconn (NULL)
+,_pscreen (NULL)
+,_window (XCB_NONE)
+,_xgc (XCB_NONE)
+,_width()
+,_height()
+,_minKeycode()
+,_keysymsPerKeycode()
 ,_wantQuit (false)
 {
+    // Initialize cleanup handlers
     static const int8_t c_Signals[] = {
 	SIGILL, SIGABRT, SIGBUS,  SIGFPE,  SIGSEGV, SIGSYS, SIGALRM, SIGXCPU,
 	SIGHUP, SIGINT,  SIGQUIT, SIGTERM, SIGCHLD, SIGXFSZ, SIGPWR, SIGPIPE
@@ -53,88 +49,89 @@ CXApp::CXApp (void)
 	signal (c_Signals[i], OnSignal);
     std::set_terminate (Terminate);
 
-    XSetErrorHandler (OnXlibError);
+    // Establish X server connection
+    _pconn = xcb_connect (NULL, NULL);
+    const xcb_setup_t* xsetup = xcb_get_setup (_pconn);
+    _pscreen = xcb_setup_roots_iterator(xsetup).data;
+    auto kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
+    auto rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
+    auto r_wm_protocols = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
+    auto r_wm_delete_window = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
+    auto r_net_wm_state = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
+    auto r_net_wm_state_fullscreen = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
 
-    _pDisplay = XOpenDisplay (NULL);
-    if (!_pDisplay)
-	throw runtime_error ("unable to open an X display, either X is not running or DISPLAY environment variable is not set");
-    _pVisual = DefaultVisual (_pDisplay, DefaultScreen(_pDisplay));
+    const xcb_get_keyboard_mapping_reply_t* kbreply = xcb_get_keyboard_mapping_reply (_pconn, kbcookie, NULL);
+    size_t szkeysyms = xcb_get_keyboard_mapping_keysyms_length (kbreply);
+    const wchar_t* psyms = (const wchar_t*) xcb_get_keyboard_mapping_keysyms (kbreply);
+    _ksyms.assign (psyms, psyms + szkeysyms);
+    _minKeycode = xsetup->min_keycode;
+    _keysymsPerKeycode = kbreply->keysyms_per_keycode;
+
+    xcb_render_query_version_reply (_pconn, rendcook, NULL);
+    _xa_wm_protocols = xcb_intern_atom_reply(_pconn, r_wm_protocols, NULL)->atom;
+    _xa_wm_delete_window = xcb_intern_atom_reply(_pconn, r_wm_delete_window, NULL)->atom;
+    _xa_net_wm_state = xcb_intern_atom_reply(_pconn, r_net_wm_state, NULL)->atom;
+    _xa_net_wm_state_fullscreen = xcb_intern_atom_reply(_pconn, r_net_wm_state_fullscreen, NULL)->atom;
 }
 
 /// Closes all active resources, windows, and server connections.
 CXApp::~CXApp (void)
 {
-    if (!_pDisplay)
-	return;
-    CloseWindow();
-    XSync (_pDisplay, DefaultScreen(_pDisplay));
-    XCloseDisplay (_pDisplay);
-    _pDisplay = NULL;
+    if (!_pconn) return;
+    xcb_disconnect (_pconn);
+    _pconn = NULL;
 }
 
 int CXApp::Run (void)
 {
-    Update();
-    for (_wantQuit = false; !_wantQuit; OnIdle())
-	CheckEvents (this);
+    _wantQuit = false;
+    xcb_flush(_pconn);
+    for (xcb_generic_event_t* e; !_wantQuit && (e = xcb_wait_for_event(_pconn)); free(e)) {
+	switch (e->response_type & 0x7f) {
+	    case XCB_MAP_NOTIFY:	OnMap(); break;
+	    case XCB_EXPOSE:		Update(); break;
+	    case XCB_CONFIGURE_NOTIFY:
+		_width = ((const xcb_configure_notify_event_t*)e)->width;
+		_height = ((const xcb_configure_notify_event_t*)e)->height;
+		break;
+	    case XCB_KEY_PRESS:		OnKey (TranslateKeycode(e)); break;
+	}
+    }
     return (EXIT_SUCCESS);
 }
 
 void CXApp::Update (void)
 {
-    if (!GC().begin())
+    if (!_pconn || !_window || !GC().begin())
 	return;
     OnDraw (GC());
-    Flush();
+
+    vector<uint32_t> img (_width*_height);
+    CopyGCToImage (img);
+    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, _window, _xgc, _width, _height, 0, 0, 0, _pscreen->root_depth, img.size()*4, (const uint8_t*) &img[0]);
+    xcb_flush(_pconn);
 }
 
 //----------------------------------------------------------------------
 // Window and mode management
 //----------------------------------------------------------------------
 
-/// Closes the application window and frees its resources.
-void CXApp::CloseWindow (void)
-{
-    if (!_pDisplay || _window == None)
-	return;
-    if (_xgc) {
-	XFreeGC (_pDisplay, _xgc);
-	_xgc = NULL;
-    }
-    XUngrabPointer (_pDisplay, CurrentTime);
-    if (_pImage) {
-	_pImage->data = NULL;	// Managed by _imageData
-	XDestroyImage (_pImage);
-	_pImage = NULL;
-    }
-    XUnmapWindow (_pDisplay, _window);
-    XDestroyWindow (_pDisplay, _window);
-    _window = None;
-}
-
 void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
 {
-    CloseWindow();	// The old one, if exists.
-
-    // Create the window with full-screen dimensions
-    const int black = BlackPixel (_pDisplay, DefaultScreen (_pDisplay));
-    _window = XCreateSimpleWindow (_pDisplay, DefaultRootWindow(_pDisplay), 0, 0, width, height, 0, black, black);
-    if (_window == None)
-	throw runtime_error ("unable to create the application window");
+    // Create the window with given dimensions
+    static const uint32_t winvals[] = { XCB_NONE, XCB_EVENT_MASK_EXPOSURE| XCB_EVENT_MASK_KEY_PRESS| XCB_EVENT_MASK_STRUCTURE_NOTIFY };
+    xcb_create_window (_pconn, XCB_COPY_FROM_PARENT, _window=xcb_generate_id(_pconn),
+	    _pscreen->root, 0, 0, _width = width, _height = height, 0,
+	    XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
+	    XCB_CW_BACK_PIXMAP| XCB_CW_EVENT_MASK, winvals);
     // Create a GC for this window
-    _xgc = XCreateGC (_pDisplay, _window, 0, NULL);
-    // Enable WM close message
-    Atom xa_w_protocols = XInternAtom (_pDisplay, "WM_PROTOCOLS", False);
-    Atom xa_w_delete_window = XInternAtom (_pDisplay, "WM_DELETE_WINDOW", False);
-    XChangeProperty (_pDisplay, _window, xa_w_protocols, XA_ATOM, 32, PropModeReplace, (const unsigned char*) &xa_w_delete_window, 1);
+    xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), _window, 0, NULL);
     // Set window title
-    XChangeProperty (_pDisplay, _window, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (const unsigned char*) title, strlen(title));
-    // Get all relevant events.
-    const long eventMask = StructureNotifyMask | ExposureMask | KeyPressMask |
-	KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
-    XSelectInput (_pDisplay, _window, eventMask);
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, WM_NAME, STRING, 8, strlen(title), title);
+    // Enable WM close message
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _xa_wm_protocols, ATOM, 32, 1, &_xa_wm_delete_window);
     // And put it on the screen
-    XMapRaised (_pDisplay, _window);
+    xcb_map_window (_pconn, _window);
 
     // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
     GC().Palette().resize (256);
@@ -146,109 +143,43 @@ void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
 inline void CXApp::OnMap (void)
 {
     // Set the fullscreen flag on the window
-    XEvent xev;
+    xcb_client_message_event_t xev;
     memset (&xev, 0, sizeof(xev));
-    xev.type = ClientMessage;
-    xev.xclient.display = _pDisplay;
-    xev.xclient.window = _window;
-    xev.xclient.message_type = XInternAtom (_pDisplay, "_NET_WM_STATE", False);
-    xev.xclient.format = 32;
-    xev.xclient.data.l[0] = 1;
-    xev.xclient.data.l[1] = XInternAtom (_pDisplay, "_NET_WM_STATE_FULLSCREEN", False);
-    XSendEvent (_pDisplay, DefaultRootWindow(_pDisplay), False, SubstructureRedirectMask|SubstructureNotifyMask, &xev);
+    xev.response_type = XCB_CLIENT_MESSAGE;
+    xev.window = _window;
+    xev.type = _xa_net_wm_state;
+    xev.format = 32;
+    xev.data.data32[0] = 1;
+    xev.data.data32[1] = _xa_net_wm_state_fullscreen;
+    xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT| XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
+    xcb_flush(_pconn);
 }
 
-inline void CXApp::OnConfigure (coord_t width, coord_t height)
+inline wchar_t CXApp::TranslateKeycode (const xcb_generic_event_t* event) const
 {
-    const int imageDepth = DefaultDepth (_pDisplay, DefaultScreen(_pDisplay));
-    _imageData.resize (width * height * (imageDepth == 24 ? 32 : imageDepth) / 8);
-    // Create the backbuffer image.
-    if (_pImage) {
-	_pImage->data = NULL;	// Managed by _imageData
-	XDestroyImage (_pImage);
-    }
-    _pImage = XCreateImage (_pDisplay, _pVisual, imageDepth, ZPixmap, 0, _imageData.begin(), width, height, 8, 0);
-    if (!_pImage)
-	throw bad_alloc (sizeof(XImage));
-}
-
-//----------------------------------------------------------------------
-// Event processing
-//----------------------------------------------------------------------
-
-void CXApp::CheckEvents (CXApp* papp)
-{
-    while (XPending (_pDisplay)) {
-	XEvent e;
-	XNextEvent (_pDisplay, &e);
-	key_t keymods = e.xkey.state;
-	switch (e.type) {
-	    case MapNotify:	OnMap(); break;
-	    case ConfigureNotify: OnConfigure (e.xconfigure.width, e.xconfigure.height); break;
-	    case Expose:	Flush(); break;
-	    case ButtonPress:	papp->OnButton (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
-	    case ButtonRelease:	papp->OnButtonUp (e.xbutton.button, e.xbutton.x, e.xbutton.y); break;
-	    case MotionNotify:	papp->OnMouseMove (e.xmotion.x, e.xmotion.y); break;
-	    case KeyPress:	papp->OnKey (XKeycodeToKeysym(_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
-	    case KeyRelease:	papp->OnKeyUp (XKeycodeToKeysym(_pDisplay, e.xkey.keycode, 0)|((keymods << _XKM_Bitshift) & XKM_Mask)); break;
-	}
-    }
-    WaitForEvents();
-}
-
-/// Waits for X events with timeout.
-void CXApp::WaitForEvents (void)
-{
-    fd_set fds;
-    FD_ZERO (&fds);
-    FD_SET (ConnectionNumber (_pDisplay), &fds);
-    struct timeval tv = { 0, 200000 };
-    int rv;
-    do {
-	errno = 0;
-	rv = select (ConnectionNumber(_pDisplay) + 1, &fds, NULL, NULL, &tv);
-    } while (errno == EINTR);
-    if (rv < 0)
-	throw file_exception ("select", "X server connection");
+    const xcb_key_press_event_t *kp = (const xcb_key_press_event_t*)event;
+    return (_ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode]);
 }
 
 //----------------------------------------------------------------------
 // Drawing and colormap translation.
 //----------------------------------------------------------------------
 
-/// Creates a list of truecolor values from GC palette entries.
-template <typename PixelType>
-void CXApp::InitColormap (PixelType* cmap) const
+/// Copies GC contents to the image.
+void CXApp::CopyGCToImage (vector<uint32_t>& img)
 {
     const CPalette& rpal (GC().Palette());
-    for (uoff_t i = 0; i < min (256U, rpal.size()); ++ i) {
-	if (BitsInType (PixelType) == 32)
-	    cmap[i] = rpal[i];
-	else if (BitsInType (PixelType) == 16) {
-	    ray_t r, g, b;
-	    unRGB (rpal[i], r, g, b);
-	    cmap[i] = (r >> 3) << 11 | (g >> 2) << 5 | b >> 3;
-	}
-    }
-}
-
-/// Copies GC contents to the image.
-template <typename PixelType>
-void CXApp::CopyGCToImage (void)
-{
-    PixelType cmap [256];
-    InitColormap (cmap);
     const color_t* src = GC().begin();
-    PixelType* dest = (PixelType*) _pImage->data;
+    auto dest = img.begin();
 
     // Scale the gc to the screen resolution.
     const size_t sw = GC().Width(), sh = GC().Height();
-    const size_t dw = _pImage->width, dh = _pImage->height;
+    const size_t dw = _width, dh = _height;
     size_t dx = 0, dy = 0;
     for (size_t y = 0; y < sh; ++y) {
 	for (; dy < dh; dy += sh) {
 	    for (size_t x = 0; x < sw; ++x) {
-		const PixelType v (cmap[src[x]]);
+		const uint32_t v (rpal[src[x]]);
 		for (; dx < dw; dx += sw)
 		    *dest++ = v;
 		dx -= dw;
@@ -257,16 +188,4 @@ void CXApp::CopyGCToImage (void)
 	dy -= dh;
 	src += sw;
     }
-}
-
-/// Copies the GC to an XImage and flushes the image to the server.
-void CXApp::Flush (void)
-{
-    if (!_pDisplay || _window == None || !_pImage)
-	return;
-    if (_pImage->depth == 16)
-	CopyGCToImage<uint16_t>();
-    else if (_pImage->depth == 24 || _pImage->depth == 32)
-	CopyGCToImage<uint32_t>();
-    XPutImage (_pDisplay, _window, _xgc, _pImage, 0, 0, 0, 0, _pImage->width, _pImage->height);
 }

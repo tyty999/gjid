@@ -4,16 +4,16 @@
 #pragma once
 #include "gc.h"
 #include "pal.h"
+#include <xcb/xcb.h>
 #include <X11/keysym.h>
-#include <X11/Xlib.h>
 
 //----------------------------------------------------------------------
 
 enum {
     _XKM_Bitshift = 24,
-    XKM_Shift = ShiftMask << _XKM_Bitshift,
-    XKM_Ctrl = ControlMask << _XKM_Bitshift,
-    XKM_Alt = Mod1Mask << _XKM_Bitshift,
+    XKM_Shift = 1<<_XKM_Bitshift,
+    XKM_Ctrl = 4<<_XKM_Bitshift,
+    XKM_Alt = 8<<_XKM_Bitshift,
     XKM_Mask = XKM_Shift| XKM_Ctrl| XKM_Alt
 };
 
@@ -22,7 +22,6 @@ class CXApp {
 public:
     typedef wchar_t		key_t;		///< Used for keycodes.
     typedef uint32_t		bidx_t;		///< Mouse button index.
-    typedef ::GC		XGC;
 public:
     inline void			Quit (void)	{ OnQuit(); }
     void			Update (void);
@@ -34,33 +33,29 @@ protected:
     inline virtual void		OnDraw (CGC&)	{ }
     inline virtual void		OnQuit (void)	{ _wantQuit = true; }
     inline virtual void		OnKey (key_t)	{ }
-    inline virtual void		OnKeyUp (key_t)	{ }
-    inline virtual void		OnMouseMove (coord_t, coord_t) {}
-    inline virtual void		OnButton (bidx_t, coord_t, coord_t) {}
-    inline virtual void		OnButtonUp (bidx_t, coord_t, coord_t) {}
     void			CreateWindow (const char* title, coord_t w, coord_t h);
 private:
-    void			CheckEvents (CXApp* evp);
-    void			Flush (void);
     inline const CGC&		GC (void) const	{ return (_gc); }
     inline CGC&			GC (void)	{ return (_gc); }
-    void			CloseWindow (void);
-    void			WaitForEvents (void);
     inline void			OnMap (void);
-    inline void			OnConfigure (coord_t width, coord_t height);
-    template <typename PixelType>
-    void			InitColormap (PixelType* cmap) const;
-    template <typename PixelType>
-    void			CopyGCToImage (void);
+    inline wchar_t		TranslateKeycode (const xcb_generic_event_t* event) const;
+    void			CopyGCToImage (vector<uint32_t>& img);
 private:
     CGC				_gc;
-    Display*			_pDisplay;
-    Visual*			_pVisual;
-    XGC				_xgc;
-    memblock			_imageData;
-    XImage*			_pImage;
-    Window			_window;
-    bool			_wantQuit;	///< True if want to quit
+    vector<wchar_t>		_ksyms;
+    xcb_connection_t*		_pconn;
+    const xcb_screen_t*		_pscreen;
+    xcb_window_t		_window;
+    xcb_gcontext_t		_xgc;
+    xcb_atom_t			_xa_wm_protocols;
+    xcb_atom_t			_xa_wm_delete_window;
+    xcb_atom_t			_xa_net_wm_state;
+    xcb_atom_t			_xa_net_wm_state_fullscreen;
+    uint16_t			_width;
+    uint16_t			_height;
+    uint8_t			_minKeycode;
+    uint8_t			_keysymsPerKeycode;
+    bool			_wantQuit;
 };
 
 //----------------------------------------------------------------------
@@ -70,13 +65,12 @@ extern "C" void InstallCleanupHandlers (void);
 template <typename AppClass>
 inline int TMainApp (int, const char* const*)
 {
-    int rv = EXIT_FAILURE;
     try {
-	rv = AppClass::Instance().Run();
+	return (AppClass::Instance().Run());
     } catch (exception& e) {
 	printf ("Error: %s\n", e.what());
     }
-    return (rv);
+    return (EXIT_FAILURE);
 }
 
 //----------------------------------------------------------------------

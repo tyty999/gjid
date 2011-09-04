@@ -13,7 +13,6 @@ public:
     static GJID&	Instance (void);
 protected:
 			GJID (void);
-    virtual void	OnIdle (void);
     virtual void	OnDraw (CGC& gc);
     virtual void	OnKey (key_t key);
 private:
