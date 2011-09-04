@@ -7,15 +7,12 @@
 /// Base class for application objects
 class CApp {
 public:
-    typedef int			argc_t;
-    typedef const char* const*	argv_t;
     typedef wchar_t		key_t;		///< Used for keycodes.
     typedef uint32_t		bidx_t;		///< Mouse button index.
 public:
-    inline virtual void		ProcessArguments (argc_t, argv_t) {}
     inline void			Quit (void)	{ OnQuit(); }
     void			Update (void);
-    void			MainLoop (void);
+    int				Run (void);
 protected:
     friend class CXlibFramebuffer;
 				CApp (void);
@@ -39,14 +36,11 @@ private:
 extern "C" void InstallCleanupHandlers (void);
 
 template <typename AppClass>
-inline int TMainApp (int argc, const char* const* argv)
+inline int TMainApp (int, const char* const*)
 {
     int rv = EXIT_FAILURE;
     try {
-	AppClass& rApp = AppClass::Instance();
-	rApp.AppClass::ProcessArguments (argc, argv);
-	rApp.AppClass::MainLoop();
-	rv = EXIT_SUCCESS;
+	rv = AppClass::Instance().Run();
     } catch (exception& e) {
 	printf ("Error: %s\n", e.what());
     }

@@ -40,11 +40,12 @@ CApp::CApp (void)
     _fb.Open();
 }
 
-void CApp::MainLoop (void)
+int CApp::Run (void)
 {
     Update();
     for (_wantQuit = false; !_wantQuit; OnIdle())
 	_fb.CheckEvents (this);
+    return (EXIT_SUCCESS);
 }
 
 void CApp::Update (void)
