@@ -12,7 +12,7 @@ MainApp (GJID)
 //----------------------------------------------------------------------
 
 GJID::GJID (void)
-: CApp()
+: CXApp()
 ,_state (state_Title)
 ,_storyPage (0)
 ,_level (0)
@@ -40,7 +40,7 @@ void GJID::GoToState (EGameState state)
 
 void GJID::OnIdle (void)
 {
-    CApp::OnIdle();
+    CXApp::OnIdle();
     if (_state == state_Title) {
 	static const time_t titleDelay (time (NULL));
 	if (_levels.empty()) {
@@ -213,7 +213,7 @@ inline void GJID::LoserScreen (CGC& gc)
 
 void GJID::OnDraw (CGC& gc)
 {
-    CApp::OnDraw (gc);
+    CXApp::OnDraw (gc);
     if (_pics.empty())
 	return;
     gc.Palette() = _palette;

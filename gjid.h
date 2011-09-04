@@ -4,11 +4,11 @@
 #pragma once
 #include "level.h"
 #include "font.h"
-#include "app.h"
+#include "xapp.h"
 
 //----------------------------------------------------------------------
 
-class GJID : public CApp {
+class GJID : public CXApp {
 public:
     static GJID&	Instance (void);
 protected:

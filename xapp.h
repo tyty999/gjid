@@ -2,20 +2,34 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "fb.h"
+#include "gc.h"
+#include "pal.h"
+#include <X11/keysym.h>
+#include <X11/Xlib.h>
+
+//----------------------------------------------------------------------
+
+enum {
+    _XKM_Bitshift = 24,
+    XKM_Shift = ShiftMask << _XKM_Bitshift,
+    XKM_Ctrl = ControlMask << _XKM_Bitshift,
+    XKM_Alt = Mod1Mask << _XKM_Bitshift,
+    XKM_Mask = XKM_Shift| XKM_Ctrl| XKM_Alt
+};
 
 /// Base class for application objects
-class CApp {
+class CXApp {
 public:
     typedef wchar_t		key_t;		///< Used for keycodes.
     typedef uint32_t		bidx_t;		///< Mouse button index.
+    typedef ::GC		XGC;
 public:
     inline void			Quit (void)	{ OnQuit(); }
     void			Update (void);
     int				Run (void);
 protected:
-    friend class CXlibFramebuffer;
-				CApp (void);
+				CXApp (void);
+    virtual			~CXApp (void);
     inline virtual void		OnIdle (void)	{ }
     inline virtual void		OnDraw (CGC&)	{ }
     inline virtual void		OnQuit (void)	{ _wantQuit = true; }
@@ -24,10 +38,28 @@ protected:
     inline virtual void		OnMouseMove (coord_t, coord_t) {}
     inline virtual void		OnButton (bidx_t, coord_t, coord_t) {}
     inline virtual void		OnButtonUp (bidx_t, coord_t, coord_t) {}
-    inline void			CreateWindow (const char* title, coord_t w, coord_t h) { _fb.CreateWindow (title, w, h); }
+    void			CreateWindow (const char* title, coord_t w, coord_t h);
 private:
-    CXlibFramebuffer		_fb;		///< The framebuffer backend.
-    CGC				_gc;		///< GC for drawing onto the offscreen buffer.
+    void			CheckEvents (CXApp* evp);
+    void			Flush (void);
+    inline const CGC&		GC (void) const	{ return (_gc); }
+    inline CGC&			GC (void)	{ return (_gc); }
+    void			CloseWindow (void);
+    void			WaitForEvents (void);
+    inline void			OnMap (void);
+    inline void			OnConfigure (coord_t width, coord_t height);
+    template <typename PixelType>
+    void			InitColormap (PixelType* cmap) const;
+    template <typename PixelType>
+    void			CopyGCToImage (void);
+private:
+    CGC				_gc;
+    Display*			_pDisplay;
+    Visual*			_pVisual;
+    XGC				_xgc;
+    memblock			_imageData;
+    XImage*			_pImage;
+    Window			_window;
     bool			_wantQuit;	///< True if want to quit
 };
 

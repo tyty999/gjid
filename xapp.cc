@@ -1,8 +1,9 @@
 // Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-#include "fb.h"
-#include "app.h"
+#include "xapp.h"
+#include <signal.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 #include <X11/Xutil.h>
@@ -10,41 +11,31 @@
 
 //----------------------------------------------------------------------
 
-class XlibError : public runtime_error {
-public:
-			XlibError (const XErrorEvent& e) throw();
-    virtual const char*	what (void) const throw() { return ("Xlib error"); }
-};
-
-XlibError::XlibError (const XErrorEvent& e) throw()
-: runtime_error ("")
+/// Called when a signal is received.
+static void OnSignal (int sig)
 {
-    char errbuf [512];
-    XGetErrorText (e.display, e.error_code, VectorBlock(errbuf));
-    try { m_Arg.format ("%hhu,%hhu: %s", e.request_code, e.minor_code, errbuf); } catch (...) {}
+    printf ("[S] Fatal error: %s\n", strsignal(sig));
+    exit (-sig);
+}
+
+/// Called by the framework on unrecoverable exception handling errors.
+static void Terminate (void)
+{
+    printf ("[T] Unexpected fatal error\n");
+    exit (EXIT_FAILURE);
+}
+
+static int OnXlibError (Display* dpy, XErrorEvent* e)
+{
+    char errbuf[64];
+    XGetErrorText (dpy, e->error_code, VectorBlock(errbuf));
+    printf ("Error: %hhu,%hhu: %s", e->request_code, e->minor_code, errbuf);
+    std::terminate();
 }
 
 //----------------------------------------------------------------------
-// Can't throw an exception through a C callstack, hence this junk.
-//
-static XErrorEvent g_ErrorEvent;
-static bool g_bErrorHappened = false;
 
-static int OnXlibError (Display*, XErrorEvent* e)
-{
-    if (!g_bErrorHappened && e) {
-	g_bErrorHappened = true;
-	g_ErrorEvent = *e;
-    }
-    return (EXIT_SUCCESS);
-}
-
-//----------------------------------------------------------------------
-// Window and mode management
-//----------------------------------------------------------------------
-
-/// Default constructor.
-CXlibFramebuffer::CXlibFramebuffer (void)
+CXApp::CXApp (void)
 :_gc()
 ,_pDisplay (NULL)
 ,_pVisual (NULL)
@@ -52,12 +43,16 @@ CXlibFramebuffer::CXlibFramebuffer (void)
 ,_imageData()
 ,_pImage (NULL)
 ,_window (None)
+,_wantQuit (false)
 {
-}
+    static const int8_t c_Signals[] = {
+	SIGILL, SIGABRT, SIGBUS,  SIGFPE,  SIGSEGV, SIGSYS, SIGALRM, SIGXCPU,
+	SIGHUP, SIGINT,  SIGQUIT, SIGTERM, SIGCHLD, SIGXFSZ, SIGPWR, SIGPIPE
+    };
+    for (uoff_t i = 0; i < VectorSize(c_Signals); ++ i)
+	signal (c_Signals[i], OnSignal);
+    std::set_terminate (Terminate);
 
-/// Opens a connection to the X server (no windows opened)
-void CXlibFramebuffer::Open (void)
-{
     XSetErrorHandler (OnXlibError);
 
     _pDisplay = XOpenDisplay (NULL);
@@ -67,7 +62,7 @@ void CXlibFramebuffer::Open (void)
 }
 
 /// Closes all active resources, windows, and server connections.
-void CXlibFramebuffer::Close (void)
+CXApp::~CXApp (void)
 {
     if (!_pDisplay)
 	return;
@@ -77,8 +72,28 @@ void CXlibFramebuffer::Close (void)
     _pDisplay = NULL;
 }
 
+int CXApp::Run (void)
+{
+    Update();
+    for (_wantQuit = false; !_wantQuit; OnIdle())
+	CheckEvents (this);
+    return (EXIT_SUCCESS);
+}
+
+void CXApp::Update (void)
+{
+    if (!GC().begin())
+	return;
+    OnDraw (GC());
+    Flush();
+}
+
+//----------------------------------------------------------------------
+// Window and mode management
+//----------------------------------------------------------------------
+
 /// Closes the application window and frees its resources.
-void CXlibFramebuffer::CloseWindow (void)
+void CXApp::CloseWindow (void)
 {
     if (!_pDisplay || _window == None)
 	return;
@@ -97,7 +112,7 @@ void CXlibFramebuffer::CloseWindow (void)
     _window = None;
 }
 
-void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t height)
+void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
 {
     CloseWindow();	// The old one, if exists.
 
@@ -128,7 +143,7 @@ void CXlibFramebuffer::CreateWindow (const char* title, coord_t width, coord_t h
     _gc.Resize (width, height);
 }
 
-inline void CXlibFramebuffer::OnMap (void)
+inline void CXApp::OnMap (void)
 {
     // Set the fullscreen flag on the window
     XEvent xev;
@@ -143,7 +158,7 @@ inline void CXlibFramebuffer::OnMap (void)
     XSendEvent (_pDisplay, DefaultRootWindow(_pDisplay), False, SubstructureRedirectMask|SubstructureNotifyMask, &xev);
 }
 
-inline void CXlibFramebuffer::OnConfigure (coord_t width, coord_t height)
+inline void CXApp::OnConfigure (coord_t width, coord_t height)
 {
     const int imageDepth = DefaultDepth (_pDisplay, DefaultScreen(_pDisplay));
     _imageData.resize (width * height * (imageDepth == 24 ? 32 : imageDepth) / 8);
@@ -161,11 +176,9 @@ inline void CXlibFramebuffer::OnConfigure (coord_t width, coord_t height)
 // Event processing
 //----------------------------------------------------------------------
 
-void CXlibFramebuffer::CheckEvents (CApp* papp)
+void CXApp::CheckEvents (CXApp* papp)
 {
     while (XPending (_pDisplay)) {
-	if (g_bErrorHappened)
-	    throw XlibError (g_ErrorEvent);
 	XEvent e;
 	XNextEvent (_pDisplay, &e);
 	key_t keymods = e.xkey.state;
@@ -184,17 +197,17 @@ void CXlibFramebuffer::CheckEvents (CApp* papp)
 }
 
 /// Waits for X events with timeout.
-void CXlibFramebuffer::WaitForEvents (void)
+void CXApp::WaitForEvents (void)
 {
     fd_set fds;
-    FD_ZERO (&fds); 
+    FD_ZERO (&fds);
     FD_SET (ConnectionNumber (_pDisplay), &fds);
     struct timeval tv = { 0, 200000 };
     int rv;
     do {
 	errno = 0;
 	rv = select (ConnectionNumber(_pDisplay) + 1, &fds, NULL, NULL, &tv);
-    } while (errno == EINTR); 
+    } while (errno == EINTR);
     if (rv < 0)
 	throw file_exception ("select", "X server connection");
 }
@@ -205,7 +218,7 @@ void CXlibFramebuffer::WaitForEvents (void)
 
 /// Creates a list of truecolor values from GC palette entries.
 template <typename PixelType>
-void CXlibFramebuffer::InitColormap (PixelType* cmap) const
+void CXApp::InitColormap (PixelType* cmap) const
 {
     const CPalette& rpal (GC().Palette());
     for (uoff_t i = 0; i < min (256U, rpal.size()); ++ i) {
@@ -221,7 +234,7 @@ void CXlibFramebuffer::InitColormap (PixelType* cmap) const
 
 /// Copies GC contents to the image.
 template <typename PixelType>
-void CXlibFramebuffer::CopyGCToImage (void)
+void CXApp::CopyGCToImage (void)
 {
     PixelType cmap [256];
     InitColormap (cmap);
@@ -247,7 +260,7 @@ void CXlibFramebuffer::CopyGCToImage (void)
 }
 
 /// Copies the GC to an XImage and flushes the image to the server.
-void CXlibFramebuffer::Flush (void)
+void CXApp::Flush (void)
 {
     if (!_pDisplay || _window == None || !_pImage)
 	return;
