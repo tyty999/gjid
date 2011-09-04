@@ -8,23 +8,6 @@
 
 //----------------------------------------------------------------------
 
-void CApp::MainLoop (void)
-{
-    Update();
-    for (_wantQuit = false; !_wantQuit; OnIdle())
-	_fb.CheckEvents (this);
-}
-
-void CApp::Update (void)
-{
-    if (!_fb.GC().begin())
-	return;
-    OnDraw (_fb.GC());
-    _fb.Flush();
-}
-
-//----------------------------------------------------------------------
-
 /// Called when a signal is received.
 static void OnSignal (int sig)
 {
@@ -39,8 +22,12 @@ static void Terminate (void)
     exit (EXIT_FAILURE);
 }
 
-/// Installs OnSignal as handler for signals.
-extern "C" void InstallCleanupHandlers (void)
+//----------------------------------------------------------------------
+
+CApp::CApp (void)
+:_fb()
+,_gc()
+,_wantQuit (false)
 {
     static const int8_t c_Signals[] = {
 	SIGILL, SIGABRT, SIGBUS,  SIGFPE,  SIGSEGV, SIGSYS, SIGALRM, SIGXCPU,
@@ -49,4 +36,21 @@ extern "C" void InstallCleanupHandlers (void)
     for (uoff_t i = 0; i < VectorSize(c_Signals); ++ i)
 	signal (c_Signals[i], OnSignal);
     std::set_terminate (Terminate);
+
+    _fb.Open();
+}
+
+void CApp::MainLoop (void)
+{
+    Update();
+    for (_wantQuit = false; !_wantQuit; OnIdle())
+	_fb.CheckEvents (this);
+}
+
+void CApp::Update (void)
+{
+    if (!_fb.GC().begin())
+	return;
+    OnDraw (_fb.GC());
+    _fb.Flush();
 }

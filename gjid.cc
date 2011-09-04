@@ -7,19 +7,19 @@
 
 //----------------------------------------------------------------------
 
-FbglMain (GJID)
+MainApp (GJID)
 
 //----------------------------------------------------------------------
 
 GJID::GJID (void)
-: CApp ()
+: CApp()
 ,_state (state_Title)
 ,_storyPage (0)
 ,_level (0)
-,_curLevel ()
-,_font ()
-,_pics ()
-,_palette ()
+,_curLevel()
+,_font()
+,_pics()
+,_palette()
 ,_levels (0)
 {
     _palette.AllocColor (0,0,0);

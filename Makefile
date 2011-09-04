@@ -14,7 +14,7 @@ DATAFC	:= $(wildcard data/*.gif) data/default.fnt data/levels.dat
 
 all:	Config.mk config.h ${EXE} ${DATAF}
 
-run:	${EXE}
+run:	${EXE} ${DATAF}
 	@./${EXE}
 
 ${EXE}:	${OBJS}

@@ -20,3 +20,4 @@
 #else
     #error "uSTL library (http://sourceforge.net/projects/ustl) is required to compile this package"
 #endif
+#include <stdio.h>

@@ -18,7 +18,7 @@ public:
     void			MainLoop (void);
 protected:
     friend class CXlibFramebuffer;
-    inline			CApp (void)	: _fb(), _gc(), _wantQuit (false) { _fb.Open(); }
+				CApp (void);
     inline virtual void		OnIdle (void)	{ }
     inline virtual void		OnDraw (CGC&)	{ }
     inline virtual void		OnQuit (void)	{ _wantQuit = true; }
@@ -39,27 +39,24 @@ private:
 extern "C" void InstallCleanupHandlers (void);
 
 template <typename AppClass>
-inline int TFbglMain (int argc, const char* const* argv)
+inline int TMainApp (int argc, const char* const* argv)
 {
     int rv = EXIT_FAILURE;
-    InstallCleanupHandlers();
     try {
 	AppClass& rApp = AppClass::Instance();
 	rApp.AppClass::ProcessArguments (argc, argv);
 	rApp.AppClass::MainLoop();
 	rv = EXIT_SUCCESS;
     } catch (exception& e) {
-	cout.flush(); cerr << "Error: " << e << endl;
-    } catch (...) {
-	cout.flush(); cerr << "Unexpected fatal error has occured\n";
+	printf ("Error: %s\n", e.what());
     }
     return (rv);
 }
 
 //----------------------------------------------------------------------
 
-#define FbglMain(appClass)				\
+#define MainApp(appClass)				\
     int main (int argc, const char* const* argv)	\
-	{ return (TFbglMain<appClass> (argc, argv)); }
+	{ return (TMainApp<appClass> (argc, argv)); }
 
 //----------------------------------------------------------------------

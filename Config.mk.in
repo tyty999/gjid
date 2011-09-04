@@ -26,7 +26,7 @@ WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
 		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
 CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fno-threadsafe-statics
 LDFLAGS		:= @CUSTOMLIBDIR@
-LIBS		:= @libustl@ @libX11@ @libXxf86vm@
+LIBS		:= @libustl@ @libX11@
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else
