@@ -32,6 +32,9 @@ CXApp::CXApp (void)
 ,_pconn (NULL)
 ,_pscreen (NULL)
 ,_window (XCB_NONE)
+,_wpict (XCB_NONE)
+,_bpict (XCB_NONE)
+,_bpixid (XCB_NONE)
 ,_xgc (XCB_NONE)
 ,_width()
 ,_height()
@@ -112,10 +115,7 @@ int CXApp::Run (void)
 	switch (e->response_type & 0x7f) {
 	    case XCB_MAP_NOTIFY:	OnMap(); break;
 	    case XCB_EXPOSE:		Update(); break;
-	    case XCB_CONFIGURE_NOTIFY:
-		_width = ((const xcb_configure_notify_event_t*)e)->width;
-		_height = ((const xcb_configure_notify_event_t*)e)->height;
-		break;
+	    case XCB_CONFIGURE_NOTIFY:	OnResize(e); break;
 	    case XCB_KEY_PRESS:		OnKey (TranslateKeycode(e)); break;
 	}
     }
@@ -128,9 +128,12 @@ void CXApp::Update (void)
 	return;
     OnDraw (GC());
 
-    vector<uint32_t> img (_width*_height);
-    CopyGCToImage (img);
-    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, _window, _xgc, _width, _height, 0, 0, 0, _pscreen->root_depth, img.size()*4, (const uint8_t*) &img[0]);
+    vector<uint32_t> img (GC().Width()*GC().Height());
+    for (size_t i = 0; i < img.size(); ++i)
+	img[i] = GC().Palette()[GC().begin()[i]];
+
+    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, _bpixid, _xgc, GC().Width(), GC().Height(), 0, 0, 0, _pscreen->root_depth, img.size()*4, (const uint8_t*) &img[0]);
+    xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_SRC, _bpict, XCB_NONE, _wpict, 0, 0, 0, 0, 0, 0, _width, _height);
     xcb_flush(_pconn);
 }
 
@@ -148,6 +151,11 @@ void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
 	    XCB_CW_BACK_PIXMAP| XCB_CW_EVENT_MASK, winvals);
     // Create a GC for this window
     xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), _window, 0, NULL);
+    // Create backing pixmap
+    _bpixid = xcb_generate_id(_pconn);
+    xcb_create_pixmap (_pconn, _pscreen->root_depth, _bpixid, _window, width, height);
+    xcb_render_create_picture (_pconn, _bpict = xcb_generate_id(_pconn), _bpixid, _xrfmt[rfmt_Default], 0, NULL);
+    xcb_render_create_picture (_pconn, _wpict = xcb_generate_id(_pconn), _window, _xrfmt[rfmt_Default], 0, NULL);
     // Set window title
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
     // Enable WM close message
@@ -177,37 +185,21 @@ inline void CXApp::OnMap (void)
     xcb_flush(_pconn);
 }
 
+inline void CXApp::OnResize (const xcb_generic_event_t* e)
+{
+    _width = ((const xcb_configure_notify_event_t*)e)->width;
+    _height = ((const xcb_configure_notify_event_t*)e)->height;
+    // Setup RENDER scaling of the backbuffer
+    xcb_render_transform_t tr;
+    memset (&tr, 0, sizeof(tr));
+    tr.matrix11 = (GC().Width()<<16)/_width;
+    tr.matrix22 = (GC().Height()<<16)/_height;
+    tr.matrix33 = (1<<16);
+    xcb_render_set_picture_transform (_pconn, _bpict, tr);
+}
+
 inline wchar_t CXApp::TranslateKeycode (const xcb_generic_event_t* event) const
 {
     const xcb_key_press_event_t *kp = (const xcb_key_press_event_t*)event;
     return (_ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode]);
-}
-
-//----------------------------------------------------------------------
-// Drawing and colormap translation.
-//----------------------------------------------------------------------
-
-/// Copies GC contents to the image.
-void CXApp::CopyGCToImage (vector<uint32_t>& img)
-{
-    const CPalette& rpal (GC().Palette());
-    const color_t* src = GC().begin();
-    vector<uint32_t>::iterator dest = img.begin();
-
-    // Scale the gc to the screen resolution.
-    const size_t sw = GC().Width(), sh = GC().Height();
-    const size_t dw = _width, dh = _height;
-    size_t dx = 0, dy = 0;
-    for (size_t y = 0; y < sh; ++y) {
-	for (; dy < dh; dy += sh) {
-	    for (size_t x = 0; x < sw; ++x) {
-		const uint32_t v (rpal[src[x]]);
-		for (; dx < dw; dx += sw)
-		    *dest++ = v;
-		dx -= dw;
-	    }
-	}
-	dy -= dh;
-	src += sw;
-    }
 }

@@ -55,14 +55,17 @@ private:
     inline const CGC&		GC (void) const	{ return (_gc); }
     inline CGC&			GC (void)	{ return (_gc); }
     inline void			OnMap (void);
+    inline void			OnResize (const xcb_generic_event_t* event);
     inline wchar_t		TranslateKeycode (const xcb_generic_event_t* event) const;
-    void			CopyGCToImage (vector<uint32_t>& img);
 private:
     CGC				_gc;
     vector<wchar_t>		_ksyms;
     xcb_connection_t*		_pconn;
     const xcb_screen_t*		_pscreen;
     xcb_window_t		_window;
+    uint32_t			_wpict;
+    uint32_t			_bpict;
+    uint32_t			_bpixid;
     xcb_gcontext_t		_xgc;
     xcb_atom_t			_atoms[xa_Count];
     xcb_atom_t			_xa_wm_protocols;
