@@ -22,6 +22,13 @@ class CXApp {
 public:
     typedef wchar_t		key_t;		///< Used for keycodes.
     typedef uint32_t		bidx_t;		///< Mouse button index.
+    struct SImage {
+	uint32_t		id;
+	uint16_t		w,h;
+    };
+    struct SImageTile {
+	uint8_t			x,y,w,h;
+    };
 private:
     enum EXRFmt {
 	rfmt_Default,
@@ -50,6 +57,8 @@ protected:
     inline virtual void		OnDraw (CGC&)	{ }
     inline virtual void		OnQuit (void)	{ _wantQuit = true; }
     inline virtual void		OnKey (key_t)	{ }
+    SImage			LoadImage (const char* const* p);
+    void			DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y);
     void			CreateWindow (const char* title, coord_t w, coord_t h);
 private:
     inline const CGC&		GC (void) const	{ return (_gc); }

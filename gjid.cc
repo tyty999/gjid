@@ -5,6 +5,11 @@
 #include "cpio.h"
 #include <time.h>
 
+#define char const char
+#include "data/tileset.xpm"
+#include "data/logo.xpm"
+#undef char
+
 //----------------------------------------------------------------------
 
 MainApp (GJID)

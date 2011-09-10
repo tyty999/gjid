@@ -203,3 +203,35 @@ inline wchar_t CXApp::TranslateKeycode (const xcb_generic_event_t* event) const
     const xcb_key_press_event_t *kp = (const xcb_key_press_event_t*)event;
     return (_ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode]);
 }
+
+CXApp::SImage CXApp::LoadImage (const char* const* p)
+{
+    SImage img;
+    uint32_t d;
+    sscanf (*p++, "%hu %hu %u", &img.w, &img.h, &d);
+    uint32_t pal[128];
+    for (uint32_t i = 0; i < d; ++i) {
+	uint8_t ci; uint32_t cv = 0xff000000;
+	sscanf (*p++, "%c c #%X", &ci, &cv);
+	pal[ci] = cv ^ 0xff000000;
+    }
+    vector<uint32_t> pixels (img.w*img.h);
+    for (uint32_t y = 0; y < img.h; ++y, ++p)
+	for (uint32_t x = 0; x < img.w; ++x)
+	    pixels[y*img.w+x] = pal[uint8_t((*p)[x])];
+
+    xcb_pixmap_t pixid = xcb_generate_id(_pconn);
+    xcb_create_pixmap (_pconn, 32, pixid, _window, img.w, img.h);
+    uint32_t gc = xcb_generate_id(_pconn);
+    xcb_create_gc (_pconn, gc, pixid, 0, NULL);
+    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, gc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, (const uint8_t*)&pixels[0]);
+    xcb_free_gc (_pconn, gc);
+    xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, 38, 0, NULL);
+    xcb_free_pixmap (_pconn, pixid);
+    return (img);
+}
+
+void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y)
+{
+    xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_OVER, img.id, XCB_NONE, _bpict, tile.x, tile.y, 0, 0, x, y, tile.w, tile.h);
+}
