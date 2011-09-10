@@ -53,8 +53,8 @@ CXApp::CXApp (void)
     const xcb_setup_t* xsetup = xcb_get_setup (_pconn);
     _pscreen = xcb_setup_roots_iterator(xsetup).data;
     // Request RENDER extension, keyboard mappings, and WM atoms
-    auto kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
-    auto rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
+    xcb_get_keyboard_mapping_cookie_t kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
+    xcb_render_query_version_cookie_t rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
     static const char* c_AtomNames[xa_Count] = { "STRING", "ATOM", "WM_NAME", "WM_PROTOCOLS", "WM_DELETE_WINDOW", "_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN" };
     for (int i = 0; i < xa_Count; ++i)
 	_atoms[i] = xcb_intern_atom (_pconn, false, strlen(c_AtomNames[i]), c_AtomNames[i]).sequence;
@@ -74,17 +74,17 @@ CXApp::CXApp (void)
 
     // Find the root visual
     const xcb_visualtype_t* visual = NULL;
-    for (auto depth_iter = xcb_screen_allowed_depths_iterator(_pscreen); depth_iter.rem; xcb_depth_next(&depth_iter)) {
+    for (xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(_pscreen); depth_iter.rem; xcb_depth_next(&depth_iter)) {
 	if (depth_iter.data->depth != _pscreen->root_depth)
 	    continue;
-	for (auto visual_iter = xcb_depth_visuals_iterator(depth_iter.data); visual_iter.rem; xcb_visualtype_next(&visual_iter))
+	for (xcb_visualtype_iterator_t visual_iter = xcb_depth_visuals_iterator(depth_iter.data); visual_iter.rem; xcb_visualtype_next(&visual_iter))
 	    if (_pscreen->root_visual == visual_iter.data->visual_id)
 		visual = visual_iter.data;
     }
     // Get standard RENDER formats
-    auto qpfcook = xcb_render_query_pict_formats (_pconn);
-    auto qpfr = xcb_render_query_pict_formats_reply (_pconn, qpfcook, NULL);
-    for (auto i = xcb_render_query_pict_formats_formats_iterator(qpfr); i.rem; xcb_render_pictforminfo_next(&i)) {
+    xcb_render_query_pict_formats_cookie_t qpfcook = xcb_render_query_pict_formats (_pconn);
+    xcb_render_query_pict_formats_reply_t* qpfr = xcb_render_query_pict_formats_reply (_pconn, qpfcook, NULL);
+    for (xcb_render_pictforminfo_iterator_t i = xcb_render_query_pict_formats_formats_iterator(qpfr); i.rem; xcb_render_pictforminfo_next(&i)) {
 	if (i.data->depth == _pscreen->root_depth && i.data->direct.red_mask == visual->red_mask >> i.data->direct.red_shift)
 	    _xrfmt[rfmt_Default] = i.data->id;
 	else if (i.data->depth == 1)
@@ -192,7 +192,7 @@ void CXApp::CopyGCToImage (vector<uint32_t>& img)
 {
     const CPalette& rpal (GC().Palette());
     const color_t* src = GC().begin();
-    auto dest = img.begin();
+    vector<uint32_t>::iterator dest = img.begin();
 
     // Scale the gc to the screen resolution.
     const size_t sw = GC().Width(), sh = GC().Height();
