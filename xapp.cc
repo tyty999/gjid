@@ -2,7 +2,6 @@
 // This file is free software, distributed under the MIT License.
 
 #include "xapp.h"
-#include <xcb/xcb_atom.h>
 #include <xcb/render.h>
 #include <signal.h>
 #include <stdio.h>
@@ -53,13 +52,14 @@ CXApp::CXApp (void)
     _pconn = xcb_connect (NULL, NULL);
     const xcb_setup_t* xsetup = xcb_get_setup (_pconn);
     _pscreen = xcb_setup_roots_iterator(xsetup).data;
+    // Request RENDER extension, keyboard mappings, and WM atoms
     auto kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
     auto rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
-    auto r_wm_protocols = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
-    auto r_wm_delete_window = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
-    auto r_net_wm_state = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
-    auto r_net_wm_state_fullscreen = xcb_intern_atom (_pconn, false, strlen("WM_NAME"), "WM_NAME");
+    static const char* c_AtomNames[xa_Count] = { "STRING", "ATOM", "WM_NAME", "WM_PROTOCOLS", "WM_DELETE_WINDOW", "_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN" };
+    for (int i = 0; i < xa_Count; ++i)
+	_atoms[i] = xcb_intern_atom (_pconn, false, strlen(c_AtomNames[i]), c_AtomNames[i]).sequence;
 
+    // Receive and store keyboard mappings
     const xcb_get_keyboard_mapping_reply_t* kbreply = xcb_get_keyboard_mapping_reply (_pconn, kbcookie, NULL);
     size_t szkeysyms = xcb_get_keyboard_mapping_keysyms_length (kbreply);
     const wchar_t* psyms = (const wchar_t*) xcb_get_keyboard_mapping_keysyms (kbreply);
@@ -67,11 +67,33 @@ CXApp::CXApp (void)
     _minKeycode = xsetup->min_keycode;
     _keysymsPerKeycode = kbreply->keysyms_per_keycode;
 
+    // Acknowledge render version and assign atom values
     xcb_render_query_version_reply (_pconn, rendcook, NULL);
-    _xa_wm_protocols = xcb_intern_atom_reply(_pconn, r_wm_protocols, NULL)->atom;
-    _xa_wm_delete_window = xcb_intern_atom_reply(_pconn, r_wm_delete_window, NULL)->atom;
-    _xa_net_wm_state = xcb_intern_atom_reply(_pconn, r_net_wm_state, NULL)->atom;
-    _xa_net_wm_state_fullscreen = xcb_intern_atom_reply(_pconn, r_net_wm_state_fullscreen, NULL)->atom;
+    for (int i = 0; i < xa_Count; ++i)
+	_atoms[i] = xcb_intern_atom_reply(_pconn, *(xcb_intern_atom_cookie_t*)&_atoms[i], NULL)->atom;
+
+    // Find the root visual
+    const xcb_visualtype_t* visual = NULL;
+    for (auto depth_iter = xcb_screen_allowed_depths_iterator(_pscreen); depth_iter.rem; xcb_depth_next(&depth_iter)) {
+	if (depth_iter.data->depth != _pscreen->root_depth)
+	    continue;
+	for (auto visual_iter = xcb_depth_visuals_iterator(depth_iter.data); visual_iter.rem; xcb_visualtype_next(&visual_iter))
+	    if (_pscreen->root_visual == visual_iter.data->visual_id)
+		visual = visual_iter.data;
+    }
+    // Get standard RENDER formats
+    auto qpfcook = xcb_render_query_pict_formats (_pconn);
+    auto qpfr = xcb_render_query_pict_formats_reply (_pconn, qpfcook, NULL);
+    for (auto i = xcb_render_query_pict_formats_formats_iterator(qpfr); i.rem; xcb_render_pictforminfo_next(&i)) {
+	if (i.data->depth == _pscreen->root_depth && i.data->direct.red_mask == visual->red_mask >> i.data->direct.red_shift)
+	    _xrfmt[rfmt_Default] = i.data->id;
+	else if (i.data->depth == 1)
+	    _xrfmt[rfmt_Bitmask] = i.data->id;
+	else if (i.data->depth == 8)
+	    _xrfmt[rfmt_Font] = i.data->id;
+	else if (i.data->depth == 32 && i.data->direct.red_shift == 16 && i.data->direct.alpha_mask == 0xff)
+	    _xrfmt[rfmt_Pixmap] = i.data->id;
+    }
 }
 
 /// Closes all active resources, windows, and server connections.
@@ -127,9 +149,9 @@ void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
     // Create a GC for this window
     xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), _window, 0, NULL);
     // Set window title
-    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, WM_NAME, STRING, 8, strlen(title), title);
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
     // Enable WM close message
-    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _xa_wm_protocols, ATOM, 32, 1, &_xa_wm_delete_window);
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_PROTOCOLS], _atoms[xa_ATOM], 32, 1, &_atoms[xa_WM_DELETE_WINDOW]);
     // And put it on the screen
     xcb_map_window (_pconn, _window);
 
@@ -147,10 +169,10 @@ inline void CXApp::OnMap (void)
     memset (&xev, 0, sizeof(xev));
     xev.response_type = XCB_CLIENT_MESSAGE;
     xev.window = _window;
-    xev.type = _xa_net_wm_state;
+    xev.type = _atoms[xa_NET_WM_STATE];
     xev.format = 32;
     xev.data.data32[0] = 1;
-    xev.data.data32[1] = _xa_net_wm_state_fullscreen;
+    xev.data.data32[1] = _atoms[xa_NET_WM_STATE_FULLSCREEN];
     xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT| XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
     xcb_flush(_pconn);
 }

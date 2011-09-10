@@ -22,6 +22,23 @@ class CXApp {
 public:
     typedef wchar_t		key_t;		///< Used for keycodes.
     typedef uint32_t		bidx_t;		///< Mouse button index.
+private:
+    enum EXRFmt {
+	rfmt_Default,
+	rfmt_Bitmask,
+	rfmt_Font,
+	rfmt_Pixmap
+    };
+    enum EXAtoms {
+	xa_STRING,
+	xa_ATOM,
+	xa_WM_NAME,
+	xa_WM_PROTOCOLS,
+	xa_WM_DELETE_WINDOW,
+	xa_NET_WM_STATE,
+	xa_NET_WM_STATE_FULLSCREEN,
+	xa_Count
+    };
 public:
     inline void			Quit (void)	{ OnQuit(); }
     void			Update (void);
@@ -47,10 +64,12 @@ private:
     const xcb_screen_t*		_pscreen;
     xcb_window_t		_window;
     xcb_gcontext_t		_xgc;
+    xcb_atom_t			_atoms[xa_Count];
     xcb_atom_t			_xa_wm_protocols;
     xcb_atom_t			_xa_wm_delete_window;
     xcb_atom_t			_xa_net_wm_state;
     xcb_atom_t			_xa_net_wm_state_fullscreen;
+    uint8_t			_xrfmt[4];
     uint16_t			_width;
     uint16_t			_height;
     uint8_t			_minKeycode;
