@@ -46,7 +46,5 @@ private:
     SImage		_imglogo;
     Level		_curLevel;
     CFont		_font;
-    picvec_t		_pics;
-    CPalette		_palette;
     vector<Level>	_levels;
 };

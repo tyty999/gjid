@@ -24,7 +24,7 @@ void CFont::read (istream& is)
 }
 
 
-int CFont::PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color)
+int CFont::PrintString (CGC& gc, int x, int y, const char* s, color_t color)
 {
     size_t m = x;
     for (uoff_t n = 0; n < strlen(s); ++ n)
@@ -32,7 +32,7 @@ int CFont::PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t co
     return (m - x);
 }
 
-int CFont::PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color)
+int CFont::PrintCharacter (CGC& gc, int x, int y, wchar_t c, color_t color)
 {
     memblock::const_iterator li = GetLetterStart (c);
     size_t bit = 0, cmw = 0;

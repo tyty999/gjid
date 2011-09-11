@@ -122,7 +122,7 @@ int CXApp::Run (void)
 
 void CXApp::Update (void)
 {
-    if (!_pconn || !_window || !GC().begin())
+    if (!_pconn || !_window)
 	return;
     OnDraw (GC());
     xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_SRC, _bpict, XCB_NONE, _wpict, 0, 0, 0, 0, 0, 0, _width, _height);
@@ -132,8 +132,9 @@ void CXApp::Update (void)
 // Window and mode management
 //----------------------------------------------------------------------
 
-void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
+void CXApp::CreateWindow (const char* title, int width, int height)
 {
+    _gc.Resize (width, height);
     // Create the window with given dimensions
     static const uint32_t winvals[] = { XCB_NONE, XCB_EVENT_MASK_EXPOSURE| XCB_EVENT_MASK_KEY_PRESS| XCB_EVENT_MASK_STRUCTURE_NOTIFY };
     xcb_create_window (_pconn, XCB_COPY_FROM_PARENT, _window=xcb_generate_id(_pconn),
@@ -153,12 +154,6 @@ void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_PROTOCOLS], _atoms[xa_ATOM], 32, 1, &_atoms[xa_WM_DELETE_WINDOW]);
     // And put it on the screen
     xcb_map_window (_pconn, _window);
-
-    // Initialize the palette to grayscale to avoid a black screen if the palette is not set.
-    GC().Palette().resize (256);
-    for (uoff_t i = 0; i < GC().Palette().size(); ++ i)
-	GC().Palette()[i] = RGB (i, i, i);
-    _gc.Resize (width, height);
 }
 
 inline void CXApp::OnMap (void)

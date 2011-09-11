@@ -4,19 +4,21 @@
 #pragma once
 #include "gc.h"
 
+typedef uint8_t color_t;
+
 class CFont {
 public:
 			CFont (void);
-    int			PrintString (CGC& gc, coord_t x, coord_t y, const char* s, color_t color);
+    int			PrintString (CGC& gc, int x, int y, const char* s, color_t color);
     void		read (istream& is);
 private:
-    int			PrintCharacter (CGC& gc, coord_t x, coord_t y, wchar_t c, color_t color);
+    int			PrintCharacter (CGC& gc, int x, int y, wchar_t c, color_t color);
     memblock::iterator	GetLetterStart (wchar_t c)	{ return (_data.begin() + c * _letterSize); }
 private:
     memblock		_data;
     size_t		_letterSize;
-    dim_t		_width;
-    dim_t		_height;
+    uint16_t		_width;
+    uint16_t		_height;
 };
 
 STD_STREAMABLE (CFont)

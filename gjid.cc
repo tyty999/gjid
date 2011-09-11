@@ -23,11 +23,8 @@ GJID::GJID (void)
 ,_level (0)
 ,_curLevel()
 ,_font()
-,_pics()
-,_palette()
 ,_levels (0)
 {
-    _palette.AllocColor (0,0,0);
     CreateWindow ("GJID", 320, 240);
     LoadData (DATAFILE);
     _imgtiles = LoadImage (tileset_xpm);
@@ -53,22 +50,6 @@ void GJID::LoadData (const char* filename)
     istream fntstm = datafile.File ("default.fnt"); fntstm >> _font;
     istream lvlstm = datafile.File ("levels.dat"); lvlstm >> _levels;
     _curLevel = _levels[0];
-
-    _pics.resize (NumberOfPics);
-    static const char c_PicFiles[] =
-	"dispose.gif\0" "exit.gif\0" "floor.gif\0"
-	"oneway_n.gif\0" "oneway_s.gif\0" "oneway_e.gif\0" "oneway_w.gif\0"
-	"wall1.gif\0" "wall2.gif\0" "wall3.gif\0" "back1.gif\0" "back2.gif\0" "back3.gif\0"
-	"robot_n.gif\0" "robot_s.gif\0" "robot_e.gif\0" "robot_w.gif\0"
-	"barrel1.gif\0" "barrel2.gif\0"
-	"logo_g.gif\0" "logo_j.gif\0" "logo_i.gif\0" "logo_d.gif\0";
-    const char* picfilename = c_PicFiles;
-    foreach (picvec_t::iterator, i, _pics) {
-	istream picstm = datafile.File (picfilename);
-	picstm >> *i;
-	i->MergePaletteInto (_palette);
-	picfilename += strlen(picfilename)+1;
-    }
 }
 
 static const GJID::SImageTile c_Tiles [NumberOfPics] = {
@@ -107,15 +88,15 @@ inline void GJID::PutTile (PicIndex ti, int x, int y)
 
 void GJID::FillWithTile (CGC& gc, PicIndex tidx)
 {
-    for (dim_t y = 0; y < gc.Height(); y += TILE_H)
-	for (dim_t x = 0; x < gc.Width(); x += TILE_W)
+    for (int y = 0; y < gc.Height(); y += TILE_H)
+	for (int x = 0; x < gc.Width(); x += TILE_W)
 	    PutTile (tidx, x, y);
 }
 
 void GJID::DecodeBitmapWithTile (CGC&, const uint16_t* p, size_t n, PicIndex tidx)
 {
-    for (uoff_t y = 0; y < n; ++ y)
-	for (uoff_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
+    for (size_t y = 0; y < n; ++ y)
+	for (size_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
 	    if (p[y] & mask)
 		PutTile (tidx, (x + 2) * TILE_W, (y + 3) * TILE_H);
 }
@@ -134,7 +115,7 @@ inline void GJID::IntroScreen (CGC& gc)
 
 inline void GJID::PrintStory (CGC& gc)
 {
-    coord_t x, y, row = 0;
+    int x, y, row = 0;
 
     FillWithTile (gc, Back1Pix);
     for (y = 0; y < gc.Height(); y += TILE_H) {
@@ -214,8 +195,8 @@ inline void GJID::DrawLevel (CGC& gc)
 {
     Level::tilemap_t::const_iterator it (_curLevel.Map().begin());
     FillWithTile (gc, PicIndex(_curLevel.Map().back()));
-    for (coord_t y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
-	for (coord_t x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
+    for (int y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
+	for (int x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
 	    PutTile (PicIndex(*it++), x, y);
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
@@ -242,9 +223,6 @@ inline void GJID::LoserScreen (CGC& gc)
 void GJID::OnDraw (CGC& gc)
 {
     CXApp::OnDraw (gc);
-    if (_pics.empty())
-	return;
-    gc.Palette() = _palette;
     switch (_state) {
 	default:
 	case state_Title:	return (IntroScreen (gc));

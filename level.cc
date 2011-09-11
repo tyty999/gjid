@@ -13,7 +13,7 @@ Level::Level (void)
     fill (_map, tilemap_t::value_type(FloorPix));
 }
 
-bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
+bool Level::CanMoveTo (int x, int y, RobotDir where) const
 {
     if (x < 0 || y < 0 || x >= MAP_WIDTH || y >= MAP_HEIGHT)
 	return (false);
@@ -27,7 +27,7 @@ bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
     return (false);
 }
 
-int Level::FindCrate (coord_t x, coord_t y) const
+int Level::FindCrate (int x, int y) const
 {
     for (uoff_t i = 1; i < _objects.size(); ++ i)
 	if (_objects[i].x == x && _objects[i].y == y)
@@ -67,7 +67,7 @@ void Level::MoveRobot (RobotDir where)
     }
 }
 
-void Level::MoveRobot (coord_t x, coord_t y, PicIndex pic)
+void Level::MoveRobot (int x, int y, PicIndex pic)
 {
     if (CanMoveTo (x, y, North)) {
 	Robot().x = x;
@@ -76,7 +76,7 @@ void Level::MoveRobot (coord_t x, coord_t y, PicIndex pic)
     }
 }
 
-void Level::AddCrate (coord_t x, coord_t y, PicIndex pic)
+void Level::AddCrate (int x, int y, PicIndex pic)
 {
     _objects.push_back();
     _objects.back().x = x;

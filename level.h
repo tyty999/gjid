@@ -52,15 +52,11 @@ enum RobotDir {
 
 //----------------------------------------------------------------------
 
-typedef vector<CImage>	picvec_t;
-
-//----------------------------------------------------------------------
-
 class Level {
 public:
     class ObjectType {
     public:
-	inline		ObjectType (coord_t nx = 0, coord_t ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
+	inline		ObjectType (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
 	inline void	read (istream& s)	{ s >> x >> y >> pic; }
 	inline void	write (ostream& s) const{ s << x << y << pic; }
 	inline size_t	stream_size (void) const{ return (3); }
@@ -75,20 +71,20 @@ public:
     typedef const objvec_t&	rcobjvec_t;
 public:
 			Level (void);
-    inline PicIndex	At (coord_t x, coord_t y) const			{ return (PicIndex (_map [y * MAP_WIDTH + x])); }
-    inline void		SetCell (coord_t x, coord_t y, PicIndex pic)	{ _map [y * MAP_WIDTH + x] = pic; }
+    inline PicIndex	At (int x, int y) const			{ return (PicIndex (_map [y * MAP_WIDTH + x])); }
+    inline void		SetCell (int x, int y, PicIndex pic)	{ _map [y * MAP_WIDTH + x] = pic; }
     bool		Finished (void) const;
     inline void		DisposeCrate (uoff_t index)			{ _objects.erase (_objects.begin() + index); }
     inline rctilemap_t	Map (void) const				{ return (_map); }
     inline rcobjvec_t	Objects (void) const				{ return (_objects); }
-    void		AddCrate (coord_t x, coord_t y, PicIndex pic);
+    void		AddCrate (int x, int y, PicIndex pic);
     void		MoveRobot (RobotDir where);
-    void		MoveRobot (coord_t x, coord_t y, PicIndex pic);
+    void		MoveRobot (int x, int y, PicIndex pic);
     void		read (istream& is);
     void		write (ostream& os) const;
     size_t		stream_size (void) const;
-    int			FindCrate (coord_t x, coord_t y) const;
-    bool		CanMoveTo (coord_t x, coord_t y, RobotDir where) const;
+    int			FindCrate (int x, int y) const;
+    bool		CanMoveTo (int x, int y, RobotDir where) const;
 private:
     inline const ObjectType&	Robot (void) const	{ return (_objects[0]); }
     inline ObjectType&		Robot (void)		{ return (_objects[0]); }

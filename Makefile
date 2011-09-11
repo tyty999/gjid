@@ -6,7 +6,7 @@ EXE	:= ${NAME}
 SRCS	:= $(wildcard *.cc fbgl/*.cc fbgl/con/*.cc fbgl/gob/*.cc fbgl/x11/*.cc)
 OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 DATAF	:= data/${NAME}.cpio
-DATAFC	:= $(wildcard data/*.gif) data/default.fnt data/levels.dat
+DATAFC	:= data/default.fnt data/levels.dat
 
 ################ Compilation ###########################################
 

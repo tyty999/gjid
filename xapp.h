@@ -3,7 +3,6 @@
 
 #pragma once
 #include "gc.h"
-#include "pal.h"
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 
@@ -59,7 +58,7 @@ protected:
     inline virtual void		OnKey (key_t)	{ }
     SImage			LoadImage (const char* const* p);
     void			DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y);
-    void			CreateWindow (const char* title, coord_t w, coord_t h);
+    void			CreateWindow (const char* title, int w, int h);
 private:
     inline const CGC&		GC (void) const	{ return (_gc); }
     inline CGC&			GC (void)	{ return (_gc); }
