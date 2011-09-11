@@ -71,22 +71,53 @@ void GJID::LoadData (const char* filename)
     }
 }
 
+static const GJID::SImageTile c_Tiles [NumberOfPics] = {
+    { 32, 48, 16, 16 },	// DisposePix
+    { 48, 48, 16, 16 },	// ExitPix
+    { 48, 16, 16, 16 },	// FloorPix
+    { 16, 32, 16, 16 },	// OWDNorthPix
+    { 32, 32, 16, 16 },	// OWDSouthPix
+    {  0, 32, 16, 16 },	// OWDEastPix
+    { 48, 32, 16, 16 },	// OWDWestPix
+    {  0, 16, 16, 16 },	// Wall1Pix
+    { 16, 16, 16, 16 },	// Wall2Pix
+    { 32, 16, 16, 16 },	// Wall3Pix
+    {  0, 64, 16, 16 },	// Back1Pix
+    { 16, 64, 16, 16 },	// Back2Pix
+    { 32, 64, 16, 16 },	// Back3Pix
+    { 16,  0, 16, 16 },	// RobotNorthPix
+    { 32,  0, 16, 16 },	// RobotSouthPix
+    {  0,  0, 16, 16 },	// RobotEastPix
+    { 48,  0, 16, 16 },	// RobotWestPix
+    {  0, 48, 16, 16 },	// Barrel1Pix
+    { 16, 48, 16, 16 },	// Barrel2Pix
+    {  0,  0, 50, 50 },	// LogoGPix
+    { 50,  0, 50, 50 },	// LogoJPix
+    {100,  0, 50, 50 },	// LogoIPix
+    {150,  0, 50, 50 }	// LogoDPix
+};
+
+inline void GJID::PutTile (PicIndex ti, int x, int y)
+{
+    DrawImageTile (ti < NumberOfMapPics ? _imgtiles : _imglogo, c_Tiles[ti], x, y);
+}
+
 //----------------------------------------------------------------------
 // Tile screen helpers
 
-void GJID::FillWithTile (CGC& gc, PicIndex tidx) const
+void GJID::FillWithTile (CGC& gc, PicIndex tidx)
 {
     for (dim_t y = 0; y < gc.Height(); y += TILE_H)
 	for (dim_t x = 0; x < gc.Width(); x += TILE_W)
-	    gc.Image (_pics[tidx], x, y);
+	    PutTile (tidx, x, y);
 }
 
-void GJID::DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx) const
+void GJID::DecodeBitmapWithTile (CGC&, const uint16_t* p, size_t n, PicIndex tidx)
 {
     for (uoff_t y = 0; y < n; ++ y)
 	for (uoff_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
 	    if (p[y] & mask)
-		gc.Image (_pics [tidx], (x + 2) * TILE_W, (y + 3) * TILE_H);
+		PutTile (tidx, (x + 2) * TILE_W, (y + 3) * TILE_H);
 }
 
 //----------------------------------------------------------------------
@@ -105,23 +136,23 @@ inline void GJID::PrintStory (CGC& gc)
 {
     coord_t x, y, row = 0;
 
-    gc.Clear (gc.AllocColor (0,0,64));
+    FillWithTile (gc, Back1Pix);
     for (y = 0; y < gc.Height(); y += TILE_H) {
-	gc.Image (_pics [Wall1Pix], 0, y);
-	gc.Image (_pics [Wall1Pix], gc.Width() - TILE_W, y);
+	PutTile (Wall1Pix, 0, y);
+	PutTile (Wall1Pix, gc.Width() - TILE_W, y);
     }
     for (x = TILE_W; x < gc.Width() - TILE_W; x += TILE_W) {
-	gc.Image (_pics [Wall1Pix], x, 0);
-	gc.Image (_pics [Wall1Pix], x, gc.Height() - TILE_H);
+	PutTile (Wall1Pix, x, 0);
+	PutTile (Wall1Pix, x, gc.Height() - TILE_H);
     }
     _font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
     _font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
 
     if (_storyPage == 0) {
-	gc.ImageMasked (_pics[LogoGPix], 40, TILE_H * 2); 
-	gc.ImageMasked (_pics[LogoJPix], 100, TILE_H * 2); 
-	gc.ImageMasked (_pics[LogoIPix], 160, TILE_H * 2); 
-	gc.ImageMasked (_pics[LogoDPix], 220, TILE_H * 2); 
+	PutTile (LogoGPix, 40, TILE_H * 2); 
+	PutTile (LogoJPix, 100, TILE_H * 2); 
+	PutTile (LogoIPix, 160, TILE_H * 2); 
+	PutTile (LogoDPix, 220, TILE_H * 2); 
 	row = 8;
     }
     if (_storyPage < 2) {
@@ -167,27 +198,27 @@ inline void GJID::PrintStory (CGC& gc)
 	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
 	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
-	    gc.ImageMasked (_pics [pic[i]], x, y);
+	    PutTile (pic[i], x, y);
 	    _font.PrintString (gc, x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
 	    y += 17;
 	}
-	gc.Image (_pics [OWDNorthPix], x, y);
-	gc.Image (_pics [OWDSouthPix], x += TILE_W, y);
-	gc.Image (_pics [OWDEastPix], x += TILE_W, y);
-	gc.Image (_pics [OWDWestPix], x += TILE_W, y);
+	PutTile (OWDNorthPix, x, y);
+	PutTile (OWDSouthPix, x += TILE_W, y);
+	PutTile (OWDEastPix, x += TILE_W, y);
+	PutTile (OWDWestPix, x += TILE_W, y);
 	_font.PrintString (gc, x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
     }
 }
 
 inline void GJID::DrawLevel (CGC& gc)
 {
-    gc.Clear();
     Level::tilemap_t::const_iterator it (_curLevel.Map().begin());
+    FillWithTile (gc, PicIndex(_curLevel.Map().back()));
     for (coord_t y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
 	for (coord_t x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
-	    gc.Image (_pics[*it++], x, y);
+	    PutTile (PicIndex(*it++), x, y);
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
-	gc.ImageMasked (_pics[i->pic], i->x*TILE_W, i->y*TILE_H);
+	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
 }
 
 inline void GJID::WinnerScreen (CGC& gc)

@@ -26,8 +26,8 @@ private:
     };
 private:
     void		GoToState (EGameState state);
-    void		FillWithTile (CGC& gc, PicIndex tidx) const;
-    void		DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx) const;
+    void		FillWithTile (CGC& gc, PicIndex tidx);
+    void		DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx);
     inline void		IntroScreen (CGC& gc);
     inline void		LoserScreen (CGC& gc);
     inline void		PrintStory (CGC& gc);
@@ -37,6 +37,7 @@ private:
     inline void		StoryKeys (key_t key);
     inline void		LevelKeys (key_t key);
     void		LoadData (const char* filename);
+    inline void		PutTile (PicIndex ti, int x, int y);
 private:
     EGameState		_state;
     uoff_t		_storyPage;

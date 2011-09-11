@@ -15,7 +15,7 @@
 
 //----------------------------------------------------------------------
 
-typedef enum {
+enum PicIndex {
     DisposePix,
     ExitPix,
     FloorPix,
@@ -41,14 +41,14 @@ typedef enum {
     LogoIPix,
     LogoDPix,
     NumberOfPics
-} PicIndex;
+};
 
-typedef enum {
+enum RobotDir {
     North,
     South,
     East,
     West
-} RobotDir;
+};
 
 //----------------------------------------------------------------------
 

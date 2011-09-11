@@ -34,7 +34,6 @@ CXApp::CXApp (void)
 ,_window (XCB_NONE)
 ,_wpict (XCB_NONE)
 ,_bpict (XCB_NONE)
-,_bpixid (XCB_NONE)
 ,_xgc (XCB_NONE)
 ,_width()
 ,_height()
@@ -110,8 +109,7 @@ CXApp::~CXApp (void)
 int CXApp::Run (void)
 {
     _wantQuit = false;
-    xcb_flush(_pconn);
-    for (xcb_generic_event_t* e; !_wantQuit && (e = xcb_wait_for_event(_pconn)); free(e)) {
+    for (xcb_generic_event_t* e; !_wantQuit && xcb_flush(_pconn)>0 && (e = xcb_wait_for_event(_pconn)); free(e)) {
 	switch (e->response_type & 0x7f) {
 	    case XCB_MAP_NOTIFY:	OnMap(); break;
 	    case XCB_EXPOSE:		Update(); break;
@@ -127,14 +125,7 @@ void CXApp::Update (void)
     if (!_pconn || !_window || !GC().begin())
 	return;
     OnDraw (GC());
-
-    vector<uint32_t> img (GC().Width()*GC().Height());
-    for (size_t i = 0; i < img.size(); ++i)
-	img[i] = GC().Palette()[GC().begin()[i]];
-
-    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, _bpixid, _xgc, GC().Width(), GC().Height(), 0, 0, 0, _pscreen->root_depth, img.size()*4, (const uint8_t*) &img[0]);
     xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_SRC, _bpict, XCB_NONE, _wpict, 0, 0, 0, 0, 0, 0, _width, _height);
-    xcb_flush(_pconn);
 }
 
 //----------------------------------------------------------------------
@@ -149,12 +140,12 @@ void CXApp::CreateWindow (const char* title, coord_t width, coord_t height)
 	    _pscreen->root, 0, 0, _width = width, _height = height, 0,
 	    XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
 	    XCB_CW_BACK_PIXMAP| XCB_CW_EVENT_MASK, winvals);
-    // Create a GC for this window
-    xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), _window, 0, NULL);
     // Create backing pixmap
-    _bpixid = xcb_generate_id(_pconn);
-    xcb_create_pixmap (_pconn, _pscreen->root_depth, _bpixid, _window, width, height);
-    xcb_render_create_picture (_pconn, _bpict = xcb_generate_id(_pconn), _bpixid, _xrfmt[rfmt_Default], 0, NULL);
+    xcb_pixmap_t bpixid = xcb_generate_id(_pconn);
+    xcb_create_pixmap (_pconn, 32, bpixid, _window, width, height);
+    xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), bpixid, 0, NULL);
+    xcb_render_create_picture (_pconn, _bpict = xcb_generate_id(_pconn), bpixid, _xrfmt[rfmt_Pixmap], 0, NULL);
+    xcb_free_pixmap (_pconn, bpixid);	// henceforth accessed only through _bpict
     xcb_render_create_picture (_pconn, _wpict = xcb_generate_id(_pconn), _window, _xrfmt[rfmt_Default], 0, NULL);
     // Set window title
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
@@ -182,7 +173,6 @@ inline void CXApp::OnMap (void)
     xev.data.data32[0] = 1;
     xev.data.data32[1] = _atoms[xa_NET_WM_STATE_FULLSCREEN];
     xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT| XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
-    xcb_flush(_pconn);
 }
 
 inline void CXApp::OnResize (const xcb_generic_event_t* e)
@@ -222,10 +212,7 @@ CXApp::SImage CXApp::LoadImage (const char* const* p)
 
     xcb_pixmap_t pixid = xcb_generate_id(_pconn);
     xcb_create_pixmap (_pconn, 32, pixid, _window, img.w, img.h);
-    uint32_t gc = xcb_generate_id(_pconn);
-    xcb_create_gc (_pconn, gc, pixid, 0, NULL);
-    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, gc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, (const uint8_t*)&pixels[0]);
-    xcb_free_gc (_pconn, gc);
+    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, _xgc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, (const uint8_t*)&pixels[0]);
     xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, 38, 0, NULL);
     xcb_free_pixmap (_pconn, pixid);
     return (img);

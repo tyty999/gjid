@@ -74,7 +74,6 @@ private:
     xcb_window_t		_window;
     uint32_t			_wpict;
     uint32_t			_bpict;
-    uint32_t			_bpixid;
     xcb_gcontext_t		_xgc;
     xcb_atom_t			_atoms[xa_Count];
     xcb_atom_t			_xa_wm_protocols;
