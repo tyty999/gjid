@@ -30,6 +30,8 @@ GJID::GJID (void)
     _palette.AllocColor (0,0,0);
     CreateWindow ("GJID", 320, 240);
     LoadData (DATAFILE);
+    _imgtiles = LoadImage (tileset_xpm);
+    _imglogo = LoadImage (logo_xpm);
 }
 
 /*static*/ GJID& GJID::Instance (void)
@@ -180,7 +182,12 @@ inline void GJID::PrintStory (CGC& gc)
 inline void GJID::DrawLevel (CGC& gc)
 {
     gc.Clear();
-    _curLevel.Draw (gc, _pics);
+    Level::tilemap_t::const_iterator it (_curLevel.Map().begin());
+    for (coord_t y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
+	for (coord_t x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
+	    gc.Image (_pics[*it++], x, y);
+    foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
+	gc.ImageMasked (_pics[i->pic], i->x*TILE_W, i->y*TILE_H);
 }
 
 inline void GJID::WinnerScreen (CGC& gc)

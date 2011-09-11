@@ -41,6 +41,8 @@ private:
     EGameState		_state;
     uoff_t		_storyPage;
     uoff_t		_level;
+    SImage		_imgtiles;
+    SImage		_imglogo;
     Level		_curLevel;
     CFont		_font;
     picvec_t		_pics;

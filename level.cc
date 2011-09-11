@@ -5,39 +5,12 @@
 
 //----------------------------------------------------------------------
 
-void ObjectType::read (istream& is)
-{
-    is >> x >> y >> pic;
-}
-
-void ObjectType::write (ostream& os) const
-{
-    os << x << y << pic;
-}
-
-size_t ObjectType::stream_size (void) const
-{
-    return (stream_size_of(x) + stream_size_of(y) + stream_size_of(pic));
-}
-
-//----------------------------------------------------------------------
-
 Level::Level (void)
-: _map (MAP_WIDTH * MAP_HEIGHT),
-  _objects ()
+:_map (MAP_WIDTH * MAP_HEIGHT)
+,_objects()
 {
     _objects.push_back (ObjectType (0, 0, RobotNorthPix));
     fill (_map, tilemap_t::value_type(FloorPix));
-}
-
-void Level::Draw (CGC& gc, const picvec_t& tiles) const
-{
-    tilemap_t::const_iterator it (_map.begin());
-    for (coord_t y = 0; y < MAP_HEIGHT * TILE_H; y += TILE_H)
-	for (coord_t x = 0; x < MAP_WIDTH * TILE_W; x += TILE_W)
-	    gc.Image (tiles [*it++], x, y);
-    foreach (objvec_t::const_iterator, i, _objects)
-	gc.ImageMasked (tiles[i->pic], i->x * TILE_W, i->y * TILE_H);
 }
 
 bool Level::CanMoveTo (coord_t x, coord_t y, RobotDir where) const
