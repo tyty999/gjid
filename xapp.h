@@ -59,12 +59,14 @@ protected:
     SImage			LoadImage (const char* const* p);
     void			DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y);
     void			CreateWindow (const char* title, int w, int h);
+    void			DrawText (int x, int y, const char* s, uint32_t color);
 private:
     inline const CGC&		GC (void) const	{ return (_gc); }
     inline CGC&			GC (void)	{ return (_gc); }
     inline void			OnMap (void);
     inline void			OnResize (const xcb_generic_event_t* event);
     inline wchar_t		TranslateKeycode (const xcb_generic_event_t* event) const;
+    void			LoadFont (void);
 private:
     CGC				_gc;
     vector<wchar_t>		_ksyms;
@@ -73,6 +75,9 @@ private:
     xcb_window_t		_window;
     uint32_t			_wpict;
     uint32_t			_bpict;
+    uint32_t			_glyphset;
+    uint32_t			_glyphpen;
+    uint32_t			_pencolor;
     xcb_gcontext_t		_xgc;
     xcb_atom_t			_atoms[xa_Count];
     xcb_atom_t			_xa_wm_protocols;

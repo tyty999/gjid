@@ -34,6 +34,9 @@ CXApp::CXApp (void)
 ,_window (XCB_NONE)
 ,_wpict (XCB_NONE)
 ,_bpict (XCB_NONE)
+,_glyphset (XCB_NONE)
+,_glyphpen (XCB_NONE)
+,_pencolor (0)
 ,_xgc (XCB_NONE)
 ,_width()
 ,_height()
@@ -168,6 +171,8 @@ inline void CXApp::OnMap (void)
     xev.data.data32[0] = 1;
     xev.data.data32[1] = _atoms[xa_NET_WM_STATE_FULLSCREEN];
     xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT| XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
+
+    LoadFont();
 }
 
 inline void CXApp::OnResize (const xcb_generic_event_t* e)
@@ -208,7 +213,7 @@ CXApp::SImage CXApp::LoadImage (const char* const* p)
     xcb_pixmap_t pixid = xcb_generate_id(_pconn);
     xcb_create_pixmap (_pconn, 32, pixid, _window, img.w, img.h);
     xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, _xgc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, (const uint8_t*)&pixels[0]);
-    xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, 38, 0, NULL);
+    xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], 0, NULL);
     xcb_free_pixmap (_pconn, pixid);
     return (img);
 }
@@ -216,4 +221,59 @@ CXApp::SImage CXApp::LoadImage (const char* const* p)
 void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y)
 {
     xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_OVER, img.id, XCB_NONE, _bpict, tile.x, tile.y, 0, 0, x, y, tile.w, tile.h);
+}
+
+#define unsigned const unsigned
+#include "data/font3x5.xbm"
+#undef unsigned
+
+void CXApp::LoadFont (void)
+{
+    xcb_render_create_glyph_set (_pconn, _glyphset = xcb_generate_id(_pconn), _xrfmt[rfmt_Font]);
+    static const xcb_render_glyphinfo_t glyphi[2] = {
+	{ 4, 6, 0, 0, -4, 0 },
+	{ 4, 6, 0, 0, -4, 0 },
+    };
+    uint32_t glid[2];
+    uint8_t lbuf [glyphi[0].width*glyphi[0].height*2];
+    fill_n (lbuf, sizeof(lbuf), 0xff);
+    for (int row = 0; row < 8; ++row) {
+	for (int col = 0; col < 8; ++col) {
+	    uint8_t* l1d = &lbuf[0];
+	    uint8_t* l2d = &lbuf[sizeof(lbuf)/2];
+	    for (int y = 0; y < font3x5_y_hot; ++y) {
+		uint8_t v=font3x5_bits[row*8+col+y*8];
+		for (int x = 0; x < 4; ++x, v>>=1)
+		    *l1d++ = !(v&1)-1;
+		for (int x = 0; x < 4; ++x, v>>=1)
+		    *l2d++ = !(v&1)-1;
+	    }
+	    glid[0] = row*16+col*2;
+	    glid[1] = row*16+col*2+1;
+	    xcb_render_add_glyphs (_pconn, _glyphset, 2, glid, glyphi, sizeof(lbuf), lbuf);
+	}
+    }
+    uint32_t pixid = xcb_generate_id(_pconn);
+    xcb_create_pixmap (_pconn, 32, pixid, _window, 4, 6);
+    xcb_render_create_picture (_pconn, _glyphpen = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], 0, NULL);
+    xcb_free_pixmap (_pconn, pixid);
+    static const xcb_rectangle_t r = { 0, 0, 4, 6 };
+    static const xcb_render_color_t rc = { 0, 0, 0, 0 };
+    xcb_render_fill_rectangles (_pconn, XCB_RENDER_PICT_OP_SRC, _glyphpen, rc, 1, &r);
+    _pencolor = 0;
+}
+
+void CXApp::DrawText (int x, int y, const char* s, uint32_t color)
+{
+    if (color != _pencolor) {
+	xcb_render_color_t rc;
+	rc.red = (color>>8)&0xff00;
+	rc.green = color&0xff00;
+	rc.blue = (color<<8)&0xff00;
+	rc.alpha = ((color>>24)&0xff00)^0xff00;
+	static const xcb_rectangle_t r = { 0, 0, 4, 6 };
+	xcb_render_fill_rectangles (_pconn, XCB_RENDER_PICT_OP_SRC, _glyphpen, rc, 1, &r);
+	_pencolor = color;
+    }
+    xcb_render_composite_glyphs_8 (_pconn, XCB_RENDER_PICT_OP_OVER, _glyphpen, _bpict, XCB_NONE, _glyphset, x, y, strlen(s), (const uint8_t*)s);
 }

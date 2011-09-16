@@ -126,8 +126,8 @@ inline void GJID::PrintStory (CGC& gc)
 	PutTile (Wall1Pix, x, 0);
 	PutTile (Wall1Pix, x, gc.Height() - TILE_H);
     }
-    _font.PrintString (gc, 145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
-    _font.PrintString (gc, 144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
+    DrawText (145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
+    DrawText (144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
 
     if (_storyPage == 0) {
 	PutTile (LogoGPix, 40, TILE_H * 2); 
@@ -168,26 +168,26 @@ inline void GJID::PrintStory (CGC& gc)
 	const string storyPage (_storyPage == 0 ? storyPage1 : storyPage2);
 	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
 	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
-	    _font.PrintString (gc, TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
+	    DrawText (TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
     } else if (_storyPage == 2) {
 	x = TILE_W * 2;
 	y = TILE_H * 2 + 7;
-	_font.PrintString (gc, x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
+	DrawText (x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
 	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
-	    _font.PrintString (gc, x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
+	    DrawText (x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
 	    y += 17;
 	}
 	PutTile (OWDNorthPix, x, y);
 	PutTile (OWDSouthPix, x += TILE_W, y);
 	PutTile (OWDEastPix, x += TILE_W, y);
 	PutTile (OWDWestPix, x += TILE_W, y);
-	_font.PrintString (gc, x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
+	DrawText (x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
     }
 }
 
