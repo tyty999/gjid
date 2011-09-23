@@ -230,19 +230,19 @@ void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int
 void CXApp::LoadFont (void)
 {
     xcb_render_create_glyph_set (_pconn, _glyphset = xcb_generate_id(_pconn), _xrfmt[rfmt_Font]);
-    static const xcb_render_glyphinfo_t glyphi[2] = {
-	{ 4, 6, 0, 0, -4, 0 },
-	{ 4, 6, 0, 0, -4, 0 },
+    const xcb_render_glyphinfo_t glyphi[] = {
+	{ 4, 6, 0, 0, 4, 0 },
+	{ 4, 6, 0, 0, 4, 0 },
     };
     uint32_t glid[2];
     uint8_t lbuf [glyphi[0].width*glyphi[0].height*2];
-    fill_n (lbuf, sizeof(lbuf), 0xff);
+    fill_n (lbuf, sizeof(lbuf), 0);
     for (int row = 0; row < 8; ++row) {
 	for (int col = 0; col < 8; ++col) {
 	    uint8_t* l1d = &lbuf[0];
 	    uint8_t* l2d = &lbuf[sizeof(lbuf)/2];
-	    for (int y = 0; y < font3x5_y_hot; ++y) {
-		uint8_t v=font3x5_bits[row*8+col+y*8];
+	    for (int y = 0; y < 5; ++y) {
+		uint8_t v=font3x5_bits[row*8*6+col+y*8];
 		for (int x = 0; x < 4; ++x, v>>=1)
 		    *l1d++ = !(v&1)-1;
 		for (int x = 0; x < 4; ++x, v>>=1)
@@ -253,12 +253,12 @@ void CXApp::LoadFont (void)
 	    xcb_render_add_glyphs (_pconn, _glyphset, 2, glid, glyphi, sizeof(lbuf), lbuf);
 	}
     }
-    uint32_t pixid = xcb_generate_id(_pconn);
-    xcb_create_pixmap (_pconn, 32, pixid, _window, 4, 6);
-    xcb_render_create_picture (_pconn, _glyphpen = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], 0, NULL);
+    uint32_t repeatOn = 1, pixid = xcb_generate_id(_pconn);
+    xcb_create_pixmap (_pconn, 32, pixid, _window, 1, 1);
+    xcb_render_create_picture (_pconn, _glyphpen = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], XCB_RENDER_CP_REPEAT, &repeatOn);
     xcb_free_pixmap (_pconn, pixid);
-    static const xcb_rectangle_t r = { 0, 0, 4, 6 };
-    static const xcb_render_color_t rc = { 0, 0, 0, 0 };
+    static const xcb_rectangle_t r = { 0, 0, 1, 1 };
+    static const xcb_render_color_t rc = { 0, 0, 0, 0xffff };
     xcb_render_fill_rectangles (_pconn, XCB_RENDER_PICT_OP_SRC, _glyphpen, rc, 1, &r);
     _pencolor = 0;
 }
@@ -271,9 +271,22 @@ void CXApp::DrawText (int x, int y, const char* s, uint32_t color)
 	rc.green = color&0xff00;
 	rc.blue = (color<<8)&0xff00;
 	rc.alpha = ((color>>24)&0xff00)^0xff00;
-	static const xcb_rectangle_t r = { 0, 0, 4, 6 };
+	static const xcb_rectangle_t r = { 0, 0, 1, 1 };
 	xcb_render_fill_rectangles (_pconn, XCB_RENDER_PICT_OP_SRC, _glyphpen, rc, 1, &r);
 	_pencolor = color;
     }
-    xcb_render_composite_glyphs_8 (_pconn, XCB_RENDER_PICT_OP_OVER, _glyphpen, _bpict, XCB_NONE, _glyphset, x, y, strlen(s), (const uint8_t*)s);
+    struct TextElement {
+	uint8_t		len;
+	uint8_t		_pad1;
+	uint16_t	_pad2;
+	int16_t		x, y;
+	char		text [256-8];
+    };
+    TextElement elt;
+    uint8_t slen = min (strlen(s), sizeof(elt.text)-1);	// Maximum 248 chars; since this call does not see newlines and we are at 320x240, that's reasonable
+    uint8_t eltsz = 8+Align(slen,4);
+    elt.len = slen;
+    elt.x = x; elt.y = y;
+    memcpy (elt.text, s, slen);
+    xcb_render_composite_glyphs_8 (_pconn, XCB_RENDER_PICT_OP_OVER, _glyphpen, _bpict, XCB_NONE, _glyphset, 0, 0, eltsz, (const uint8_t*) &elt);
 }

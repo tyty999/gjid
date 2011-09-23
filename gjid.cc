@@ -138,37 +138,37 @@ inline void GJID::PrintStory (CGC& gc)
     }
     if (_storyPage < 2) {
 	static const char storyPage1[] =
-	    "In the year 32333 AD two robot cities on the planet Nikarad were arming\n"
-	    "themselves against each other. The both set up large complexes in which\n"
-	    "powerful photon disrupters were stored. After many years of increasing\n"
-	    "tension on of the cities elected another leader who attempted to make\n"
-	    "peace with the enemy. The cities finally agreed for an entente to start\n"
-	    "in 32407 and to recycle some of the created weapons.\n"
+	    "In the year 32333 AD two robot cities on the planet Nikarade were\n"
+	    "arming themselves against each other. Both set up large complexes\n"
+	    "in which powerful photon disrupters were stored. After many years\n"
+	    "of increasing tension on of the cities elected another leader who\n"
+	    "attempted to make peace with the enemy. The cities finally agreed\n"
+	    "to an entente in 32407 and to recycle some of the created weapons\n"
 	    "\n"
-	    "The problem was that no robot wanted to go down into the dungeons and\n"
-	    "accomplish this dangerous task. Finally, one robot named GJID came\n"
-	    "forward and offered to help. He was a simple robot and had not much to\n"
-	    "lose. Besides, there was a reward offered for the job :)";
+	    "The problem was that no robot wanted to go down into the dungeons\n"
+	    "and accomplish this dangerous task. Finally, one robot named GJID\n"
+	    "came forward to take up the job. He was a simple robot and little\n"
+	    "to lose. Besides, there was a reward offered for the job :)";
 	static const char storyPage2[] =
-	    "You play GJID in this game as he carefully moves the weapon crates into\n"
-	    "recycling bins. Complex mazes and one-way doors make this quite difficult\n"
-	    "at times. Unfortunately, GJID is not very powerful and can only move one\n"
-	    "crate at a time. Furthermore, he can only push the crates, not pull.\n"
+	    "In this game you play GJID, whose task is to move each crate into\n"
+	    "recycling bins. At times complex mazes and one-way doors can make\n"
+	    "this quite difficult. GJID is not very powerful and can only move\n"
+	    "one crate at a time. Also, he can only push the crates, not pull.\n"
 	    "\n"
-	    "When you have recycled all the crates on the level you should use the\n"
-	    "exit door to move on to the next. In this first mission you will go\n"
-	    "through 14 levels.\n"
+	    "When you have recycled all the crates on the level you should use\n"
+	    "the exit door to move on to the next. This weapons complex has 14\n"
+	    "levels for you to clear.\n"
 	    "\n"
 	    "     Controls:   Cursor keys to move\n"
-	    "                 F1   show this help\n"
-	    "                 F6   restart the level\n"
-	    "                 F8   skip the level\n"
+	    "                 F1  show this help\n"
+	    "                 F6  restart the level\n"
+	    "                 F8  skip the level\n"
 	    "                 F10 quit the game";
 	string line;
 	const string storyPage (_storyPage == 0 ? storyPage1 : storyPage2);
 	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
 	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
-	    DrawText (TILE_W * 2, TILE_H * 2 + (row + 1) * 7, line, gc.AllocColor (128,128,0));
+	    DrawText (TILE_W * 2, TILE_H * 2 + (row + 1) * 8, line, gc.AllocColor (128,128,0));
 	    ++ row;
 	}
     } else if (_storyPage == 2) {
@@ -176,18 +176,13 @@ inline void GJID::PrintStory (CGC& gc)
 	y = TILE_H * 2 + 7;
 	DrawText (x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
 	y += 17;
-	static const PicIndex pic[] = { DisposePix, ExitPix, Barrel1Pix, Barrel2Pix };
-	static const char* desc[] = { "- A recycling bin", "- An exit door", "- Nuclear weapon", "- Photon disruptor" };
+	static const PicIndex pic[] = { Barrel2Pix, Barrel1Pix, DisposePix, OWDEastPix, ExitPix };
+	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- A recycling bin", "- One-way door", "- The exit" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
 	    DrawText (x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
 	    y += 17;
 	}
-	PutTile (OWDNorthPix, x, y);
-	PutTile (OWDSouthPix, x += TILE_W, y);
-	PutTile (OWDEastPix, x += TILE_W, y);
-	PutTile (OWDWestPix, x += TILE_W, y);
-	DrawText (x += TILE_W * 2, y + 5, "- One-way doors", gc.AllocColor(128,128,0));
     }
 }
 
