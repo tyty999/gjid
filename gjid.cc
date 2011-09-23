@@ -22,7 +22,6 @@ GJID::GJID (void)
 ,_storyPage (0)
 ,_level (0)
 ,_curLevel()
-,_font()
 ,_levels (0)
 {
     CreateWindow ("GJID", 320, 240);
@@ -46,8 +45,6 @@ void GJID::GoToState (EGameState state)
 void GJID::LoadData (const char* filename)
 {
     CPIO datafile (filename);
-
-    istream fntstm = datafile.File ("default.fnt"); fntstm >> _font;
     istream lvlstm = datafile.File ("levels.dat"); lvlstm >> _levels;
     _curLevel = _levels[0];
 }

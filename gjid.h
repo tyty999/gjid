@@ -3,7 +3,6 @@
 
 #pragma once
 #include "level.h"
-#include "font.h"
 #include "xapp.h"
 
 //----------------------------------------------------------------------
@@ -45,6 +44,5 @@ private:
     SImage		_imgtiles;
     SImage		_imglogo;
     Level		_curLevel;
-    CFont		_font;
     vector<Level>	_levels;
 };
