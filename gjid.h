@@ -12,7 +12,7 @@ public:
     static GJID&	Instance (void);
 protected:
 			GJID (void);
-    virtual void	OnDraw (CGC& gc);
+    virtual void	OnDraw (void);
     virtual void	OnKey (key_t key);
 private:
     enum EGameState {
@@ -25,13 +25,13 @@ private:
     };
 private:
     void		GoToState (EGameState state);
-    void		FillWithTile (CGC& gc, PicIndex tidx);
-    void		DecodeBitmapWithTile (CGC& gc, const uint16_t* p, size_t n, PicIndex tidx);
-    inline void		IntroScreen (CGC& gc);
-    inline void		LoserScreen (CGC& gc);
-    inline void		PrintStory (CGC& gc);
-    inline void		WinnerScreen (CGC& gc);
-    inline void		DrawLevel (CGC& gc);
+    void		FillWithTile (PicIndex tidx);
+    void		DecodeBitmapWithTile (const uint16_t* p, size_t n, PicIndex tidx);
+    inline void		IntroScreen (void);
+    inline void		LoserScreen (void);
+    inline void		PrintStory (void);
+    inline void		WinnerScreen (void);
+    inline void		DrawLevel (void);
     inline void		TitleKeys (key_t key);
     inline void		StoryKeys (key_t key);
     inline void		LevelKeys (key_t key);

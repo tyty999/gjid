@@ -27,8 +27,7 @@ static void Terminate (void)
 //----------------------------------------------------------------------
 
 CXApp::CXApp (void)
-:_gc()
-,_ksyms()
+:_ksyms()
 ,_pconn (NULL)
 ,_pscreen (NULL)
 ,_window (XCB_NONE)
@@ -40,6 +39,8 @@ CXApp::CXApp (void)
 ,_xgc (XCB_NONE)
 ,_width()
 ,_height()
+,_winWidth()
+,_winHeight()
 ,_minKeycode()
 ,_keysymsPerKeycode()
 ,_wantQuit (false)
@@ -127,8 +128,8 @@ void CXApp::Update (void)
 {
     if (!_pconn || !_window)
 	return;
-    OnDraw (GC());
-    xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_SRC, _bpict, XCB_NONE, _wpict, 0, 0, 0, 0, 0, 0, _width, _height);
+    OnDraw();
+    xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_SRC, _bpict, XCB_NONE, _wpict, 0, 0, 0, 0, 0, 0, _winWidth, _winHeight);
 }
 
 //----------------------------------------------------------------------
@@ -137,11 +138,11 @@ void CXApp::Update (void)
 
 void CXApp::CreateWindow (const char* title, int width, int height)
 {
-    _gc.Resize (width, height);
+    _width = width; _height = height;
     // Create the window with given dimensions
     static const uint32_t winvals[] = { XCB_NONE, XCB_EVENT_MASK_EXPOSURE| XCB_EVENT_MASK_KEY_PRESS| XCB_EVENT_MASK_STRUCTURE_NOTIFY };
     xcb_create_window (_pconn, XCB_COPY_FROM_PARENT, _window=xcb_generate_id(_pconn),
-	    _pscreen->root, 0, 0, _width = width, _height = height, 0,
+	    _pscreen->root, 0, 0, _winWidth = width, _winHeight = height, 0,
 	    XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
 	    XCB_CW_BACK_PIXMAP| XCB_CW_EVENT_MASK, winvals);
     // Create backing pixmap
@@ -177,13 +178,13 @@ inline void CXApp::OnMap (void)
 
 inline void CXApp::OnResize (const xcb_generic_event_t* e)
 {
-    _width = ((const xcb_configure_notify_event_t*)e)->width;
-    _height = ((const xcb_configure_notify_event_t*)e)->height;
+    _winWidth = ((const xcb_configure_notify_event_t*)e)->width;
+    _winHeight = ((const xcb_configure_notify_event_t*)e)->height;
     // Setup RENDER scaling of the backbuffer
     xcb_render_transform_t tr;
     memset (&tr, 0, sizeof(tr));
-    tr.matrix11 = (GC().Width()<<16)/_width;
-    tr.matrix22 = (GC().Height()<<16)/_height;
+    tr.matrix11 = (_width<<16)/_winWidth;
+    tr.matrix22 = (_height<<16)/_winHeight;
     tr.matrix33 = (1<<16);
     xcb_render_set_picture_transform (_pconn, _bpict, tr);
 }

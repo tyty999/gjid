@@ -83,14 +83,14 @@ inline void GJID::PutTile (PicIndex ti, int x, int y)
 //----------------------------------------------------------------------
 // Tile screen helpers
 
-void GJID::FillWithTile (CGC& gc, PicIndex tidx)
+void GJID::FillWithTile (PicIndex tidx)
 {
-    for (int y = 0; y < gc.Height(); y += TILE_H)
-	for (int x = 0; x < gc.Width(); x += TILE_W)
+    for (int y = 0; y < Height(); y += TILE_H)
+	for (int x = 0; x < Width(); x += TILE_W)
 	    PutTile (tidx, x, y);
 }
 
-void GJID::DecodeBitmapWithTile (CGC&, const uint16_t* p, size_t n, PicIndex tidx)
+void GJID::DecodeBitmapWithTile (const uint16_t* p, size_t n, PicIndex tidx)
 {
     for (size_t y = 0; y < n; ++ y)
 	for (size_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
@@ -101,30 +101,30 @@ void GJID::DecodeBitmapWithTile (CGC&, const uint16_t* p, size_t n, PicIndex tid
 //----------------------------------------------------------------------
 // Screen drawing
 
-inline void GJID::IntroScreen (CGC& gc)
+inline void GJID::IntroScreen (void)
 {
     static const uint16_t title[] = {	// "GJID"
 	0xEEEC, 0x824A, 0x824A, 0xA24A, 0xAA4A, 0xE6EC
     };
-    FillWithTile (gc, Back1Pix);
-    DecodeBitmapWithTile (gc, title, VectorSize(title), Wall2Pix);
+    FillWithTile (Back1Pix);
+    DecodeBitmapWithTile (title, VectorSize(title), Wall2Pix);
 }
 
-inline void GJID::PrintStory (CGC& gc)
+inline void GJID::PrintStory (void)
 {
     int x, y, row = 0;
 
-    FillWithTile (gc, Back1Pix);
-    for (y = 0; y < gc.Height(); y += TILE_H) {
+    FillWithTile (Back1Pix);
+    for (y = 0; y < Height(); y += TILE_H) {
 	PutTile (Wall1Pix, 0, y);
-	PutTile (Wall1Pix, gc.Width() - TILE_W, y);
+	PutTile (Wall1Pix, Width() - TILE_W, y);
     }
-    for (x = TILE_W; x < gc.Width() - TILE_W; x += TILE_W) {
+    for (x = TILE_W; x < Width() - TILE_W; x += TILE_W) {
 	PutTile (Wall1Pix, x, 0);
-	PutTile (Wall1Pix, x, gc.Height() - TILE_H);
+	PutTile (Wall1Pix, x, Height() - TILE_H);
     }
-    DrawText (145, gc.Height() - 9, "Hit any key", gc.AllocColor (0,0,0));
-    DrawText (144, gc.Height() - 10, "Hit any key", gc.AllocColor (128,128,128));
+    DrawText (145, Height() - 9, "Hit any key", RGB(0,0,0));
+    DrawText (144, Height() - 10, "Hit any key", RGB(128,128,128));
 
     if (_storyPage == 0) {
 	PutTile (LogoGPix, 40, TILE_H * 2); 
@@ -165,28 +165,28 @@ inline void GJID::PrintStory (CGC& gc)
 	const string storyPage (_storyPage == 0 ? storyPage1 : storyPage2);
 	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
 	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
-	    DrawText (TILE_W * 2, TILE_H * 2 + (row + 1) * 8, line, gc.AllocColor (128,128,0));
+	    DrawText (TILE_W * 2, TILE_H * 2 + (row + 1) * 8, line, RGB(128,128,0));
 	    ++ row;
 	}
     } else if (_storyPage == 2) {
 	x = TILE_W * 2;
 	y = TILE_H * 2 + 7;
-	DrawText (x + 50, y, "Things you will find in the maze:", gc.AllocColor(255,255,255));
+	DrawText (x + 50, y, "Things you will find in the maze:", RGB(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { Barrel2Pix, Barrel1Pix, DisposePix, OWDEastPix, ExitPix };
 	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- A recycling bin", "- One-way door", "- The exit" };
 	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
-	    DrawText (x + TILE_W * 2, y + 5, desc[i], gc.AllocColor(128,128,0));
+	    DrawText (x + TILE_W * 2, y + 5, desc[i], RGB(128,128,0));
 	    y += 17;
 	}
     }
 }
 
-inline void GJID::DrawLevel (CGC& gc)
+inline void GJID::DrawLevel (void)
 {
     Level::tilemap_t::const_iterator it (_curLevel.Map().begin());
-    FillWithTile (gc, PicIndex(_curLevel.Map().back()));
+    FillWithTile (PicIndex(_curLevel.Map().back()));
     for (int y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
 	for (int x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
 	    PutTile (PicIndex(*it++), x, y);
@@ -194,34 +194,34 @@ inline void GJID::DrawLevel (CGC& gc)
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
 }
 
-inline void GJID::WinnerScreen (CGC& gc)
+inline void GJID::WinnerScreen (void)
 {
     static const uint16_t title[] = {	// "WIN"
 	0x45D2, 0x449A, 0x449E, 0x5496, 0x5492, 0x29D2
     };
-    FillWithTile (gc, Wall1Pix);
-    DecodeBitmapWithTile (gc, title, VectorSize(title), RobotNorthPix);
+    FillWithTile (Wall1Pix);
+    DecodeBitmapWithTile (title, VectorSize(title), RobotNorthPix);
 }
 
-inline void GJID::LoserScreen (CGC& gc)
+inline void GJID::LoserScreen (void)
 {
     static const uint16_t title[] = {	// "LOSE"
 	0x8F77, 0x8944, 0x8966, 0x8934, 0x8914, 0xEF77
     };
-    FillWithTile (gc, Back3Pix);
-    DecodeBitmapWithTile (gc, title, VectorSize(title), DisposePix);
+    FillWithTile (Back3Pix);
+    DecodeBitmapWithTile (title, VectorSize(title), DisposePix);
 }
 
-void GJID::OnDraw (CGC& gc)
+void GJID::OnDraw (void)
 {
-    CXApp::OnDraw (gc);
+    CXApp::OnDraw();
     switch (_state) {
 	default:
-	case state_Title:	return (IntroScreen (gc));
-	case state_Story:	return (PrintStory (gc));
-	case state_Game:	return (DrawLevel (gc));
-	case state_Winner:	return (WinnerScreen (gc));
-	case state_Loser:	return (LoserScreen (gc));
+	case state_Title:	return (IntroScreen());
+	case state_Story:	return (PrintStory());
+	case state_Game:	return (DrawLevel());
+	case state_Winner:	return (WinnerScreen());
+	case state_Loser:	return (LoserScreen());
     }
 }
 

@@ -2,7 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
-#include "gc.h"
+#include "config.h"
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 
@@ -53,22 +53,22 @@ protected:
 				CXApp (void);
     virtual			~CXApp (void);
     inline virtual void		OnIdle (void)	{ }
-    inline virtual void		OnDraw (CGC&)	{ }
+    inline virtual void		OnDraw (void)	{ }
     inline virtual void		OnQuit (void)	{ _wantQuit = true; }
     inline virtual void		OnKey (key_t)	{ }
+    inline uint16_t		Width (void) const				{ return (_width); }
+    inline uint16_t		Height (void) const				{ return (_height); }
+    inline uint32_t		RGB (int8_t r, int8_t g, int8_t b) const	{ return (r<<16|g<<8|b); }
     SImage			LoadImage (const char* const* p);
     void			DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y);
     void			CreateWindow (const char* title, int w, int h);
     void			DrawText (int x, int y, const char* s, uint32_t color);
 private:
-    inline const CGC&		GC (void) const	{ return (_gc); }
-    inline CGC&			GC (void)	{ return (_gc); }
     inline void			OnMap (void);
     inline void			OnResize (const xcb_generic_event_t* event);
     inline wchar_t		TranslateKeycode (const xcb_generic_event_t* event) const;
     void			LoadFont (void);
 private:
-    CGC				_gc;
     vector<wchar_t>		_ksyms;
     xcb_connection_t*		_pconn;
     const xcb_screen_t*		_pscreen;
@@ -80,13 +80,11 @@ private:
     uint32_t			_pencolor;
     xcb_gcontext_t		_xgc;
     xcb_atom_t			_atoms[xa_Count];
-    xcb_atom_t			_xa_wm_protocols;
-    xcb_atom_t			_xa_wm_delete_window;
-    xcb_atom_t			_xa_net_wm_state;
-    xcb_atom_t			_xa_net_wm_state_fullscreen;
     uint8_t			_xrfmt[4];
     uint16_t			_width;
     uint16_t			_height;
+    uint16_t			_winWidth;
+    uint16_t			_winHeight;
     uint8_t			_minKeycode;
     uint8_t			_keysymsPerKeycode;
     bool			_wantQuit;
