@@ -3,10 +3,8 @@
 ################ Source files ##########################################
 
 EXE	:= ${NAME}
-SRCS	:= $(wildcard *.cc fbgl/*.cc fbgl/con/*.cc fbgl/gob/*.cc fbgl/x11/*.cc)
+SRCS	:= $(wildcard *.cc)
 OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
-DATAF	:= data/${NAME}.cpio
-DATAFC	:= data/default.fnt data/levels.dat
 
 ################ Compilation ###########################################
 
@@ -20,10 +18,6 @@ run:	${EXE} ${DATAF}
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
 	@${CC} ${LDFLAGS} -o $@ $^ ${LIBS}
-
-${DATAF}:	${DATAFC}
-	@echo "Creating the data file ... "
-	@(cd data; ls $(notdir $^) | cpio -o > $(notdir $@))
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."
@@ -54,12 +48,11 @@ endif
 ################ Maintenance ###########################################
 
 clean:
-	@[ ! -d ./$O ] || rm -rf ./$O data/${EXE}.cpio
+	@[ ! -d ./$O ] || rm -rf ./$O
 
 ifdef MAJOR
 DISTVER	:= ${MAJOR}.${MINOR}
 DISTNAM	:= ${NAME}-${DISTVER}
-DISTLSM	:= ${DISTNAM}.lsm
 DISTTAR	:= ${DISTNAM}.tar.bz2
 
 dist:
@@ -68,11 +61,7 @@ dist:
 	@rm -f ${DISTTAR}
 	@cp -r * .${DISTNAM} && mv .${DISTNAM} ${DISTNAM}
 	@+${MAKE} -sC ${DISTNAM} maintainer-clean
-	@tar jcf ${DISTTAR} ${DISTNAM} && rm -rf ${DISTNAM}
-	@echo "s/@version@/${DISTVER}/" > ${DISTLSM}.sed
-	@echo "s/@date@/`date +%F`/" >> ${DISTLSM}.sed
-	@echo -n "s/@disttar@/`du -h --apparent-size ${DISTTAR}`/" >> ${DISTLSM}.sed;
-	@sed -f ${DISTLSM}.sed docs/${NAME}.lsm > ${DISTLSM} && rm -f ${DISTLSM}.sed
+	@tar acf ${DISTTAR} ${DISTNAM} && rm -rf ${DISTNAM}
 endif
 
 distclean:	clean

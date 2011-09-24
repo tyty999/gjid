@@ -10,8 +10,6 @@
 // Define to the address where bug reports for this package should be sent.
 #define @PKG_UNAME@_BUGREPORT	"@PKG_BUGREPORT@"
 
-#define DATAFILE		"data/gjid.cpio"
-
 // Define to 1 if you have asydna.h
 #define HAVE_USTL_H 1
 #if HAVE_USTL_H

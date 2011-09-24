@@ -225,7 +225,7 @@ void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int
 }
 
 #define unsigned const unsigned
-#include "data/font3x5.xbm"
+#include "font3x5.xbm"
 #undef unsigned
 
 void CXApp::LoadFont (void)

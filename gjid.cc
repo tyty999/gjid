@@ -2,12 +2,11 @@
 // This file is free software, distributed under the MIT License.
 
 #include "gjid.h"
-#include "cpio.h"
 #include <time.h>
 
 #define char const char
-#include "data/tileset.xpm"
-#include "data/logo.xpm"
+#include "tileset.xpm"
+#include "logo.xpm"
 #undef char
 
 //----------------------------------------------------------------------
@@ -25,7 +24,7 @@ GJID::GJID (void)
 ,_levels (0)
 {
     CreateWindow ("GJID", 320, 240);
-    LoadData (DATAFILE);
+    LoadData();
     _imgtiles = LoadImage (tileset_xpm);
     _imglogo = LoadImage (logo_xpm);
 }
@@ -44,7 +43,7 @@ void GJID::GoToState (EGameState state)
 
 #include "levels.dat"
 
-void GJID::LoadData (const char*)
+void GJID::LoadData (void)
 {
     const char* ldata = levels_data;
     _levels.clear();

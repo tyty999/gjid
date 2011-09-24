@@ -35,7 +35,7 @@ private:
     inline void		TitleKeys (key_t key);
     inline void		StoryKeys (key_t key);
     inline void		LevelKeys (key_t key);
-    void		LoadData (const char* filename);
+    void		LoadData (void);
     inline void		PutTile (PicIndex ti, int x, int y);
 private:
     EGameState		_state;
