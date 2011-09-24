@@ -89,11 +89,52 @@ bool Level::Finished (void) const
     return (_objects.size() == 1 && At(Robot().x, Robot().y) == ExitPix);
 }
 
+const char* Level::Load (const char* ldata)
+{
+    static const char picToChar[NumberOfMapPics+1] = "0E.^v><#%+~!`   @NP";
+    _objects.clear();
+    _objects.push_back (ObjectType (0, 0, RobotNorthPix));
+    for (int y = 0; y < MAP_HEIGHT; ++y) {
+	for (int x = 0; x < MAP_WIDTH; ++x) {
+	    char c = *ldata++;
+	    const char* pf = strchr (picToChar, c);
+	    PicIndex pic = pf ? PicIndex(distance(picToChar,pf)) : FloorPix;
+	    if (pic >= RobotNorthPix) {
+		if (pic >= Barrel1Pix)
+		    _objects.push_back (ObjectType (x, y, pic));
+		else
+		    MoveRobot (x, y, pic);
+	    	pic = FloorPix;
+	    }
+	    _map[y*MAP_WIDTH+x] = pic;
+	}
+    }
+    return (*ldata ? ldata : NULL);
+}
+
 void Level::read (istream& is)
 {
     is >> _map >> _objects;
     if (_objects.empty())
 	_objects.push_back (ObjectType (0, 0, RobotNorthPix));
+
+    static const char picToChar[NumberOfPics+1] = "0E.^v><#%+~!`@@@@NPGJID";
+    for (int y = 0; y < MAP_HEIGHT; ++y) {
+	putchar ('\"');
+	for (int x = 0; x < MAP_WIDTH; ++x) {
+	    char v = picToChar[_map[y*MAP_WIDTH+x]];
+	    int iobj = FindCrate (x, y);
+	    if (iobj >= 0)
+		v = picToChar[_objects[iobj].pic];
+	    if (Robot().x == x && Robot().y == y)
+		v = '@';
+	    putchar (v);
+	}
+	putchar ('\"');
+	putchar ('\n');
+    }
+    putchar ('\n');
+    fflush (stdout);
 }
 
 void Level::write (ostream& os) const

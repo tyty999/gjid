@@ -80,6 +80,7 @@ public:
     void		AddCrate (int x, int y, PicIndex pic);
     void		MoveRobot (RobotDir where);
     void		MoveRobot (int x, int y, PicIndex pic);
+    const char*		Load (const char* ldata);
     void		read (istream& is);
     void		write (ostream& os) const;
     size_t		stream_size (void) const;

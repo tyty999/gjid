@@ -42,10 +42,16 @@ void GJID::GoToState (EGameState state)
     Update();
 }
 
-void GJID::LoadData (const char* filename)
+#include "levels.dat"
+
+void GJID::LoadData (const char*)
 {
-    CPIO datafile (filename);
-    istream lvlstm = datafile.File ("levels.dat"); lvlstm >> _levels;
+    const char* ldata = levels_data;
+    _levels.clear();
+    while (ldata) {
+	_levels.push_back();
+	ldata = _levels.back().Load (ldata);
+    }
     _curLevel = _levels[0];
 }
 
