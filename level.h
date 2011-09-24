@@ -54,16 +54,11 @@ enum RobotDir {
 
 class Level {
 public:
-    class ObjectType {
-    public:
-	inline		ObjectType (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
-	inline void	read (istream& s)	{ s >> x >> y >> pic; }
-	inline void	write (ostream& s) const{ s << x << y << pic; }
-	inline size_t	stream_size (void) const{ return (3); }
-    public:
+    struct ObjectType {
 	uint8_t 	x;
 	uint8_t 	y;
-	uint8_t		pic;
+	uint16_t	pic;
+	inline		ObjectType (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
     };
     typedef vector<uint8_t>	tilemap_t;
     typedef vector<ObjectType>	objvec_t;
@@ -74,7 +69,7 @@ public:
     inline PicIndex	At (int x, int y) const			{ return (PicIndex (_map [y * MAP_WIDTH + x])); }
     inline void		SetCell (int x, int y, PicIndex pic)	{ _map [y * MAP_WIDTH + x] = pic; }
     bool		Finished (void) const;
-    inline void		DisposeCrate (uoff_t index)			{ _objects.erase (_objects.begin() + index); }
+    inline void		DisposeCrate (size_t index)			{ _objects.erase (_objects.begin() + index); }
     inline rctilemap_t	Map (void) const				{ return (_map); }
     inline rcobjvec_t	Objects (void) const				{ return (_objects); }
     void		AddCrate (int x, int y, PicIndex pic);
@@ -90,9 +85,5 @@ private:
     tilemap_t		_map;
     objvec_t		_objects;
 };
-
-ALIGNOF (Level, 4)
-ALIGNOF (Level::ObjectType, 1)
-CAST_STREAMABLE (PicIndex, int)
 
 extern const char levels_data[];

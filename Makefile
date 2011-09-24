@@ -17,7 +17,7 @@ run:	${EXE} ${DATAF}
 
 ${EXE}:	${OBJS}
 	@echo "Linking $@ ..."
-	@${CC} ${LDFLAGS} -o $@ $^ ${LIBS}
+	@${LD} ${LDFLAGS} -o $@ $^ ${LIBS}
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."

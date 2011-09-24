@@ -28,7 +28,7 @@ GJID::GJID (void)
     _imglogo = LoadImage (logo_xpm);
     const char* ldata = levels_data;
     while (ldata) {
-	_levels.push_back();
+	_levels.push_back (Level());
 	ldata = _levels.back().Load (ldata);
     }
     _curLevel = _levels[0];
@@ -132,49 +132,44 @@ inline void GJID::PrintStory (void)
     }
     if (_storyPage < 2) {
 	static const char storyPage1[] =
-	    "In the year 32333 AD two robot cities on the planet Nikarade were\n"
-	    "arming themselves against each other. Both set up large complexes\n"
-	    "in which powerful photon disrupters were stored. After many years\n"
-	    "of increasing tension on of the cities elected another leader who\n"
-	    "attempted to make peace with the enemy. The cities finally agreed\n"
-	    "to an entente in 32407 and to recycle some of the created weapons\n"
-	    "\n"
-	    "The problem was that no robot wanted to go down into the dungeons\n"
-	    "and accomplish this dangerous task. Finally, one robot named GJID\n"
-	    "came forward to take up the job. He was a simple robot and little\n"
-	    "to lose. Besides, there was a reward offered for the job :)";
+	    "In the year 32333 AD two robot cities on the planet Nikarade were\0"
+	    "arming themselves against each other. Both set up large complexes\0"
+	    "in which powerful photon disrupters were stored. After many years\0"
+	    "of increasing tension on of the cities elected another leader who\0"
+	    "attempted to make peace with the enemy. The cities finally agreed\0"
+	    "to an entente in 32407 and to recycle some of the created weapons\0"
+	    " \0"
+	    "The problem was that no robot wanted to go down into the dungeons\0"
+	    "and accomplish this dangerous task. Finally, one robot named GJID\0"
+	    "came forward to take up the job. He was a simple robot and little\0"
+	    "to lose. Besides, there was a reward offered for the job :)\0";
 	static const char storyPage2[] =
-	    "In this game you play GJID, whose task is to move each crate into\n"
-	    "recycling bins. At times complex mazes and one-way doors can make\n"
-	    "this quite difficult. GJID is not very powerful and can only move\n"
-	    "one crate at a time. Also, he can only push the crates, not pull.\n"
-	    "\n"
-	    "When you have recycled all the crates on the level you should use\n"
-	    "the exit door to move on to the next. This weapons complex has 14\n"
-	    "levels for you to clear.\n"
-	    "\n"
-	    "     Controls:   Cursor keys to move\n"
-	    "                 F1  show this help\n"
-	    "                 F6  restart the level\n"
-	    "                 F8  skip the level\n"
-	    "                 F10 quit the game";
-	string line;
-	const string storyPage (_storyPage == 0 ? storyPage1 : storyPage2);
-	for (uoff_t i = 0; i < storyPage.size(); i += line.size() + 1) {
-	    line.assign (storyPage.iat (i), storyPage.iat (storyPage.find ('\n', i)));
-	    DrawText (TILE_W * 2, TILE_H * 2 + (row + 1) * 8, line, RGB(128,128,0));
-	    ++ row;
-	}
+	    "In this game you play GJID, whose task is to move each crate into\0"
+	    "recycling bins. At times complex mazes and one-way doors can make\0"
+	    "this quite difficult. GJID is not very powerful and can only move\0"
+	    "one crate at a time. Also, he can only push the crates, not pull.\0"
+	    " \0"
+	    "When you have recycled all the crates on the level you should use\0"
+	    "the exit door to move on to the next. This weapons complex has 14\0"
+	    "levels for you to clear.\0"
+	    " \0"
+	    "     Controls:   Cursor keys to move\0"
+	    "                 F1  show this help\0"
+	    "                 F6  restart the level\0"
+	    "                 F8  skip the level\0"
+	    "                 F10 quit the game\0";
+	for (const char* l (_storyPage == 0 ? storyPage1 : storyPage2); strlen(l); ++row, l += strlen(l)+1)
+	    DrawText (TILE_W*2, TILE_H*2 + (row+1)*8, l, RGB(128,128,0));
     } else if (_storyPage == 2) {
-	x = TILE_W * 2;
-	y = TILE_H * 2 + 7;
-	DrawText (x + 50, y, "Things you will find in the maze:", RGB(255,255,255));
+	x = TILE_W*2;
+	y = TILE_H*2+7;
+	DrawText (x+50, y, "Things you will find in the maze:", RGB(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { Barrel2Pix, Barrel1Pix, DisposePix, OWDEastPix, ExitPix };
 	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- A recycling bin", "- One-way door", "- The exit" };
-	for (uoff_t i = 0; i < VectorSize(pic); ++ i) {
+	for (size_t i = 0; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
-	    DrawText (x + TILE_W * 2, y + 5, desc[i], RGB(128,128,0));
+	    DrawText (x+TILE_W*2, y+5, desc[i], RGB(128,128,0));
 	    y += 17;
 	}
     }

@@ -10,10 +10,16 @@ MINOR		:= @PKG_MINOR@
 
 CXX		:= @CXX@
 CC		:= @CC@
+LD		:= @CXX@
 INSTALL		:= @INSTALL@
 
 INSTALLEXE	:= ${INSTALL} -D -p -m 755 -s
 INSTALLDATA	:= ${INSTALL} -D -p -m 644
+
+HAVE_USTL	:= @libustl@
+ifeq (${HAVE_USTL},-lustl)
+LD		:= @CC@
+endif
 
 ################ Destination #########################################
 

@@ -51,7 +51,7 @@ CXApp::CXApp (void)
 	SIGILL, SIGABRT, SIGBUS,  SIGFPE,  SIGSEGV, SIGSYS, SIGALRM, SIGXCPU,
 	SIGHUP, SIGINT,  SIGQUIT, SIGTERM, SIGCHLD, SIGXFSZ, SIGPWR, SIGPIPE
     };
-    for (uoff_t i = 0; i < VectorSize(c_Signals); ++ i)
+    for (size_t i = 0; i < VectorSize(c_Signals); ++ i)
 	signal (c_Signals[i], OnSignal);
     std::set_terminate (Terminate);
 

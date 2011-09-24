@@ -38,8 +38,8 @@ private:
     inline void		PutTile (PicIndex ti, int x, int y);
 private:
     EGameState		_state;
-    uoff_t		_storyPage;
-    uoff_t		_level;
+    uint32_t		_storyPage;
+    uint32_t		_level;
     SImage		_imgtiles;
     SImage		_imglogo;
     Level		_curLevel;
