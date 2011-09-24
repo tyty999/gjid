@@ -81,9 +81,6 @@ public:
     void		MoveRobot (RobotDir where);
     void		MoveRobot (int x, int y, PicIndex pic);
     const char*		Load (const char* ldata);
-    void		read (istream& is);
-    void		write (ostream& os) const;
-    size_t		stream_size (void) const;
     int			FindCrate (int x, int y) const;
     bool		CanMoveTo (int x, int y, RobotDir where) const;
 private:
@@ -97,3 +94,5 @@ private:
 ALIGNOF (Level, 4)
 ALIGNOF (Level::ObjectType, 1)
 CAST_STREAMABLE (PicIndex, int)
+
+extern const char levels_data[];

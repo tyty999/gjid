@@ -21,12 +21,17 @@ GJID::GJID (void)
 ,_storyPage (0)
 ,_level (0)
 ,_curLevel()
-,_levels (0)
+,_levels()
 {
     CreateWindow ("GJID", 320, 240);
-    LoadData();
     _imgtiles = LoadImage (tileset_xpm);
     _imglogo = LoadImage (logo_xpm);
+    const char* ldata = levels_data;
+    while (ldata) {
+	_levels.push_back();
+	ldata = _levels.back().Load (ldata);
+    }
+    _curLevel = _levels[0];
 }
 
 /*static*/ GJID& GJID::Instance (void)
@@ -39,19 +44,6 @@ void GJID::GoToState (EGameState state)
 {
     _state = state;
     Update();
-}
-
-#include "levels.dat"
-
-void GJID::LoadData (void)
-{
-    const char* ldata = levels_data;
-    _levels.clear();
-    while (ldata) {
-	_levels.push_back();
-	ldata = _levels.back().Load (ldata);
-    }
-    _curLevel = _levels[0];
 }
 
 static const GJID::SImageTile c_Tiles [NumberOfPics] = {
