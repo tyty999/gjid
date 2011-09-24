@@ -60,7 +60,7 @@ protected:
     inline virtual void		OnKey (key_t)	{ }
     inline uint16_t		Width (void) const				{ return (_width); }
     inline uint16_t		Height (void) const				{ return (_height); }
-    inline uint32_t		RGB (int8_t r, int8_t g, int8_t b) const	{ return (r<<16|g<<8|b); }
+    inline uint32_t		RGB (uint8_t r, uint8_t g, uint8_t b) const	{ return (r<<16|g<<8|b); }
     SImage			LoadImage (const char* const* p);
     void			DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y);
     void			CreateWindow (const char* title, int w, int h);
