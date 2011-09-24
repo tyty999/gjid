@@ -3,7 +3,6 @@
 
 #pragma once
 #include "config.h"
-#include <xcb/xcb.h>
 #include <X11/keysym.h>
 
 //----------------------------------------------------------------------
@@ -15,6 +14,9 @@ enum {
     XKM_Alt = 8<<_XKM_Bitshift,
     XKM_Mask = XKM_Shift| XKM_Ctrl| XKM_Alt
 };
+
+struct xcb_connection_t;
+struct xcb_screen_t;
 
 /// Base class for application objects
 class CXApp {
@@ -65,21 +67,21 @@ protected:
     void			DrawText (int x, int y, const char* s, uint32_t color);
 private:
     inline void			OnMap (void);
-    inline void			OnResize (const xcb_generic_event_t* event);
-    inline wchar_t		TranslateKeycode (const xcb_generic_event_t* event) const;
+    inline void			OnResize (const void* event);
+    inline wchar_t		TranslateKeycode (const void* event) const;
     void			LoadFont (void);
 private:
     vector<wchar_t>		_ksyms;
     xcb_connection_t*		_pconn;
     const xcb_screen_t*		_pscreen;
-    xcb_window_t		_window;
+    uint32_t			_window;
     uint32_t			_wpict;
     uint32_t			_bpict;
     uint32_t			_glyphset;
     uint32_t			_glyphpen;
     uint32_t			_pencolor;
-    xcb_gcontext_t		_xgc;
-    xcb_atom_t			_atoms[xa_Count];
+    uint32_t			_xgc;
+    uint32_t			_atoms[xa_Count];
     uint8_t			_xrfmt[4];
     uint16_t			_width;
     uint16_t			_height;

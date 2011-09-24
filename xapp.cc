@@ -2,6 +2,7 @@
 // This file is free software, distributed under the MIT License.
 
 #include "xapp.h"
+#include <xcb/xcb.h>
 #include <xcb/render.h>
 #include <signal.h>
 #include <stdio.h>
@@ -176,7 +177,7 @@ inline void CXApp::OnMap (void)
     LoadFont();
 }
 
-inline void CXApp::OnResize (const xcb_generic_event_t* e)
+inline void CXApp::OnResize (const void* e)
 {
     _winWidth = ((const xcb_configure_notify_event_t*)e)->width;
     _winHeight = ((const xcb_configure_notify_event_t*)e)->height;
@@ -189,7 +190,7 @@ inline void CXApp::OnResize (const xcb_generic_event_t* e)
     xcb_render_set_picture_transform (_pconn, _bpict, tr);
 }
 
-inline wchar_t CXApp::TranslateKeycode (const xcb_generic_event_t* event) const
+inline wchar_t CXApp::TranslateKeycode (const void* event) const
 {
     const xcb_key_press_event_t *kp = (const xcb_key_press_event_t*)event;
     return (_ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode]);
