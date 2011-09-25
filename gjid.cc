@@ -134,7 +134,7 @@ inline void GJID::PrintStory (void)
 	static const char storyPage1[] =
 	    "In the year 32333 AD two robot cities on the planet Nikarade were\0"
 	    "arming themselves against each other. Both set up large complexes\0"
-	    "in which powerful photon disrupters were stored. After many years\0"
+	    "in which powerful photon disruptors were stored. After many years\0"
 	    "of increasing tension on of the cities elected another leader who\0"
 	    "attempted to make peace with the enemy. The cities finally agreed\0"
 	    "to an entente in 32407 and to recycle some of the created weapons\0"
@@ -166,7 +166,7 @@ inline void GJID::PrintStory (void)
 	DrawText (x+50, y, "Things you will find in the maze:", RGB(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { Barrel2Pix, Barrel1Pix, DisposePix, OWDEastPix, ExitPix };
-	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- A recycling bin", "- One-way door", "- The exit" };
+	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- Recycling bin", "- One-way door", "- The exit" };
 	for (size_t i = 0; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
 	    DrawText (x+TILE_W*2, y+5, desc[i], RGB(128,128,0));
