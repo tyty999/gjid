@@ -85,5 +85,3 @@ private:
     tilemap_t		_map;
     objvec_t		_objects;
 };
-
-extern const char levels_data[];

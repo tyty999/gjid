@@ -5,9 +5,15 @@
 #include <time.h>
 
 #define char const char
-#include "tileset.xpm"
-#include "logo.xpm"
+#include "data/tileset.xpm"
+#include "data/logo.xpm"
 #undef char
+#define unsigned const unsigned
+#include "data/title.xbm"
+#include "data/winner.xbm"
+#include "data/loser.xbm"
+#undef unsigned
+#include "data/levels.txt"
 
 //----------------------------------------------------------------------
 
@@ -27,6 +33,7 @@ GJID::GJID (void)
     _imgtiles = LoadImage (tileset_xpm);
     _imglogo = LoadImage (logo_xpm);
     const char* ldata = levels_data;
+
     while (ldata) {
 	_levels.push_back (Level());
 	ldata = _levels.back().Load (ldata);
@@ -87,25 +94,17 @@ void GJID::FillWithTile (PicIndex tidx)
 	    PutTile (tidx, x, y);
 }
 
-void GJID::DecodeBitmapWithTile (const uint16_t* p, size_t n, PicIndex tidx)
+void GJID::DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg)
 {
-    for (size_t y = 0; y < n; ++ y)
-	for (size_t x = 0, mask = (1 << 15); x < 16; ++ x, mask >>= 1)
-	    if (p[y] & mask)
-		PutTile (tidx, (x + 2) * TILE_W, (y + 3) * TILE_H);
+    FillWithTile (bg);
+    for (uint32_t y = 0; y < 6; ++y, ++p)
+	for (uint32_t x = 0; x < 16; p+=(++x==8))
+	    if ((*p>>(x%8))&1)
+		PutTile (fg, (x+2)*TILE_W, (y+3)*TILE_H);
 }
 
 //----------------------------------------------------------------------
 // Screen drawing
-
-inline void GJID::IntroScreen (void)
-{
-    static const uint16_t title[] = {	// "GJID"
-	0xEEEC, 0x824A, 0x824A, 0xA24A, 0xAA4A, 0xE6EC
-    };
-    FillWithTile (Back1Pix);
-    DecodeBitmapWithTile (title, VectorSize(title), Wall2Pix);
-}
 
 inline void GJID::PrintStory (void)
 {
@@ -186,34 +185,16 @@ inline void GJID::DrawLevel (void)
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
 }
 
-inline void GJID::WinnerScreen (void)
-{
-    static const uint16_t title[] = {	// "WIN"
-	0x45D2, 0x449A, 0x449E, 0x5496, 0x5492, 0x29D2
-    };
-    FillWithTile (Wall1Pix);
-    DecodeBitmapWithTile (title, VectorSize(title), RobotNorthPix);
-}
-
-inline void GJID::LoserScreen (void)
-{
-    static const uint16_t title[] = {	// "LOSE"
-	0x8F77, 0x8944, 0x8966, 0x8934, 0x8914, 0xEF77
-    };
-    FillWithTile (Back3Pix);
-    DecodeBitmapWithTile (title, VectorSize(title), DisposePix);
-}
-
 void GJID::OnDraw (void)
 {
     CXApp::OnDraw();
     switch (_state) {
 	default:
-	case state_Title:	return (IntroScreen());
+	case state_Title:	return (DecodeBitmapWithTile (title_bits, Wall2Pix, Back1Pix));
 	case state_Story:	return (PrintStory());
 	case state_Game:	return (DrawLevel());
-	case state_Winner:	return (WinnerScreen());
-	case state_Loser:	return (LoserScreen());
+	case state_Winner:	return (DecodeBitmapWithTile (winner_bits, RobotNorthPix, Wall1Pix));
+	case state_Loser:	return (DecodeBitmapWithTile (loser_bits, DisposePix, Back3Pix));
     }
 }
 

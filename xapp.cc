@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#define unsigned const unsigned
+#include "data/font3x5.xbm"
+#undef unsigned
 
 //----------------------------------------------------------------------
 
@@ -224,10 +227,6 @@ void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int
 {
     xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_OVER, img.id, XCB_NONE, _bpict, tile.x, tile.y, 0, 0, x, y, tile.w, tile.h);
 }
-
-#define unsigned const unsigned
-#include "font3x5.xbm"
-#undef unsigned
 
 void CXApp::LoadFont (void)
 {

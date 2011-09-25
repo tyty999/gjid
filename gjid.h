@@ -26,11 +26,8 @@ private:
 private:
     void		GoToState (EGameState state);
     void		FillWithTile (PicIndex tidx);
-    void		DecodeBitmapWithTile (const uint16_t* p, size_t n, PicIndex tidx);
-    inline void		IntroScreen (void);
-    inline void		LoserScreen (void);
+    void		DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg);
     inline void		PrintStory (void);
-    inline void		WinnerScreen (void);
     inline void		DrawLevel (void);
     inline void		TitleKeys (key_t key);
     inline void		StoryKeys (key_t key);
