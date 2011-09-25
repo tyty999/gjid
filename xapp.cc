@@ -59,8 +59,11 @@ CXApp::CXApp (void)
     std::set_terminate (Terminate);
 
     // Establish X server connection
-    _pconn = xcb_connect (NULL, NULL);
+    if (!(_pconn = xcb_connect (NULL, NULL)))
+	throw runtime_error ("unable to connect to the X server");
     const xcb_setup_t* xsetup = xcb_get_setup (_pconn);
+    if (!xsetup)
+	throw runtime_error ("unable to connect to the X server");
     _pscreen = xcb_setup_roots_iterator(xsetup).data;
     // Request RENDER extension, keyboard mappings, and WM atoms
     xcb_get_keyboard_mapping_cookie_t kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
