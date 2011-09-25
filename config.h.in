@@ -11,12 +11,13 @@
 #define @PKG_UNAME@_BUGREPORT	"@PKG_BUGREPORT@"
 
 // Define to 1 if you have uSTL (http://sourceforge.net/projects/ustl)
-#define HAVE_USTL_H 1
+#undef HAVE_USTL_H
 #if HAVE_USTL_H
     #include <ustl.h>
     using namespace ustl;
 #else
     #include <vector>
+    #include <stdexcept>
     #include <stdint.h>
     #include <string.h>
     #include <stdlib.h>
