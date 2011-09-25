@@ -69,6 +69,7 @@ private:
     inline void			OnMap (void);
     inline void			OnResize (const void* event);
     inline wchar_t		TranslateKeycode (const void* event) const;
+    inline void			OnClientMessage (const void* e);
     void			LoadFont (void);
 private:
     vector<wchar_t>		_ksyms;

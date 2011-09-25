@@ -123,6 +123,7 @@ int CXApp::Run (void)
 	    case XCB_EXPOSE:		Update(); break;
 	    case XCB_CONFIGURE_NOTIFY:	OnResize(e); break;
 	    case XCB_KEY_PRESS:		OnKey (TranslateKeycode(e)); break;
+	    case XCB_CLIENT_MESSAGE:	OnClientMessage(e); break;
 	}
     }
     return (EXIT_SUCCESS);
@@ -160,6 +161,8 @@ void CXApp::CreateWindow (const char* title, int width, int height)
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
     // Enable WM close message
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_PROTOCOLS], _atoms[xa_ATOM], 32, 1, &_atoms[xa_WM_DELETE_WINDOW]);
+    // Set the fullscreen flag on the window (see OnMap)
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_NET_WM_STATE], _atoms[xa_ATOM], 32, 1, &_atoms[xa_NET_WM_STATE_FULLSCREEN]);
     // And put it on the screen
     xcb_map_window (_pconn, _window);
 }
@@ -167,6 +170,13 @@ void CXApp::CreateWindow (const char* title, int width, int height)
 inline void CXApp::OnMap (void)
 {
     // Set the fullscreen flag on the window
+    //
+    // ICCCM requires sending this message instead of just setting the
+    // property on the window. Unfortunately, some window managers
+    // (like enlightenment) don't handle that and require setting the
+    // property directly. Setting the property and not sending the
+    // event works in all the WMs I tried, but is not standard compliant.
+    //
     xcb_client_message_event_t xev;
     memset (&xev, 0, sizeof(xev));
     xev.response_type = XCB_CLIENT_MESSAGE;
@@ -175,7 +185,7 @@ inline void CXApp::OnMap (void)
     xev.format = 32;
     xev.data.data32[0] = 1;
     xev.data.data32[1] = _atoms[xa_NET_WM_STATE_FULLSCREEN];
-    xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT| XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
+    xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
 
     LoadFont();
 }
@@ -193,9 +203,17 @@ inline void CXApp::OnResize (const void* e)
     xcb_render_set_picture_transform (_pconn, _bpict, tr);
 }
 
+inline void CXApp::OnClientMessage (const void* e)
+{
+    const xcb_client_message_event_t* msg = (const xcb_client_message_event_t*) e;
+    // This happens when the user clicks the close button on the window
+    if (msg->window == _window && msg->type == _atoms[xa_WM_PROTOCOLS] && msg->data.data32[0] == _atoms[xa_WM_DELETE_WINDOW])
+	Quit();
+}
+
 inline wchar_t CXApp::TranslateKeycode (const void* event) const
 {
-    const xcb_key_press_event_t *kp = (const xcb_key_press_event_t*)event;
+    const xcb_key_press_event_t* kp = (const xcb_key_press_event_t*)event;
     return (_ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode]);
 }
 
