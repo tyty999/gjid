@@ -11,8 +11,6 @@
 #define MAP_WIDTH	20
 #define MAP_HEIGHT	12
 
-#define MAX_LEVELS	1000
-
 //----------------------------------------------------------------------
 
 enum PicIndex {
@@ -54,34 +52,34 @@ enum RobotDir {
 
 class Level {
 public:
-    struct ObjectType {
+    struct Object {
 	uint8_t 	x;
 	uint8_t 	y;
 	uint16_t	pic;
-	inline		ObjectType (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
+	inline		Object (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
     };
     typedef vector<uint8_t>	tilemap_t;
-    typedef vector<ObjectType>	objvec_t;
+    typedef vector<Object>	objvec_t;
     typedef const tilemap_t&	rctilemap_t;
     typedef const objvec_t&	rcobjvec_t;
 public:
 			Level (void);
-    inline PicIndex	At (int x, int y) const			{ return (PicIndex (_map [y * MAP_WIDTH + x])); }
-    inline void		SetCell (int x, int y, PicIndex pic)	{ _map [y * MAP_WIDTH + x] = pic; }
-    bool		Finished (void) const;
-    inline void		DisposeCrate (size_t index)			{ _objects.erase (_objects.begin() + index); }
-    inline rctilemap_t	Map (void) const				{ return (_map); }
-    inline rcobjvec_t	Objects (void) const				{ return (_objects); }
-    void		AddCrate (int x, int y, PicIndex pic);
+    inline PicIndex	At (int x, int y) const			{ return (PicIndex (_map[y*MAP_WIDTH+x])); }
+    inline rctilemap_t	Map (void) const			{ return (_map); }
+    inline rcobjvec_t	Objects (void) const			{ return (_objects); }
+    const Object&	Robot (void) const			{ return (_robot); }
+    inline void		SetCell (int x, int y, PicIndex pic)	{ _map[y*MAP_WIDTH+x] = pic; }
+    bool		Finished (void) const			{ return (_objects.empty() && At(_robot.x, _robot.y) == ExitPix); }
     void		MoveRobot (RobotDir where);
-    void		MoveRobot (int x, int y, PicIndex pic);
     const char*		Load (const char* ldata);
-    int			FindCrate (int x, int y) const;
-    bool		CanMoveTo (int x, int y, RobotDir where) const;
 private:
-    inline const ObjectType&	Robot (void) const	{ return (_objects[0]); }
-    inline ObjectType&		Robot (void)		{ return (_objects[0]); }
+    bool		CanMoveTo (int x, int y, RobotDir where) const;
+    inline void		MoveRobot (int x, int y, PicIndex pic)	{ _robot.x = x; _robot.y = y; _robot.pic = pic; }
+    int			FindCrate (int x, int y) const;
+    inline void		AddCrate (int x, int y, PicIndex pic)	{ _objects.push_back (Object (x, y, pic)); }
+    inline void		DisposeCrate (size_t index)		{ _objects.erase (_objects.begin() + index); }
 private:
     tilemap_t		_map;
     objvec_t		_objects;
+    Object		_robot;
 };

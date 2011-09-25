@@ -1,4 +1,4 @@
-const char levels_data[] =
+static const char levels_data[] =
 
 "~~~~###########~~~~~"
 "~~~~#......0..#~~~~~"

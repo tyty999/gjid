@@ -179,6 +179,7 @@ inline void GJID::DrawLevel (void)
     // Objects are composited on top of the tile underneath
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
+    PutTile (PicIndex(_curLevel.Robot().pic), _curLevel.Robot().x*TILE_W, _curLevel.Robot().y*TILE_H);
 }
 
 void GJID::OnDraw (void)
