@@ -238,9 +238,10 @@ void CXApp::LoadFont (void)
     uint32_t glid[2];
     uint8_t lbuf [glyphi[0].width*glyphi[0].height*2];
     fill_n (lbuf, sizeof(lbuf), 0);
+    // The font bitmap has 128 glyphs on a 16x8 grid, each glyph line taking up 4 bits
     for (int row = 0; row < 8; ++row) {
 	for (int col = 0; col < 8; ++col) {
-	    uint8_t* l1d = &lbuf[0];
+	    uint8_t* l1d = &lbuf[0];			// So we do 2 at once
 	    uint8_t* l2d = &lbuf[sizeof(lbuf)/2];
 	    for (int y = 0; y < 5; ++y) {
 		uint8_t v=font3x5_bits[row*8*6+col+y*8];
@@ -268,24 +269,24 @@ void CXApp::DrawText (int x, int y, const char* s, uint32_t color)
 {
     if (color != _pencolor) {
 	xcb_render_color_t rc;
-	rc.red = (color>>8)&0xff00;
+	rc.red = (color>>8)&0xff00;		// RENDER uses 16 bits per channel for colors
 	rc.green = color&0xff00;
 	rc.blue = (color<<8)&0xff00;
-	rc.alpha = ((color>>24)&0xff00)^0xff00;
+	rc.alpha = ((color>>24)&0xff00)^0xff00;	// ... and thinks that "alpha" means "opacity" instead of "transparency"
 	static const xcb_rectangle_t r = { 0, 0, 1, 1 };
 	xcb_render_fill_rectangles (_pconn, XCB_RENDER_PICT_OP_SRC, _glyphpen, rc, 1, &r);
 	_pencolor = color;
     }
-    struct TextElement {
-	uint8_t		len;
+    struct TextElement {	// For some reason, render_glyphs call takes a list of these instead of a plain text string
+	uint8_t		len;	// Number of characters in text
 	uint8_t		_pad1;
 	uint16_t	_pad2;
-	int16_t		x, y;
+	int16_t		x, y;	// Offset from the last TextElement. The first element should have the passed in coordinates, the rest should have 0,0.
 	char		text [256-8];
     };
     TextElement elt;
     uint8_t slen = min (strlen(s), sizeof(elt.text)-1);	// Maximum 248 chars; since this call does not see newlines and we are at 320x240, that's reasonable
-    uint8_t eltsz = 8+Align(slen,4);
+    uint8_t eltsz = 8+Align(slen,4);			// This is the size of the header elements + the text padded to 4 byte grain
     elt.len = slen;
     elt.x = x; elt.y = y;
     memcpy (elt.text, s, slen);
