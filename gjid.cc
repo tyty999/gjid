@@ -4,6 +4,8 @@
 #include "gjid.h"
 #include <time.h>
 
+//{{{ Game data --------------------------------------------------------
+
 #define char const char
 #include "data/tileset.xpm"
 #include "data/logo.xpm"
@@ -15,45 +17,7 @@
 #undef unsigned
 #include "data/levels.txt"
 
-//----------------------------------------------------------------------
-
-MainApp (GJID)
-
-//----------------------------------------------------------------------
-
-GJID::GJID (void)
-: CXApp()
-,_state (state_Title)
-,_storyPage (0)
-,_level (0)
-,_curLevel()
-,_levels()
-{
-    CreateWindow ("GJID", 320, 240);
-    _imgtiles = LoadImage (tileset_xpm);
-    _imglogo = LoadImage (logo_xpm);
-    const char* ldata = levels_data;
-
-    while (ldata) {
-	_levels.push_back (Level());
-	ldata = _levels.back().Load (ldata);
-    }
-    _curLevel = _levels[0];
-}
-
-/*static*/ GJID& GJID::Instance (void)
-{
-    static GJID s_App;
-    return (s_App);
-}
-
-void GJID::GoToState (EGameState state)
-{
-    _state = state;
-    Update();
-}
-
-static const GJID::SImageTile c_Tiles [NumberOfPics] = {
+/*static*/ const GJID::SImageTile GJID::c_Tiles [NumberOfPics] = {
     { 32, 48, 16, 16 },	// DisposePix
     { 48, 48, 16, 16 },	// ExitPix
     { 48, 16, 16, 16 },	// FloorPix
@@ -79,9 +43,36 @@ static const GJID::SImageTile c_Tiles [NumberOfPics] = {
     {150,  0, 50, 50 }	// LogoDPix
 };
 
-inline void GJID::PutTile (PicIndex ti, int x, int y)
+//}}}-------------------------------------------------------------------
+
+MainApp (GJID)
+
+//----------------------------------------------------------------------
+
+GJID::GJID (void)
+: CXApp()
+,_state (state_Title)
+,_storyPage (0)
+,_level (0)
+,_curLevel()
+,_levels()
 {
-    DrawImageTile (ti < NumberOfMapPics ? _imgtiles : _imglogo, c_Tiles[ti], x, y);
+}
+
+int GJID::Run (void)
+{
+    CreateWindow ("GJID", 320, 240);
+
+    _imgtiles = LoadImage (tileset_xpm);	// Map tiles and objects
+    _imglogo = LoadImage (logo_xpm);		// Big text for the story
+
+    for (const char* ldata = levels_data; ldata;) {	// levels.txt
+	_levels.push_back (Level());
+	ldata = _levels.back().Load (ldata);
+    }
+    _curLevel = _levels[0];			// Moving crates changes level data, so make a working copy
+
+    return (CXApp::Run());
 }
 
 //----------------------------------------------------------------------
@@ -94,6 +85,7 @@ void GJID::FillWithTile (PicIndex tidx)
 	    PutTile (tidx, x, y);
 }
 
+// This creates the big letter screens for the title, winner, and loser
 void GJID::DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg)
 {
     FillWithTile (bg);
@@ -110,6 +102,7 @@ inline void GJID::PrintStory (void)
 {
     int x, y, row = 0;
 
+    // Make a stone tile border
     FillWithTile (Back1Pix);
     for (y = 0; y < Height(); y += TILE_H) {
 	PutTile (Wall1Pix, 0, y);
@@ -123,10 +116,10 @@ inline void GJID::PrintStory (void)
     DrawText (144, Height() - 10, "Hit any key", RGB(128,128,128));
 
     if (_storyPage == 0) {
-	PutTile (LogoGPix, 40, TILE_H * 2); 
-	PutTile (LogoJPix, 100, TILE_H * 2); 
-	PutTile (LogoIPix, 160, TILE_H * 2); 
-	PutTile (LogoDPix, 220, TILE_H * 2); 
+	DrawImageTile (_imglogo, c_Tiles[LogoGPix], 40, TILE_H * 2); 
+	DrawImageTile (_imglogo, c_Tiles[LogoJPix], 100, TILE_H * 2); 
+	DrawImageTile (_imglogo, c_Tiles[LogoIPix], 160, TILE_H * 2); 
+	DrawImageTile (_imglogo, c_Tiles[LogoDPix], 220, TILE_H * 2); 
 	row = 8;
     }
     if (_storyPage < 2) {
@@ -177,10 +170,13 @@ inline void GJID::PrintStory (void)
 inline void GJID::DrawLevel (void)
 {
     Level::tilemap_t::const_iterator it (_curLevel.Map().begin());
+    // Fill with default background
     FillWithTile (PicIndex(_curLevel.Map().back()));
+    // Map tiles on top of that (map is shorter than the screen)
     for (int y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
 	for (int x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
 	    PutTile (PicIndex(*it++), x, y);
+    // Objects are composited on top of the tile underneath
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
 }
@@ -208,7 +204,7 @@ inline void GJID::TitleKeys (key_t key)
 
 inline void GJID::StoryKeys (key_t key)
 {
-    if (key == XK_Page_Up || key == XK_Up || key == ('b'|XKM_Ctrl))
+    if (key == XK_Page_Up || key == XK_Up || key == (XKM_Ctrl|'b'))
 	_storyPage -= !!_storyPage;
     else {
 	++ _storyPage;

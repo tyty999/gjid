@@ -8,13 +8,6 @@
 //----------------------------------------------------------------------
 
 class GJID : public CXApp {
-public:
-    static GJID&	Instance (void);
-protected:
-			GJID (void);
-    virtual void	OnDraw (void);
-    virtual void	OnKey (key_t key);
-private:
     enum EGameState {
 	state_Title,
 	state_Story,
@@ -23,8 +16,16 @@ private:
 	state_Loser,
 	state_Last
     };
+public:
+    static GJID&	Instance (void)	{ static GJID s_App; return (s_App); }
+    int			Run (void);
+protected:
+			GJID (void);
+    virtual void	OnDraw (void);
+    virtual void	OnKey (key_t key);
 private:
-    void		GoToState (EGameState state);
+    inline void		PutTile (PicIndex tidx, int x, int y)	{ DrawImageTile (_imgtiles, c_Tiles[tidx], x, y); }
+    inline void		GoToState (EGameState state)		{ _state = state; Update(); }
     void		FillWithTile (PicIndex tidx);
     void		DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg);
     inline void		PrintStory (void);
@@ -32,7 +33,6 @@ private:
     inline void		TitleKeys (key_t key);
     inline void		StoryKeys (key_t key);
     inline void		LevelKeys (key_t key);
-    inline void		PutTile (PicIndex ti, int x, int y);
 private:
     EGameState		_state;
     uint32_t		_storyPage;
@@ -41,4 +41,5 @@ private:
     SImage		_imglogo;
     Level		_curLevel;
     vector<Level>	_levels;
+    static const SImageTile c_Tiles [NumberOfPics];
 };
