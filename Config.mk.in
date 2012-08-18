@@ -30,13 +30,13 @@ BINDIR		:= @bindir@
 
 WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
 		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
-CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fno-threadsafe-statics
+CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fno-threadsafe-statics -ffunction-sections -fdata-sections
 LDFLAGS		:= @CUSTOMLIBDIR@
 LIBS		:= @libustl@ @libxcb@ @libxcb-render@
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else
     CXXFLAGS	+= -Os -g0 -DNDEBUG=1
-    LDFLAGS	+= -s
+    LDFLAGS	+= -s -Wl,-gc-sections
 endif
 O		:= .o/
