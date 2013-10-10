@@ -37,34 +37,35 @@ int Level::FindCrate (int x, int y) const
 
 void Level::MoveRobot (RobotDir where)
 {
-    static const int8_t dirStepX[4] = { 0, 0, 1, -1 };
-    static const int8_t dirStepY[4] = { -1, 1, 0, 0 };
-    static const uint8_t dirImage[4] = { RobotNorthPix, RobotSouthPix, RobotEastPix, RobotWestPix };
+    static const struct {
+	int8_t dx,dy;
+	uint16_t img;
+    } robotdir[] = {{0,-1,RobotNorthPix},{0,1,RobotSouthPix},{1,0,RobotEastPix},{-1,0,RobotWestPix}};
 
-    int dx = dirStepX [where], dy = dirStepY [where];
-    _robot.pic = dirImage [where];
+    _robot.pic = robotdir[where].img;
+    int newx = _robot.x + robotdir[where].dx;
+    int newcratex = newx + robotdir[where].dx;
+    int newy = _robot.y + robotdir[where].dy;
+    int newcratey = newy + robotdir[where].dy;
 
     // Check if map square can be moved on
-    if (!CanMoveTo (_robot.x+dx, _robot.y+dy, where))
+    if (!CanMoveTo (newx, newy, where))
 	return;
 
     // Check if a crate needs to be moved
-    int ciw = FindCrate (_robot.x+dx, _robot.y+dy);
+    int ciw = FindCrate (newx, newy);
     if (ciw >= 0) {
 	// Can only move one crate - this checks for another one behind ciw
 	//	also checks if the square behind crate can be moved into
-	if (FindCrate(_robot.x+2*dx, _robot.y+2*dy) < 0 && CanMoveTo(_robot.x+2*dx, _robot.y+2*dy, where)) {
-	    _objects[ciw].x += dx;
-	    _objects[ciw].y += dy;
-	    _robot.x += dx;
-	    _robot.y += dy;
-	    if (At(_objects[ciw].x, _objects[ciw].y) == DisposePix)
-		DisposeCrate (ciw);
-	}
-    } else {
-	_robot.x += dx;
-	_robot.y += dy;
+	if (FindCrate(newcratex, newcratey) >= 0 || !CanMoveTo(newcratex, newcratey, where))
+	    return;
+	_objects[ciw].x = newcratex;
+	_objects[ciw].y = newcratey;
+	if (At(newcratex, newcratey) == DisposePix)
+	    DisposeCrate (ciw);
     }
+    _robot.x = newx;
+    _robot.y = newy;
 }
 
 const char* Level::Load (const char* ldata)
