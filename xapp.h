@@ -83,7 +83,7 @@ private:
     uint32_t			_pencolor;
     uint32_t			_xgc;
     uint32_t			_atoms[xa_Count];
-    uint8_t			_xrfmt[4];
+    uint16_t			_xrfmt[4];
     uint16_t			_width;
     uint16_t			_height;
     uint16_t			_winWidth;
