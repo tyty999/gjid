@@ -68,7 +68,13 @@ CXApp::CXApp (void)
     // Request RENDER extension, keyboard mappings, and WM atoms
     xcb_get_keyboard_mapping_cookie_t kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
     xcb_render_query_version_cookie_t rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
-    static const char* c_AtomNames[xa_Count] = { "STRING", "ATOM", "WM_NAME", "WM_PROTOCOLS", "WM_DELETE_WINDOW", "_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN" };
+    static const char* c_AtomNames[xa_Count] = {
+	"CARDINAL", "STRING", "ATOM",
+	"WM_NAME", "WM_PROTOCOLS", "WM_DELETE_WINDOW",
+	"_NET_WM_PID",
+	"_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN",
+	"_NET_WM_WINDOW_TYPE", "_NET_WM_WINDOW_TYPE_NORMAL",
+    };
     for (int i = 0; i < xa_Count; ++i)
 	_atoms[i] = xcb_intern_atom (_pconn, false, strlen(c_AtomNames[i]), c_AtomNames[i]).sequence;
 
@@ -162,10 +168,15 @@ void CXApp::CreateWindow (const char* title, int width, int height)
     xcb_render_create_picture (_pconn, _wpict = xcb_generate_id(_pconn), _window, _xrfmt[rfmt_Default], 0, NULL);
     // Set window title
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
+    // Set owner pid
+    uint32_t pid = getpid();
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_NET_WM_PID], _atoms[xa_CARDINAL], 32, 1, &pid);
     // Enable WM close message
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_PROTOCOLS], _atoms[xa_ATOM], 32, 1, &_atoms[xa_WM_DELETE_WINDOW]);
     // Set the fullscreen flag on the window
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_NET_WM_STATE], _atoms[xa_ATOM], 32, 1, &_atoms[xa_NET_WM_STATE_FULLSCREEN]);
+    // Set window type
+    xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_NET_WM_WINDOW_TYPE], _atoms[xa_ATOM], 32, 1, &_atoms[xa_NET_WM_WINDOW_TYPE_NORMAL]);
     // And put it on the screen
     xcb_map_window (_pconn, _window);
 }

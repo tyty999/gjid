@@ -38,13 +38,17 @@ private:
 	rfmt_Pixmap
     };
     enum EXAtoms {
+	xa_CARDINAL,
 	xa_STRING,
 	xa_ATOM,
 	xa_WM_NAME,
 	xa_WM_PROTOCOLS,
 	xa_WM_DELETE_WINDOW,
+	xa_NET_WM_PID,
 	xa_NET_WM_STATE,
 	xa_NET_WM_STATE_FULLSCREEN,
+	xa_NET_WM_WINDOW_TYPE,
+	xa_NET_WM_WINDOW_TYPE_NORMAL,
 	xa_Count
     };
 public:
