@@ -164,7 +164,7 @@ void CXApp::CreateWindow (const char* title, int width, int height)
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
     // Enable WM close message
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_PROTOCOLS], _atoms[xa_ATOM], 32, 1, &_atoms[xa_WM_DELETE_WINDOW]);
-    // Set the fullscreen flag on the window (see OnMap)
+    // Set the fullscreen flag on the window
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_NET_WM_STATE], _atoms[xa_ATOM], 32, 1, &_atoms[xa_NET_WM_STATE_FULLSCREEN]);
     // And put it on the screen
     xcb_map_window (_pconn, _window);
@@ -172,24 +172,6 @@ void CXApp::CreateWindow (const char* title, int width, int height)
 
 inline void CXApp::OnMap (void)
 {
-    // Set the fullscreen flag on the window
-    //
-    // ICCCM requires sending this message instead of just setting the
-    // property on the window. Unfortunately, some window managers
-    // (like enlightenment) don't handle that and require setting the
-    // property directly. Setting the property and not sending the
-    // event works in all the WMs I tried, but is not standard compliant.
-    //
-    xcb_client_message_event_t xev;
-    memset (&xev, 0, sizeof(xev));
-    xev.response_type = XCB_CLIENT_MESSAGE;
-    xev.window = _window;
-    xev.type = _atoms[xa_NET_WM_STATE];
-    xev.format = 32;
-    xev.data.data32[0] = 1;
-    xev.data.data32[1] = _atoms[xa_NET_WM_STATE_FULLSCREEN];
-    xcb_send_event (_pconn, _pscreen->root, false, XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char*) &xev);
-
     LoadFont();
 }
 
