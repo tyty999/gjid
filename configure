@@ -6,7 +6,7 @@
 ######################################################################
 
 PKG_NAME="gjid"
-PKG_VERSTR="v3.0"
+PKG_VERSTR="v3.1"
 
 MNT_NAME="Mike Sharov"
 MNT_MAIL="zfunebi@hfref.fbheprsbetr.arg"
