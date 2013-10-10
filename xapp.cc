@@ -154,12 +154,15 @@ void CXApp::CreateWindow (const char* title, int width, int height)
 {
     _width = width; _height = height;
     // Create the window with given dimensions
-    static const uint32_t winvals[] = { XCB_NONE, XCB_EVENT_MASK_EXPOSURE| XCB_EVENT_MASK_KEY_PRESS| XCB_EVENT_MASK_STRUCTURE_NOTIFY };
+    static const uint32_t winvals[] = {
+	XCB_NONE,	// XCB_CW_BACK_PIXMAP set to none avoids startup flicker by not drawing background
+	XCB_EVENT_MASK_EXPOSURE| XCB_EVENT_MASK_KEY_PRESS| XCB_EVENT_MASK_STRUCTURE_NOTIFY
+    };
     xcb_create_window (_pconn, XCB_COPY_FROM_PARENT, _window=xcb_generate_id(_pconn),
 	    _pscreen->root, 0, 0, _winWidth = width, _winHeight = height, 0,
 	    XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
 	    XCB_CW_BACK_PIXMAP| XCB_CW_EVENT_MASK, winvals);
-    // Create backing pixmap
+    // Create backing pixmap and the render picture on top of it
     xcb_pixmap_t bpixid = xcb_generate_id(_pconn);
     xcb_create_pixmap (_pconn, 32, bpixid, _window, width, height);
     xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), bpixid, 0, NULL);
@@ -168,7 +171,7 @@ void CXApp::CreateWindow (const char* title, int width, int height)
     xcb_render_create_picture (_pconn, _wpict = xcb_generate_id(_pconn), _window, _xrfmt[rfmt_Default], 0, NULL);
     // Set window title
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
-    // Set owner pid
+    // Set owner pid (so the WM knows whom to kill)
     uint32_t pid = getpid();
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_NET_WM_PID], _atoms[xa_CARDINAL], 32, 1, &pid);
     // Enable WM close message
@@ -193,7 +196,7 @@ inline void CXApp::OnResize (const void* e)
     // Setup RENDER scaling of the backbuffer
     xcb_render_transform_t tr;
     memset (&tr, 0, sizeof(tr));
-    tr.matrix11 = (_width<<16)/_winWidth;
+    tr.matrix11 = (_width<<16)/_winWidth;	// matrix values are in fixed point fraction, v/(1<<16)
     tr.matrix22 = (_height<<16)/_winHeight;
     tr.matrix33 = (1<<16);
     xcb_render_set_picture_transform (_pconn, _bpict, tr);
@@ -245,7 +248,7 @@ void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int
 void CXApp::LoadFont (void)
 {
     xcb_render_create_glyph_set (_pconn, _glyphset = xcb_generate_id(_pconn), _xrfmt[rfmt_Font]);
-    const xcb_render_glyphinfo_t glyphi[] = {
+    static const xcb_render_glyphinfo_t glyphi[] = {
 	{ 4, 6, 0, 0, 4, 0 },
 	{ 4, 6, 0, 0, 4, 0 },
     };
