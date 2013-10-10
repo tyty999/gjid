@@ -72,7 +72,7 @@ public:
     const Object&	Robot (void) const			{ return (_robot); }
     inline void		SetCell (uint8_t x, uint8_t y, PicIndex pic)	{ _map[y*MAP_WIDTH+x] = pic; }
     bool		Finished (void) const			{ return (_objects.empty() && At(_robot.x, _robot.y) == ExitPix); }
-    void		MoveRobot (RobotDir where);
+    bool		MoveRobot (RobotDir where);
     const char*		Load (const char* ldata);
 private:
     bool		CanMoveTo (uint8_t x, uint8_t y, RobotDir where) const;

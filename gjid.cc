@@ -54,6 +54,7 @@ GJID::GJID (void)
 ,_state (state_Title)
 ,_storyPage (0)
 ,_level (0)
+,_moves (0)
 ,_curLevel()
 ,_levels()
 {
@@ -184,6 +185,12 @@ inline void GJID::DrawLevel (void)
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
     PutTile (PicIndex(_curLevel.Robot().pic), _curLevel.Robot().x*TILE_W, _curLevel.Robot().y*TILE_H);
+    // Move count
+    if (_moves) {
+	char mbuf [16];
+	snprintf (mbuf, sizeof(mbuf), "Moves: %u", _moves);
+	DrawText (TILE_W*17+TILE_W/4, Height()-TILE_H*2/3, mbuf, RGB(128,128,0));
+    }
 }
 
 void GJID::OnDraw (void)
@@ -222,13 +229,13 @@ inline void GJID::LevelKeys (key_t key)
 {
     switch (key) {
 	case 'k':
-	case XK_Up:	_curLevel.MoveRobot (North);	break;
+	case XK_Up:	_moves += _curLevel.MoveRobot (North);	break;
 	case 'j':
-	case XK_Down:	_curLevel.MoveRobot (South);	break;
+	case XK_Down:	_moves += _curLevel.MoveRobot (South);	break;
 	case 'l':
-	case XK_Right:	_curLevel.MoveRobot (East);	break;
+	case XK_Right:	_moves += _curLevel.MoveRobot (East);	break;
 	case 'h':
-	case XK_Left:	_curLevel.MoveRobot (West);	break;
+	case XK_Left:	_moves += _curLevel.MoveRobot (West);	break;
 	case XK_F1:	GoToState (state_Story);	break;
 	case 'q':
 	case XK_Escape:	Quit();				break;
@@ -237,6 +244,7 @@ inline void GJID::LevelKeys (key_t key)
 	case XK_F6:	_curLevel = _levels [_level];	break;
     }
     if (_curLevel.Finished()) {
+	_moves = 0;
 	if (++_level < _levels.size())
 	    _curLevel = _levels [_level];
 	else {

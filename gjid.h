@@ -37,6 +37,7 @@ private:
     EGameState		_state;
     uint32_t		_storyPage;
     uint32_t		_level;
+    uint32_t		_moves;
     SImage		_imgtiles;
     SImage		_imglogo;
     Level		_curLevel;

@@ -35,7 +35,7 @@ int Level::FindCrate (uint8_t x, uint8_t y) const
     return (-1);
 }
 
-void Level::MoveRobot (RobotDir where)
+bool Level::MoveRobot (RobotDir where)
 {
     static const struct {
 	int8_t dx,dy;
@@ -50,7 +50,7 @@ void Level::MoveRobot (RobotDir where)
 
     // Check if map square can be moved on
     if (!CanMoveTo (newx, newy, where))
-	return;
+	return (false);
 
     // Check if a crate needs to be moved
     int ciw = FindCrate (newx, newy);
@@ -58,7 +58,7 @@ void Level::MoveRobot (RobotDir where)
 	// Can only move one crate - this checks for another one behind ciw
 	//	also checks if the square behind crate can be moved into
 	if (FindCrate(newcratex, newcratey) >= 0 || !CanMoveTo(newcratex, newcratey, where))
-	    return;
+	    return (false);
 	_objects[ciw].x = newcratex;
 	_objects[ciw].y = newcratey;
 	if (At(newcratex, newcratey) == DisposePix)
@@ -66,6 +66,7 @@ void Level::MoveRobot (RobotDir where)
     }
     _robot.x = newx;
     _robot.y = newy;
+    return (true);
 }
 
 const char* Level::Load (const char* ldata)
