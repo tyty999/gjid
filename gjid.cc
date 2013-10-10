@@ -80,8 +80,8 @@ int GJID::Run (void)
 
 void GJID::FillWithTile (PicIndex tidx)
 {
-    for (int y = 0; y < Height(); y += TILE_H)
-	for (int x = 0; x < Width(); x += TILE_W)
+    for (unsigned y = 0; y < Height(); y += TILE_H)
+	for (unsigned x = 0; x < Width(); x += TILE_W)
 	    PutTile (tidx, x, y);
 }
 
@@ -89,8 +89,8 @@ void GJID::FillWithTile (PicIndex tidx)
 void GJID::DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg)
 {
     FillWithTile (bg);
-    for (uint32_t y = 0; y < 6; ++y, ++p)
-	for (uint32_t x = 0; x < 16; p+=(++x==8))
+    for (unsigned y = 0; y < 6; ++y, ++p)
+	for (unsigned x = 0; x < 16; p+=(++x==8))
 	    if ((*p>>(x%8))&1)
 		PutTile (fg, (x+2)*TILE_W, (y+3)*TILE_H);
 }
@@ -100,21 +100,20 @@ void GJID::DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg)
 
 inline void GJID::PrintStory (void)
 {
-    int x, y, row = 0;
-
     // Make a stone tile border
     FillWithTile (Back1Pix);
-    for (y = 0; y < Height(); y += TILE_H) {
+    for (unsigned y = 0; y < Height(); y += TILE_H) {
 	PutTile (Wall1Pix, 0, y);
 	PutTile (Wall1Pix, Width() - TILE_W, y);
     }
-    for (x = TILE_W; x < Width() - TILE_W; x += TILE_W) {
+    for (unsigned x = TILE_W; x < Width(); x += TILE_W) {
 	PutTile (Wall1Pix, x, 0);
 	PutTile (Wall1Pix, x, Height() - TILE_H);
     }
     DrawText (145, Height() - 9, "Hit any key", RGB(0,0,0));
     DrawText (144, Height() - 10, "Hit any key", RGB(128,128,128));
 
+    unsigned row = 0;
     if (_storyPage == 0) {
 	DrawImageTile (_imglogo, c_Tiles[LogoGPix], 40, TILE_H * 2); 
 	DrawImageTile (_imglogo, c_Tiles[LogoJPix], 100, TILE_H * 2); 
@@ -123,7 +122,7 @@ inline void GJID::PrintStory (void)
 	row = 8;
     }
     if (_storyPage < 2) {
-	static const char storyPage1[] =
+	static const char* storyText[] = {
 	    "In the year 32333 AD two robot cities on the planet Nikarade were\0"
 	    "arming themselves against each other. Both set up large complexes\0"
 	    "in which powerful photon disruptors were stored. After many years\0"
@@ -134,8 +133,8 @@ inline void GJID::PrintStory (void)
 	    "The problem was that no robot wanted to go down into the dungeons\0"
 	    "and accomplish this dangerous task. Finally, one robot named GJID\0"
 	    "came forward to take up the job. He was a simple robot and little\0"
-	    "to lose. Besides, there was a reward offered for the job :)\0";
-	static const char storyPage2[] =
+	    "to lose. Besides, there was a reward offered for the job :)\0"
+	    ,
 	    "In this game you play GJID, whose task is to move each crate into\0"
 	    "recycling bins. At times complex mazes and one-way doors can make\0"
 	    "this quite difficult. GJID is not very powerful and can only move\0"
@@ -149,17 +148,17 @@ inline void GJID::PrintStory (void)
 	    "                 F1  show this help\0"
 	    "                 F6  restart the level\0"
 	    "                 F8  skip the level\0"
-	    "                 F10 quit the game\0";
-	for (const char* l (_storyPage == 0 ? storyPage1 : storyPage2); strlen(l); ++row, l += strlen(l)+1)
+	    "                 F10 quit the game\0"
+	};
+	for (const char* l = storyText[_storyPage]; strlen(l); ++row, l += strlen(l)+1)
 	    DrawText (TILE_W*2, TILE_H*2 + (row+1)*8, l, RGB(128,128,0));
     } else if (_storyPage == 2) {
-	x = TILE_W*2;
-	y = TILE_H*2+7;
+	unsigned x = TILE_W*2, y = TILE_H*2+7;
 	DrawText (x+50, y, "Things you will find in the maze:", RGB(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { Barrel2Pix, Barrel1Pix, DisposePix, OWDEastPix, ExitPix };
 	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- Recycling bin", "- One-way door", "- The exit" };
-	for (size_t i = 0; i < VectorSize(pic); ++ i) {
+	for (unsigned i = 0; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
 	    DrawText (x+TILE_W*2, y+5, desc[i], RGB(128,128,0));
 	    y += 17;
@@ -173,8 +172,8 @@ inline void GJID::DrawLevel (void)
     // Fill with default background
     FillWithTile (PicIndex(_curLevel.Map().back()));
     // Map tiles on top of that (map is shorter than the screen)
-    for (int y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
-	for (int x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
+    for (unsigned y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
+	for (unsigned x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
 	    PutTile (PicIndex(*it++), x, y);
     // Objects are composited on top of the tile underneath
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
@@ -205,14 +204,11 @@ inline void GJID::TitleKeys (key_t key)
 
 inline void GJID::StoryKeys (key_t key)
 {
-    if (key == XK_Page_Up || key == XK_Up || key == (XKM_Ctrl|'b'))
+    if (key == XK_Page_Up || key == XK_Up || key == XKM_Ctrl+'b')
 	_storyPage -= !!_storyPage;
-    else {
-	++ _storyPage;
-	if (_storyPage > 2 || key == XK_Escape) {
-	    _storyPage = 2;
-	    GoToState (state_Game);
-	}
+    else if (++_storyPage > 2 || key == XK_Escape) {
+	_storyPage = 0;
+	GoToState (state_Game);
     }
     Update();
 }
@@ -236,8 +232,7 @@ inline void GJID::LevelKeys (key_t key)
 	case XK_F6:	_curLevel = _levels [_level];	break;
     }
     if (_curLevel.Finished()) {
-	++ _level;
-	if (_level < _levels.size())
+	if (++_level < _levels.size())
 	    _curLevel = _levels [_level];
 	else {
 	    _level = 0;

@@ -6,10 +6,12 @@
 
 //----------------------------------------------------------------------
 
-#define TILE_W		16
-#define TILE_H		16
-#define MAP_WIDTH	20
-#define MAP_HEIGHT	12
+enum {
+    TILE_W	= 16,
+    TILE_H	= 16,
+    MAP_WIDTH	= 20,
+    MAP_HEIGHT	= 12
+};
 
 //----------------------------------------------------------------------
 
@@ -56,7 +58,7 @@ public:
 	uint8_t 	x;
 	uint8_t 	y;
 	uint16_t	pic;
-	inline		Object (int nx = 0, int ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
+	inline		Object (uint8_t nx = 0, uint8_t ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
     };
     typedef vector<uint8_t>	tilemap_t;
     typedef vector<Object>	objvec_t;
@@ -64,20 +66,20 @@ public:
     typedef const objvec_t&	rcobjvec_t;
 public:
 			Level (void);
-    inline PicIndex	At (int x, int y) const			{ return (PicIndex (_map[y*MAP_WIDTH+x])); }
+    inline PicIndex	At (uint8_t x, uint8_t y) const		{ return (PicIndex (_map[y*MAP_WIDTH+x])); }
     inline rctilemap_t	Map (void) const			{ return (_map); }
     inline rcobjvec_t	Objects (void) const			{ return (_objects); }
     const Object&	Robot (void) const			{ return (_robot); }
-    inline void		SetCell (int x, int y, PicIndex pic)	{ _map[y*MAP_WIDTH+x] = pic; }
+    inline void		SetCell (uint8_t x, uint8_t y, PicIndex pic)	{ _map[y*MAP_WIDTH+x] = pic; }
     bool		Finished (void) const			{ return (_objects.empty() && At(_robot.x, _robot.y) == ExitPix); }
     void		MoveRobot (RobotDir where);
     const char*		Load (const char* ldata);
 private:
-    bool		CanMoveTo (int x, int y, RobotDir where) const;
-    inline void		MoveRobot (int x, int y, PicIndex pic)	{ _robot.x = x; _robot.y = y; _robot.pic = pic; }
-    int			FindCrate (int x, int y) const;
-    inline void		AddCrate (int x, int y, PicIndex pic)	{ _objects.push_back (Object (x, y, pic)); }
-    inline void		DisposeCrate (size_t index)		{ _objects.erase (_objects.begin() + index); }
+    bool		CanMoveTo (uint8_t x, uint8_t y, RobotDir where) const;
+    inline void		MoveRobot (uint8_t x, uint8_t y, PicIndex pic)	{ _robot.x = x; _robot.y = y; _robot.pic = pic; }
+    int			FindCrate (uint8_t x, uint8_t y) const;
+    inline void		AddCrate (uint8_t x, uint8_t y, PicIndex pic)	{ _objects.push_back (Object (x, y, pic)); }
+    inline void		DisposeCrate (unsigned index)			{ _objects.erase (_objects.begin() + index); }
 private:
     tilemap_t		_map;
     objvec_t		_objects;

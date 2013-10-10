@@ -13,9 +13,9 @@ Level::Level (void)
     MoveRobot (0, 0, RobotNorthPix);
 }
 
-bool Level::CanMoveTo (int x, int y, RobotDir where) const
+bool Level::CanMoveTo (uint8_t x, uint8_t y, RobotDir where) const
 {
-    if (x < 0 || y < 0 || x >= MAP_WIDTH || y >= MAP_HEIGHT)
+    if (x >= MAP_WIDTH || y >= MAP_HEIGHT)
 	return (false);
     const PicIndex tpic (At(x,y));
     if (tpic == DisposePix || tpic == ExitPix || tpic == FloorPix)
@@ -27,9 +27,9 @@ bool Level::CanMoveTo (int x, int y, RobotDir where) const
     return (false);
 }
 
-int Level::FindCrate (int x, int y) const
+int Level::FindCrate (uint8_t x, uint8_t y) const
 {
-    for (uint32_t i = 0; i < _objects.size(); ++ i)
+    for (unsigned i = 0; i < _objects.size(); ++ i)
 	if (_objects[i].x == x && _objects[i].y == y)
 	    return (i);
     return (-1);
@@ -43,10 +43,10 @@ void Level::MoveRobot (RobotDir where)
     } robotdir[] = {{0,-1,RobotNorthPix},{0,1,RobotSouthPix},{1,0,RobotEastPix},{-1,0,RobotWestPix}};
 
     _robot.pic = robotdir[where].img;
-    int newx = _robot.x + robotdir[where].dx;
-    int newcratex = newx + robotdir[where].dx;
-    int newy = _robot.y + robotdir[where].dy;
-    int newcratey = newy + robotdir[where].dy;
+    uint8_t newx = _robot.x + robotdir[where].dx;
+    uint8_t newcratex = newx + robotdir[where].dx;
+    uint8_t newy = _robot.y + robotdir[where].dy;
+    uint8_t newcratey = newy + robotdir[where].dy;
 
     // Check if map square can be moved on
     if (!CanMoveTo (newx, newy, where))
@@ -72,8 +72,8 @@ const char* Level::Load (const char* ldata)
 {
     static const char picToChar[NumberOfMapPics+1] = "0E.^v><#%+~!`   @NP";
     _objects.clear();
-    for (int y = 0; y < MAP_HEIGHT; ++y) {
-	for (int x = 0; x < MAP_WIDTH; ++x) {
+    for (uint8_t y = 0; y < MAP_HEIGHT; ++y) {
+	for (uint8_t x = 0; x < MAP_WIDTH; ++x) {
 	    char c = *ldata++;
 	    const char* pf = strchr (picToChar, c);
 	    PicIndex pic = pf ? PicIndex(distance(picToChar,pf)) : FloorPix;
