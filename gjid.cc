@@ -172,9 +172,14 @@ inline void GJID::DrawLevel (void)
     // Fill with default background
     FillWithTile (PicIndex(_curLevel.Map().back()));
     // Map tiles on top of that (map is shorter than the screen)
-    for (unsigned y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H)
-	for (unsigned x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W)
-	    PutTile (PicIndex(*it++), x, y);
+    for (unsigned y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H) {
+	for (unsigned x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W) {
+	    PicIndex pic = PicIndex(*it++);
+	    if (pic == ExitPix && !_curLevel.Objects().empty())
+		pic = FloorPix;
+	    PutTile (pic, x, y);
+	}
+    }
     // Objects are composited on top of the tile underneath
     foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
 	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
