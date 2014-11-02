@@ -10,6 +10,16 @@
 // Define to the address where bug reports for this package should be sent.
 #define @PKG_UNAME@_BUGREPORT	"@PKG_BUGREPORT@"
 
+// Define to 1 if you have XCB (http://xcb.freedesktop.org)
+#undef HAVE_XCB_XCB_H
+
+// Define to 1 if you have XCB render support (http://xcb.freedesktop.org)
+#undef HAVE_XCB_RENDER_H
+
+#if !HAVE_XCB_XCB_H || !HAVE_XCB_RENDER_H
+    #error "The XCB library (http://xcb.freedesktop.org) is required to compile"
+#endif
+
 // Define to 1 if you have uSTL (http://sourceforge.net/projects/ustl)
 #undef HAVE_USTL_H
 #if HAVE_USTL_H

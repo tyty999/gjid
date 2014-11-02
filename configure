@@ -23,7 +23,7 @@ seds=[s/^#\(DEBUG\)/\1/]
 }';
 
 # Header files
-HEADERS="ustl.h"
+HEADERS="ustl.h xcb/xcb.h xcb/render.h"
 
 # Libraries
 LIBS="ustl xcb xcb-render"
