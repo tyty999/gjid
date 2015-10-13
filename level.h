@@ -60,25 +60,25 @@ public:
 	uint16_t	pic;
 	inline		Object (uint8_t nx = 0, uint8_t ny = 0, PicIndex npic = FloorPix) : x (nx), y (ny), pic (npic) {}
     };
-    typedef vector<uint8_t>	tilemap_t;
-    typedef vector<Object>	objvec_t;
-    typedef const tilemap_t&	rctilemap_t;
-    typedef const objvec_t&	rcobjvec_t;
+    using tilemap_t	= vector<uint8_t>;
+    using objvec_t	= vector<Object>;
+    using rctilemap_t	= const tilemap_t&;
+    using rcobjvec_t	= const objvec_t&;
 public:
 			Level (void);
-    inline PicIndex	At (uint8_t x, uint8_t y) const		{ return (PicIndex (_map[y*MAP_WIDTH+x])); }
-    inline rctilemap_t	Map (void) const			{ return (_map); }
-    inline rcobjvec_t	Objects (void) const			{ return (_objects); }
-    const Object&	Robot (void) const			{ return (_robot); }
+    inline PicIndex	At (uint8_t x, uint8_t y) const		{ return PicIndex (_map[y*MAP_WIDTH+x]); }
+    inline rctilemap_t	Map (void) const			{ return _map; }
+    inline rcobjvec_t	Objects (void) const			{ return _objects; }
+    const Object&	Robot (void) const			{ return _robot; }
     inline void		SetCell (uint8_t x, uint8_t y, PicIndex pic)	{ _map[y*MAP_WIDTH+x] = pic; }
-    bool		Finished (void) const			{ return (_objects.empty() && At(_robot.x, _robot.y) == ExitPix); }
+    bool		Finished (void) const			{ return _objects.empty() && At(_robot.x, _robot.y) == ExitPix; }
     bool		MoveRobot (RobotDir where);
     const char*		Load (const char* ldata);
 private:
-    bool		CanMoveTo (uint8_t x, uint8_t y, RobotDir where) const;
+    bool		CanMoveTo (uint8_t x, uint8_t y, RobotDir where) const noexcept;
     inline void		MoveRobot (uint8_t x, uint8_t y, PicIndex pic)	{ _robot.x = x; _robot.y = y; _robot.pic = pic; }
-    int			FindCrate (uint8_t x, uint8_t y) const;
-    inline void		AddCrate (uint8_t x, uint8_t y, PicIndex pic)	{ _objects.push_back (Object (x, y, pic)); }
+    int			FindCrate (uint8_t x, uint8_t y) const noexcept;
+    inline void		AddCrate (uint8_t x, uint8_t y, PicIndex pic)	{ _objects.emplace_back (x, y, pic); }
     inline void		DisposeCrate (unsigned index)			{ _objects.erase (_objects.begin() + index); }
 private:
     tilemap_t		_map;

@@ -67,13 +67,13 @@ int GJID::Run (void)
     _imgtiles = LoadImage (tileset_xpm);	// Map tiles and objects
     _imglogo = LoadImage (logo_xpm);		// Big text for the story
 
-    for (const char* ldata = levels_data; ldata;) {	// levels.txt
+    for (auto ldata = levels_data; ldata;) {	// levels.txt
 	_levels.push_back (Level());
 	ldata = _levels.back().Load (ldata);
     }
     _curLevel = _levels[0];			// Moving crates changes level data, so make a working copy
 
-    return (CXApp::Run());
+    return CXApp::Run();
 }
 
 //----------------------------------------------------------------------
@@ -81,8 +81,8 @@ int GJID::Run (void)
 
 void GJID::FillWithTile (PicIndex tidx)
 {
-    for (unsigned y = 0; y < Height(); y += TILE_H)
-	for (unsigned x = 0; x < Width(); x += TILE_W)
+    for (auto y = 0u; y < Height(); y += TILE_H)
+	for (auto x = 0u; x < Width(); x += TILE_W)
 	    PutTile (tidx, x, y);
 }
 
@@ -90,8 +90,8 @@ void GJID::FillWithTile (PicIndex tidx)
 void GJID::DecodeBitmapWithTile (const uint8_t* p, PicIndex fg, PicIndex bg)
 {
     FillWithTile (bg);
-    for (unsigned y = 0; y < 6; ++y, ++p)
-	for (unsigned x = 0; x < 16; p+=(++x==8))
+    for (auto y = 0u; y < 6; ++y, ++p)
+	for (auto x = 0u; x < 16; p+=(++x==8))
 	    if ((*p>>(x%8))&1)
 		PutTile (fg, (x+2)*TILE_W, (y+3)*TILE_H);
 }
@@ -103,7 +103,7 @@ inline void GJID::PrintStory (void)
 {
     // Make a stone tile border
     FillWithTile (Back1Pix);
-    for (unsigned y = 0; y < Height(); y += TILE_H) {
+    for (auto y = 0u; y < Height(); y += TILE_H) {
 	PutTile (Wall1Pix, 0, y);
 	PutTile (Wall1Pix, Width() - TILE_W, y);
     }
@@ -114,7 +114,7 @@ inline void GJID::PrintStory (void)
     DrawText (145, Height() - 9, "Hit any key", RGB(0,0,0));
     DrawText (144, Height() - 10, "Hit any key", RGB(128,128,128));
 
-    unsigned row = 0;
+    auto row = 0u;
     if (_storyPage == 0) {
 	DrawImageTile (_imglogo, c_Tiles[LogoGPix], 40, TILE_H * 2); 
 	DrawImageTile (_imglogo, c_Tiles[LogoJPix], 100, TILE_H * 2); 
@@ -151,15 +151,15 @@ inline void GJID::PrintStory (void)
 	    "                 F8  skip the level\0"
 	    "                 F10 quit the game\0"
 	};
-	for (const char* l = storyText[_storyPage]; strlen(l); ++row, l += strlen(l)+1)
+	for (auto l = storyText[_storyPage]; strlen(l); ++row, l += strlen(l)+1)
 	    DrawText (TILE_W*2, TILE_H*2 + (row+1)*8, l, RGB(128,128,0));
     } else if (_storyPage == 2) {
-	unsigned x = TILE_W*2, y = TILE_H*2+7;
+	auto x = 2u*TILE_W, y = 2u*TILE_H+7;
 	DrawText (x+50, y, "Things you will find in the maze:", RGB(255,255,255));
 	y += 17;
 	static const PicIndex pic[] = { Barrel2Pix, Barrel1Pix, DisposePix, OWDEastPix, ExitPix };
 	static const char* desc[] = { "- Photon disruptor", "- Nuclear weapon", "- Recycling bin", "- One-way door", "- The exit" };
-	for (unsigned i = 0; i < VectorSize(pic); ++ i) {
+	for (auto i = 0u; i < VectorSize(pic); ++ i) {
 	    PutTile (pic[i], x, y);
 	    DrawText (x+TILE_W*2, y+5, desc[i], RGB(128,128,0));
 	    y += 17;
@@ -169,21 +169,21 @@ inline void GJID::PrintStory (void)
 
 inline void GJID::DrawLevel (void)
 {
-    Level::tilemap_t::const_iterator it (_curLevel.Map().begin());
+    auto it (_curLevel.Map().begin());
     // Fill with default background
     FillWithTile (PicIndex(_curLevel.Map().back()));
     // Map tiles on top of that (map is shorter than the screen)
-    for (unsigned y = 0; y < MAP_HEIGHT*TILE_H; y += TILE_H) {
-	for (unsigned x = 0; x < MAP_WIDTH*TILE_W; x += TILE_W) {
-	    PicIndex pic = PicIndex(*it++);
+    for (auto y = 0u; y < MAP_HEIGHT*TILE_H; y += TILE_H) {
+	for (auto x = 0u; x < MAP_WIDTH*TILE_W; x += TILE_W) {
+	    auto pic = PicIndex(*it++);
 	    if (pic == ExitPix && !_curLevel.Objects().empty())
 		pic = FloorPix;
 	    PutTile (pic, x, y);
 	}
     }
     // Objects are composited on top of the tile underneath
-    foreach (Level::objvec_t::const_iterator, i, _curLevel.Objects())
-	PutTile (PicIndex(i->pic), i->x*TILE_W, i->y*TILE_H);
+    for (const auto& o : _curLevel.Objects())
+	PutTile (PicIndex(o.pic), o.x*TILE_W, o.y*TILE_H);
     PutTile (PicIndex(_curLevel.Robot().pic), _curLevel.Robot().x*TILE_W, _curLevel.Robot().y*TILE_H);
     // Move count
     if (_moves) {
@@ -198,23 +198,23 @@ void GJID::OnDraw (void)
     CXApp::OnDraw();
     switch (_state) {
 	default:
-	case state_Title:	return (DecodeBitmapWithTile (title_bits, Wall2Pix, Back1Pix));
-	case state_Story:	return (PrintStory());
-	case state_Game:	return (DrawLevel());
-	case state_Winner:	return (DecodeBitmapWithTile (winner_bits, RobotNorthPix, Wall1Pix));
-	case state_Loser:	return (DecodeBitmapWithTile (loser_bits, DisposePix, Back3Pix));
+	case state_Title:	return DecodeBitmapWithTile (title_bits, Wall2Pix, Back1Pix);
+	case state_Story:	return PrintStory();
+	case state_Game:	return DrawLevel();
+	case state_Winner:	return DecodeBitmapWithTile (winner_bits, RobotNorthPix, Wall1Pix);
+	case state_Loser:	return DecodeBitmapWithTile (loser_bits, DisposePix, Back3Pix);
     }
 }
 
 //----------------------------------------------------------------------
 // Input handling
 
-inline void GJID::TitleKeys (key_t key)
+void GJID::TitleKeys (key_t key)
 {
     GoToState (key == XK_Escape ? state_Game : state_Story);
 }
 
-inline void GJID::StoryKeys (key_t key)
+void GJID::StoryKeys (key_t key)
 {
     if (key == XK_Page_Up || key == XK_Up || key == XKM_Ctrl+'b')
 	_storyPage -= !!_storyPage;
@@ -225,7 +225,7 @@ inline void GJID::StoryKeys (key_t key)
     Update();
 }
 
-inline void GJID::LevelKeys (key_t key)
+void GJID::LevelKeys (key_t key)
 {
     switch (key) {
 	case 'k':
@@ -259,10 +259,10 @@ void GJID::OnKey (key_t key)
 {
     switch (_state) {
 	default:
-	case state_Title:	return (TitleKeys (key));
-	case state_Story:	return (StoryKeys (key));
-	case state_Game:	return (LevelKeys (key));
+	case state_Title:	return TitleKeys (key);
+	case state_Story:	return StoryKeys (key);
+	case state_Game:	return LevelKeys (key);
 	case state_Winner:
-	case state_Loser:	Quit(); break;
+	case state_Loser:	return Quit();
     }
 }

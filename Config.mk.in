@@ -15,11 +15,7 @@ INSTALL		:= @INSTALL@
 
 INSTALLEXE	:= ${INSTALL} -D -p -m 755 -s
 INSTALLDATA	:= ${INSTALL} -D -p -m 644
-
-HAVE_USTL	:= @libustl@
-ifeq (${HAVE_USTL},-lustl)
-LD		:= @CC@
-endif
+RMPATH		:= rmdir -p --ignore-fail-on-non-empty
 
 ################ Destination #########################################
 
@@ -29,14 +25,22 @@ BINDIR		:= @bindir@
 ################ Compiler options ####################################
 
 WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
-		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
-CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fno-threadsafe-statics -ffunction-sections -fdata-sections
+		   -Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
+CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fno-threadsafe-statics\
+		   -ffunction-sections -fdata-sections\
+		   -std=c++11 -march=native
 LDFLAGS		:= @CUSTOMLIBDIR@
-LIBS		:= @libustl@ @libxcb@ @libxcb-render@
+LIBS		:= @libxcb@ @libxcb-render@
+HAVE_USTL	:= @libustl@
+ifeq (${HAVE_USTL},-lustl)
+    LD		:= @CC@
+    LIBS	+= @libustl@ @libsupc++@
+endif
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else
     CXXFLAGS	+= -Os -g0 -DNDEBUG=1
     LDFLAGS	+= -s -Wl,-gc-sections
 endif
+BUILDDIR	:= @builddir@/${NAME}
 O		:= .o/

@@ -17,12 +17,12 @@ class GJID : public CXApp {
 	state_Last
     };
 public:
-    static GJID&	Instance (void)	{ static GJID s_App; return (s_App); }
+    static GJID&	Instance (void)	{ static GJID s_App; return s_App; }
     int			Run (void);
 protected:
 			GJID (void);
-    virtual void	OnDraw (void);
-    virtual void	OnKey (key_t key);
+    virtual void	OnDraw (void) override;
+    virtual void	OnKey (key_t key) override;
 private:
     inline void		PutTile (PicIndex tidx, int x, int y)	{ DrawImageTile (_imgtiles, c_Tiles[tidx], x, y); }
     inline void		GoToState (EGameState state)		{ _state = state; Update(); }

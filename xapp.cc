@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-#define unsigned const unsigned
+#define unsigned const unsigned	// xbm format does not include a const by default
 #include "data/font3x5.xbm"
 #undef unsigned
 
@@ -32,8 +32,8 @@ static void Terminate (void)
 
 CXApp::CXApp (void)
 :_ksyms()
-,_pconn (NULL)
-,_pscreen (NULL)
+,_pconn (nullptr)
+,_pscreen (nullptr)
 ,_window (XCB_NONE)
 ,_wpict (XCB_NONE)
 ,_bpict (XCB_NONE)
@@ -54,12 +54,12 @@ CXApp::CXApp (void)
 	SIGILL, SIGABRT, SIGBUS,  SIGFPE,  SIGSEGV, SIGSYS, SIGALRM, SIGXCPU,
 	SIGHUP, SIGINT,  SIGQUIT, SIGTERM, SIGCHLD, SIGXFSZ, SIGPWR, SIGPIPE
     };
-    for (size_t i = 0; i < VectorSize(c_Signals); ++ i)
+    for (auto i = 0u; i < VectorSize(c_Signals); ++ i)
 	signal (c_Signals[i], OnSignal);
     std::set_terminate (Terminate);
 
     // Establish X server connection
-    if (!(_pconn = xcb_connect (NULL, NULL)))
+    if (!(_pconn = xcb_connect (nullptr, nullptr)))
 	throw runtime_error ("unable to connect to the X server");
     const xcb_setup_t* xsetup = xcb_get_setup (_pconn);
     if (!xsetup)
@@ -68,42 +68,50 @@ CXApp::CXApp (void)
     // Request RENDER extension, keyboard mappings, and WM atoms
     xcb_get_keyboard_mapping_cookie_t kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
     xcb_render_query_version_cookie_t rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
+    //{{{ Atom name strings, parallel to EXAtoms enum in header
     static const char* c_AtomNames[xa_Count] = {
-	"CARDINAL", "STRING", "ATOM",
-	"WM_NAME", "WM_PROTOCOLS", "WM_DELETE_WINDOW",
+	"CARDINAL",
+	"STRING",
+	"ATOM",
+	"WM_NAME",
+	"WM_PROTOCOLS",
+	"WM_DELETE_WINDOW",
 	"_NET_WM_PID",
-	"_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN",
-	"_NET_WM_WINDOW_TYPE", "_NET_WM_WINDOW_TYPE_NORMAL",
+	"_NET_WM_STATE",
+	"_NET_WM_STATE_FULLSCREEN",
+	"_NET_WM_WINDOW_TYPE",
+	"_NET_WM_WINDOW_TYPE_NORMAL"
     };
-    for (int i = 0; i < xa_Count; ++i)
+    //}}}
+    for (auto i = 0u; i < VectorSize(c_AtomNames); ++i)
 	_atoms[i] = xcb_intern_atom (_pconn, false, strlen(c_AtomNames[i]), c_AtomNames[i]).sequence;
 
     // Receive and store keyboard mappings
-    const xcb_get_keyboard_mapping_reply_t* kbreply = xcb_get_keyboard_mapping_reply (_pconn, kbcookie, NULL);
-    size_t szkeysyms = xcb_get_keyboard_mapping_keysyms_length (kbreply);
-    const wchar_t* psyms = (const wchar_t*) xcb_get_keyboard_mapping_keysyms (kbreply);
+    auto kbreply = xcb_get_keyboard_mapping_reply (_pconn, kbcookie, nullptr);
+    auto szkeysyms = xcb_get_keyboard_mapping_keysyms_length (kbreply);
+    auto psyms = (const wchar_t*) xcb_get_keyboard_mapping_keysyms (kbreply);
     _ksyms.assign (psyms, psyms + szkeysyms);
     _minKeycode = xsetup->min_keycode;
     _keysymsPerKeycode = kbreply->keysyms_per_keycode;
 
     // Acknowledge render version and assign atom values
-    xcb_render_query_version_reply (_pconn, rendcook, NULL);
-    for (int i = 0; i < xa_Count; ++i)
-	_atoms[i] = xcb_intern_atom_reply(_pconn, *(xcb_intern_atom_cookie_t*)&_atoms[i], NULL)->atom;
+    xcb_render_query_version_reply (_pconn, rendcook, nullptr);
+    for (auto i = 0u; i < VectorSize(_atoms); ++i)
+	_atoms[i] = xcb_intern_atom_reply(_pconn, *(xcb_intern_atom_cookie_t*)&_atoms[i], nullptr)->atom;
 
     // Find the root visual
-    const xcb_visualtype_t* visual = NULL;
-    for (xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(_pscreen); depth_iter.rem; xcb_depth_next(&depth_iter)) {
+    const xcb_visualtype_t* visual = nullptr;
+    for (auto depth_iter = xcb_screen_allowed_depths_iterator(_pscreen); depth_iter.rem; xcb_depth_next(&depth_iter)) {
 	if (depth_iter.data->depth != _pscreen->root_depth)
 	    continue;
-	for (xcb_visualtype_iterator_t visual_iter = xcb_depth_visuals_iterator(depth_iter.data); visual_iter.rem; xcb_visualtype_next(&visual_iter))
+	for (auto visual_iter = xcb_depth_visuals_iterator(depth_iter.data); visual_iter.rem; xcb_visualtype_next(&visual_iter))
 	    if (_pscreen->root_visual == visual_iter.data->visual_id)
 		visual = visual_iter.data;
     }
     // Get standard RENDER formats
-    xcb_render_query_pict_formats_cookie_t qpfcook = xcb_render_query_pict_formats (_pconn);
-    xcb_render_query_pict_formats_reply_t* qpfr = xcb_render_query_pict_formats_reply (_pconn, qpfcook, NULL);
-    for (xcb_render_pictforminfo_iterator_t i = xcb_render_query_pict_formats_formats_iterator(qpfr); i.rem; xcb_render_pictforminfo_next(&i)) {
+    auto qpfcook = xcb_render_query_pict_formats (_pconn);
+    auto qpfr = xcb_render_query_pict_formats_reply (_pconn, qpfcook, nullptr);
+    for (auto i = xcb_render_query_pict_formats_formats_iterator(qpfr); i.rem; xcb_render_pictforminfo_next(&i)) {
 	if (i.data->depth == _pscreen->root_depth && i.data->direct.red_mask == visual->red_mask >> i.data->direct.red_shift)
 	    _xrfmt[rfmt_Default] = i.data->id;
 	else if (i.data->depth == 1)
@@ -116,11 +124,12 @@ CXApp::CXApp (void)
 }
 
 /// Closes all active resources, windows, and server connections.
-CXApp::~CXApp (void)
+CXApp::~CXApp (void) noexcept
 {
-    if (!_pconn) return;
+    if (!_pconn)
+	return;
     xcb_disconnect (_pconn);
-    _pconn = NULL;
+    _pconn = nullptr;
 }
 
 int CXApp::Run (void)
@@ -135,7 +144,7 @@ int CXApp::Run (void)
 	    case XCB_CLIENT_MESSAGE:	OnClientMessage(e); break;
 	}
     }
-    return (EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }
 
 void CXApp::Update (void)
@@ -150,7 +159,7 @@ void CXApp::Update (void)
 // Window and mode management
 //----------------------------------------------------------------------
 
-void CXApp::CreateWindow (const char* title, int width, int height)
+void CXApp::CreateWindow (const char* title, int width, int height) noexcept
 {
     _width = width; _height = height;
     // Create the window with given dimensions
@@ -162,13 +171,15 @@ void CXApp::CreateWindow (const char* title, int width, int height)
 	    _pscreen->root, 0, 0, _winWidth = width, _winHeight = height, 0,
 	    XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
 	    XCB_CW_BACK_PIXMAP| XCB_CW_EVENT_MASK, winvals);
+
     // Create backing pixmap and the render picture on top of it
-    xcb_pixmap_t bpixid = xcb_generate_id(_pconn);
+    auto bpixid = xcb_generate_id(_pconn);
     xcb_create_pixmap (_pconn, 32, bpixid, _window, width, height);
-    xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), bpixid, 0, NULL);
-    xcb_render_create_picture (_pconn, _bpict = xcb_generate_id(_pconn), bpixid, _xrfmt[rfmt_Pixmap], 0, NULL);
+    xcb_create_gc (_pconn, _xgc = xcb_generate_id(_pconn), bpixid, 0, nullptr);
+    xcb_render_create_picture (_pconn, _bpict = xcb_generate_id(_pconn), bpixid, _xrfmt[rfmt_Pixmap], 0, nullptr);
     xcb_free_pixmap (_pconn, bpixid);	// henceforth accessed only through _bpict
-    xcb_render_create_picture (_pconn, _wpict = xcb_generate_id(_pconn), _window, _xrfmt[rfmt_Default], 0, NULL);
+    xcb_render_create_picture (_pconn, _wpict = xcb_generate_id(_pconn), _window, _xrfmt[rfmt_Default], 0, nullptr);
+
     // Set window title
     xcb_change_property (_pconn, XCB_PROP_MODE_REPLACE, _window, _atoms[xa_WM_NAME], _atoms[xa_STRING], 8, strlen(title), title);
     // Set owner pid (so the WM knows whom to kill)
@@ -184,15 +195,15 @@ void CXApp::CreateWindow (const char* title, int width, int height)
     xcb_map_window (_pconn, _window);
 }
 
-inline void CXApp::OnMap (void)
+void CXApp::OnMap (void) noexcept
 {
     LoadFont();
 }
 
-inline void CXApp::OnResize (const void* e)
+void CXApp::OnResize (const void* e) noexcept
 {
-    _winWidth = ((const xcb_configure_notify_event_t*)e)->width;
-    _winHeight = ((const xcb_configure_notify_event_t*)e)->height;
+    auto cne = reinterpret_cast<const xcb_configure_notify_event_t*>(e);
+    _winWidth = cne->width; _winHeight = cne->height;
     // Setup RENDER scaling of the backbuffer
     xcb_render_transform_t tr;
     memset (&tr, 0, sizeof(tr));
@@ -202,50 +213,50 @@ inline void CXApp::OnResize (const void* e)
     xcb_render_set_picture_transform (_pconn, _bpict, tr);
 }
 
-inline void CXApp::OnClientMessage (const void* e)
+void CXApp::OnClientMessage (const void* e) noexcept
 {
-    const xcb_client_message_event_t* msg = (const xcb_client_message_event_t*) e;
+    auto msg = reinterpret_cast<const xcb_client_message_event_t*>(e);
     // This happens when the user clicks the close button on the window
     if (msg->window == _window && msg->type == _atoms[xa_WM_PROTOCOLS] && msg->data.data32[0] == _atoms[xa_WM_DELETE_WINDOW])
 	Quit();
 }
 
-inline wchar_t CXApp::TranslateKeycode (const void* event) const
+wchar_t CXApp::TranslateKeycode (const void* event) const noexcept
 {
-    const xcb_key_press_event_t* kp = (const xcb_key_press_event_t*)event;
-    return (_ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode]);
+    auto kp = reinterpret_cast<const xcb_key_press_event_t*>(event);
+    return _ksyms[(kp->detail-_minKeycode)*_keysymsPerKeycode];
 }
 
-CXApp::SImage CXApp::LoadImage (const char* const* p)
+CXApp::SImage CXApp::LoadImage (const char* const* p) noexcept
 {
     SImage img;
     uint32_t d;
     sscanf (*p++, "%hu %hu %u", &img.w, &img.h, &d);
     uint32_t pal[128];
-    for (uint32_t i = 0; i < d; ++i) {
+    for (auto i = 0u; i < d; ++i) {
 	uint8_t ci; uint32_t cv = 0xff000000;
 	sscanf (*p++, "%c c #%X", &ci, &cv);
 	pal[ci] = cv ^ 0xff000000;
     }
     vector<uint32_t> pixels (img.w*img.h);
-    for (uint32_t y = 0; y < img.h; ++y, ++p)
-	for (uint32_t x = 0; x < img.w; ++x)
+    for (auto y = 0u; y < img.h; ++y, ++p)
+	for (auto x = 0u; x < img.w; ++x)
 	    pixels[y*img.w+x] = pal[uint8_t((*p)[x])];
 
     xcb_pixmap_t pixid = xcb_generate_id(_pconn);
     xcb_create_pixmap (_pconn, 32, pixid, _window, img.w, img.h);
-    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, _xgc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, (const uint8_t*)&pixels[0]);
-    xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], 0, NULL);
+    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, _xgc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, reinterpret_cast<const uint8_t*>(&pixels[0]));
+    xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], 0, nullptr);
     xcb_free_pixmap (_pconn, pixid);
-    return (img);
+    return img;
 }
 
-void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y)
+void CXApp::DrawImageTile (const SImage& img, const SImageTile& tile, int x, int y) noexcept
 {
     xcb_render_composite (_pconn, XCB_RENDER_PICT_OP_OVER, img.id, XCB_NONE, _bpict, tile.x, tile.y, 0, 0, x, y, tile.w, tile.h);
 }
 
-void CXApp::LoadFont (void)
+void CXApp::LoadFont (void) noexcept
 {
     xcb_render_create_glyph_set (_pconn, _glyphset = xcb_generate_id(_pconn), _xrfmt[rfmt_Font]);
     static const xcb_render_glyphinfo_t glyphi[] = {
@@ -256,13 +267,13 @@ void CXApp::LoadFont (void)
     uint8_t lbuf [glyphi[0].width*glyphi[0].height*2];
     fill_n (lbuf, sizeof(lbuf), 0);
     // The font bitmap has 128 glyphs on a 16x8 grid, each glyph line taking up 4 bits
-    for (int row = 0; row < 8; ++row) {
-	for (int col = 0; col < 8; ++col) {
-	    uint8_t* l1d = &lbuf[0];			// So we do 2 at once
-	    uint8_t* l2d = &lbuf[sizeof(lbuf)/2];
-	    for (int y = 0; y < 5; ++y) {
-		uint8_t v=font3x5_bits[row*8*6+col+y*8];
-		for (int x = 0; x < 4; ++x, v>>=1)
+    for (auto row = 0; row < 8; ++row) {
+	for (auto col = 0; col < 8; ++col) {
+	    auto l1d = &lbuf[0];			// So we do 2 at once
+	    auto l2d = &lbuf[sizeof(lbuf)/2];
+	    for (auto y = 0; y < 5; ++y) {
+		auto v=font3x5_bits[row*8*6+col+y*8];
+		for (auto x = 0; x < 4; ++x, v>>=1)
 		    *l1d++ = !(v&1)-1;
 		for (int x = 0; x < 4; ++x, v>>=1)
 		    *l2d++ = !(v&1)-1;
@@ -282,7 +293,7 @@ void CXApp::LoadFont (void)
     _pencolor = 0;
 }
 
-void CXApp::DrawText (int x, int y, const char* s, uint32_t color)
+void CXApp::DrawText (int x, int y, const char* s, uint32_t color) noexcept
 {
     if (color != _pencolor) {
 	xcb_render_color_t rc;
@@ -302,10 +313,10 @@ void CXApp::DrawText (int x, int y, const char* s, uint32_t color)
 	char		text [256-8];
     };
     TextElement elt;
-    uint8_t slen = min (strlen(s), sizeof(elt.text)-1);	// Maximum 248 chars; since this call does not see newlines and we are at 320x240, that's reasonable
+    auto slen = min (strlen(s), sizeof(elt.text)-1);	// Maximum 248 chars; since this call does not see newlines and we are at 320x240, that's reasonable
     uint8_t eltsz = 8+Align(slen,4);			// This is the size of the header elements + the text padded to 4 byte grain
     elt.len = slen;
     elt.x = x; elt.y = y;
     memcpy (elt.text, s, slen);
-    xcb_render_composite_glyphs_8 (_pconn, XCB_RENDER_PICT_OP_OVER, _glyphpen, _bpict, XCB_NONE, _glyphset, 0, 0, eltsz, (const uint8_t*) &elt);
+    xcb_render_composite_glyphs_8 (_pconn, XCB_RENDER_PICT_OP_OVER, _glyphpen, _bpict, XCB_NONE, _glyphset, 0, 0, eltsz, &elt.len);
 }
