@@ -57,8 +57,13 @@ die() { rm -f config.sed; exit; }
 
 #### Determine compiler private include dir ##########################
 
-CC=`which ucc 2>/dev/null`
-[ -z "$CC" ] && "ucc not found" && die
+if [ -z "$CC" ]; then
+    for i in gcc clang cc g++ clang++ c++; do
+	CC=`which $i 2>/dev/null` && break
+    done
+fi
+[ -z "$CC" ] && "No C compiler found" && die
+
 PSTDDEF=`echo "#include <stddef.h>"|$CC -E -|grep stddef.h|head -n1|cut -d' ' -f3|cut -d'"' -f2`
 PINCDIR=`dirname $PSTDDEF`
 PLIBDIR=`dirname $PINCDIR`
