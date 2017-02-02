@@ -55,6 +55,8 @@ GJID::GJID (void)
 ,_storyPage (0)
 ,_level (0)
 ,_moves (0)
+,_imgtiles()
+,_imglogo()
 ,_curLevel()
 ,_levels()
 {
