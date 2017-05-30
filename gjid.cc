@@ -238,12 +238,12 @@ void GJID::LevelKeys (key_t key)
 	case XK_Right:	_moves += _curLevel.MoveRobot (East);	break;
 	case 'h':
 	case XK_Left:	_moves += _curLevel.MoveRobot (West);	break;
-	case XK_F1:	GoToState (state_Story);	break;
+	case XK_F1:	GoToState (state_Story);		break;
 	case 'q':
-	case XK_Escape:	Quit();				break;
-	case XK_F10:	GoToState (state_Loser);	break;
-	case XK_F8:	_level = (_level + 1) % _levels.size();
-	case XK_F6:	_curLevel = _levels [_level];	break;
+	case XK_Escape:	Quit();					break;
+	case XK_F10:	GoToState (state_Loser);		break;
+	case XK_F8:	_level = (_level + 1) % _levels.size();	// fallthrough
+	case XK_F6:	_curLevel = _levels [_level];		break;
     }
     if (_curLevel.Finished()) {
 	_moves = 0;
