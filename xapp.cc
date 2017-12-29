@@ -61,13 +61,13 @@ CXApp::CXApp (void)
     // Establish X server connection
     if (!(_pconn = xcb_connect (nullptr, nullptr)))
 	throw runtime_error ("unable to connect to the X server");
-    const xcb_setup_t* xsetup = xcb_get_setup (_pconn);
+    auto xsetup = xcb_get_setup (_pconn);
     if (!xsetup)
 	throw runtime_error ("unable to connect to the X server");
     _pscreen = xcb_setup_roots_iterator(xsetup).data;
     // Request RENDER extension, keyboard mappings, and WM atoms
-    xcb_get_keyboard_mapping_cookie_t kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
-    xcb_render_query_version_cookie_t rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
+    auto kbcookie = xcb_get_keyboard_mapping (_pconn, xsetup->min_keycode, xsetup->max_keycode-xsetup->min_keycode);
+    auto rendcook = xcb_render_query_version (_pconn, XCB_RENDER_MAJOR_VERSION, XCB_RENDER_MINOR_VERSION);
     //{{{ Atom name strings, parallel to EXAtoms enum in header
     static const char* c_AtomNames[xa_Count] = {
 	"CARDINAL",
@@ -126,10 +126,10 @@ CXApp::CXApp (void)
 /// Closes all active resources, windows, and server connections.
 CXApp::~CXApp (void) noexcept
 {
-    if (!_pconn)
-	return;
-    xcb_disconnect (_pconn);
-    _pconn = nullptr;
+    if (_pconn) {
+	xcb_disconnect (_pconn);
+	_pconn = nullptr;
+    }
 }
 
 int CXApp::Run (void)
@@ -243,9 +243,9 @@ CXApp::SImage CXApp::LoadImage (const char* const* p) noexcept
 	for (auto x = 0u; x < img.w; ++x)
 	    pixels[y*img.w+x] = pal[uint8_t((*p)[x])];
 
-    xcb_pixmap_t pixid = xcb_generate_id(_pconn);
+    auto pixid = xcb_generate_id(_pconn);
     xcb_create_pixmap (_pconn, 32, pixid, _window, img.w, img.h);
-    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, _xgc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, reinterpret_cast<const uint8_t*>(&pixels[0]));
+    xcb_put_image (_pconn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixid, _xgc, img.w, img.h, 0, 0, 0, 32, pixels.size()*4, (const uint8_t*) &pixels[0]);
     xcb_render_create_picture (_pconn, img.id = xcb_generate_id(_pconn), pixid, _xrfmt[rfmt_Pixmap], 0, nullptr);
     xcb_free_pixmap (_pconn, pixid);
     return img;
@@ -314,9 +314,9 @@ void CXApp::DrawText (int x, int y, const char* s, uint32_t color) noexcept
     };
     TextElement elt;
     auto slen = min (strlen(s), sizeof(elt.text)-1);	// Maximum 248 chars; since this call does not see newlines and we are at 320x240, that's reasonable
-    uint8_t eltsz = 8+Align(slen,4);			// This is the size of the header elements + the text padded to 4 byte grain
     elt.len = slen;
     elt.x = x; elt.y = y;
     memcpy (elt.text, s, slen);
+    uint8_t eltsz = 8+Align(slen,4);			// This is the size of the header elements + the text padded to 4 byte grain
     xcb_render_composite_glyphs_8 (_pconn, XCB_RENDER_PICT_OP_OVER, _glyphpen, _bpict, XCB_NONE, _glyphset, 0, 0, eltsz, &elt.len);
 }
