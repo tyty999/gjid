@@ -1,33 +1,25 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>GJID</title>
-<style>
-body		{ color: #a0b000; background: #000018 }
-a		{ color: #00a0b0 }
-a:visited	{ color: #a000b0 }
-a:active	{ color: #a0a0b0 }
-hr		{ color: #f08000 }
-.floatleft	{ float: left; margin-right: 1.5em }
-.floatright	{ float: right; margin-left: 1.5em }
-#pagectr	{ max-width: 50em; margin-left: auto; margin-right: auto }
-#bodyctr	{ text-align: justify; font-size: 17 }
-#titlectr	{ height: 180 }
-#title {
-    font-size: 120;
-    color: #f08000;
-    float: left;
-    margin-left: 1em;
-    margin-top: 0;
-    margin-bottom: 0
-}
-</style>
+    <title>GJID</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=ISO-8859-1" />
+    <meta name="Description" content="Puzzle game in sokoban style" />
+    <meta name="Keywords" content="game, puzzle, sokoban" />
+    <meta name="author" content="Mike Sharov" />
+    <meta name="date" content="2018-03-20" />
 </head>
 <body>
-<table id="pagectr">
-<tr><td id="titlectr">
-    <h1 id="title">GJID</h1>
-    <img class="floatright" src="gjid.png" width="237" height=180"/></td></tr>
-<tr><td id="bodyctr">
+<div id="pagectr">
+<div id="header">
+
+<h1>GJID</h1>
+
+<img src="gjid.png" width="237" height="180" alt="" />
+
+</div><div id="content">
 <p>
 In the year 32333 AD two robot cities on the planet Nikarade were
 arming themselves against each other. Both set up large complexes
@@ -71,12 +63,17 @@ tile sprites, and for hardware scaling of the 320x240 backbuffer.
 </p>
 <hr/>
 <p>
+Download the sources from the
+<a href="https://github.com/msharov/gjid">github</a>
+<a href="https://github.com/msharov/gjid/releases">release page</a>.<br/>
 This version of GJID has no external dependencies, so:<br/>
-<tt>./configure &amp;&amp; make &amp;&amp; make install</tt><br/>
+<pre>
+./configure &amp;&amp; make &amp;&amp; make install
+</pre>
 and run: <tt>gjid</tt><br/>
 Enjoy the game!
 </p>
-</td></tr>
-</table>
+</div>
+</div>
 </body>
 </html>
