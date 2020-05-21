@@ -189,7 +189,7 @@ inline void GJID::DrawLevel (void)
     PutTile (PicIndex(_curLevel.Robot().pic), _curLevel.Robot().x*TILE_W, _curLevel.Robot().y*TILE_H);
     // Move count
     if (_moves) {
-	char mbuf [16];
+	char mbuf [24];
 	snprintf (mbuf, sizeof(mbuf), "Moves: %u", _moves);
 	DrawText (TILE_W*17+TILE_W/4, Height()-TILE_H*2/3, mbuf, RGB(128,128,0));
     }
