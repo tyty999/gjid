@@ -37,7 +37,7 @@ $O%.o:	%.cc
 
 ifdef bindir
 exed	:= ${DESTDIR}${bindir}
-exei	:= ${bindir}/$(notdir ${exe})
+exei	:= ${exed}/$(notdir ${exe})
 
 ${exed}:
 	@echo "Creating $@ ..."
